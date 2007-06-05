@@ -312,7 +312,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	JToolBar createToolBar () {
 		JToolBar toolbar = new JToolBar ();
 		newButton = makeNavigationButton ( "New24.gif", "new",
-		    "Add new Journal entry", "New..." );
+		    "Add new entry", "New..." );
 		newButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				// Make sure there is at least one local calendar.
@@ -334,7 +334,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		toolbar.add ( newButton );
 
 		editButton = makeNavigationButton ( "Edit24.gif", "edit",
-		    "Edit Journal entry", "Edit..." );
+		    "Edit entry", "Edit..." );
 		toolbar.add ( editButton );
 		editButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -353,7 +353,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		deleteButton = makeNavigationButton ( "Delete24.gif", "delete",
-		    "Delete Journal entry", "Delete" );
+		    "Delete entry", "Delete" );
 		toolbar.add ( deleteButton );
 		deleteButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
