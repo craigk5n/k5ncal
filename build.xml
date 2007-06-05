@@ -1,0 +1,73 @@
+<!-- ant build.xml file for k5nCal -->
+<!-- $Id$ -->
+
+<project name="k5nCal" default="dist" basedir=".">
+  <description>Top-level build file for k5nCal</description>
+
+  <!-- set global properties for this build -->
+  <property name="src" location="src"/>
+  <property name="imagedir" location="images"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+
+  <property name="test" location="test"/>
+  <property name="testbuild" location="testbuild"/>
+
+  <property name="version" value="0.9.0"/>
+
+  <property name="k5n-ical-lib" value="lib/k5n-ical-0.3.0.jar"/>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by compile -->
+    <mkdir dir="${build}"/>
+  </target>
+
+  <target name="copyimages" depends="" description="Copy images files">
+    <mkdir dir="${build}/images"/>
+    <copy todir="${build}/images">
+      <fileset dir="${imagedir}" />
+    </copy>
+  </target>
+
+  <target name="compile" depends="init"
+        description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}" destdir="${build}"
+      classpath="${k5n-ical-lib}" />
+  </target>
+
+  <target name="dist" depends="compile,copyimages"
+        description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}"/>
+
+    <!-- Put all the k5nCal files into a single jar
+         and designate the main class -->
+    <jar jarfile="${dist}/k5nCal-${version}.jar" basedir="${build}">
+    <zipfileset src="${k5n-ical-lib}" />
+    <manifest>
+       <attribute name="Main-Class" value="us.k5n.k5ncal.Main"/>
+    </manifest>
+    </jar>
+  </target>
+
+
+  <!-- This target can be useful inside Eclipse when you are having
+       problems loading the images.  Just use ant to build a separate
+       jar file for the images. -->
+  <target name="imagejar" depends="copyimages">
+    <jar jarfile="dist/k5nCal-images.jar" basedir="${build}"
+      includes="images/**">
+    </jar>
+  </target>
+
+  <target name="clean"
+        description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+
+</project>
