@@ -26,6 +26,8 @@ Features not yet implemented:
  - modify in any way events from a subscribed calendar
  - views other than the 5-week month view
  - view event details (categories, status, etc.)
+ - many others... see the app home page and click on "Plans" to
+   see what else will eventually be added.
 
 ---------------------------------------------------------------------------
                          BUILDING
