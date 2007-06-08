@@ -8,8 +8,10 @@ import java.util.Vector;
  * interface. Note that the CalendarPanel does not cache any event data, so the
  * implementation of this interface should keep performance in mind.
  * 
+ * @see CalendarPanel
  * @author Craig Knudsen, craig@k5n.us
- * @version $Id$
+ * @version $Id: CalendarDataRepository.java,v 1.1 2007/06/05 12:39:27 cknudsen
+ *          Exp $
  * 
  */
 public interface CalendarDataRepository {
@@ -20,9 +22,9 @@ public interface CalendarDataRepository {
 	 * @param year
 	 *          The year in YYYY format
 	 * @param month
-	 *          The month (Jan = 1)
+	 *          The month (Jan = 1, Feb = 2, ..., Dec = 12)
 	 * @param day
-	 *          The day of the month
+	 *          The day of the month (1-31)
 	 * @return Vector of EventInstance objects
 	 */
 	public abstract Vector getEventInstancesForDate ( int year, int month, int day );

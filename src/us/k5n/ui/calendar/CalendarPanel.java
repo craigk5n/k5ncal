@@ -32,6 +32,19 @@ import javax.swing.ToolTipManager;
 import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Date;
 
+/**
+ * The CalendarPanel class is a Swing component for displaying a monthly
+ * calendar with events. The calling application must implement the
+ * CalendarDataRepository interface in order for this class to obtain events to
+ * display. Note that this class does not cache any event information outside of
+ * what is currently on the screen. So, the calling application should implement
+ * an efficient methods for the CalendarDataRepository interfance. (For example,
+ * it would be a bad idea to query a database each time.)
+ * 
+ * @see CalendarDataRepository
+ * @author Craig Knudsen, craig@k5n.us
+ * @version $Id$
+ */
 public class CalendarPanel extends JPanel implements MouseWheelListener {
 	private static final long serialVersionUID = 1000L;
 	CalendarDataRepository repository;
