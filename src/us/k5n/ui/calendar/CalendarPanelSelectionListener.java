@@ -1,6 +1,5 @@
 package us.k5n.ui.calendar;
 
-import us.k5n.ical.Date;
 
 /**
  * This interface should be implements for any class that wants to receive
