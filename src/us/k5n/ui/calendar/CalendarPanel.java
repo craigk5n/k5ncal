@@ -29,9 +29,6 @@ import javax.swing.JToolTip;
 import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 
-import us.k5n.ical.BogusDataException;
-import us.k5n.ical.Date;
-
 /**
  * The CalendarPanel class is a Swing component for displaying a monthly
  * calendar with events. The calling application must implement the
@@ -90,6 +87,16 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 	private Date selectedDate = null;
 	private int selectedItemInd = -1;// 0=first event of day selected
 	private Vector<CalendarPanelSelectionListener> selectionListeners;
+
+	class Date {
+		public int year, month, day;
+
+		public Date(int year, int month, int day) {
+			this.year = year;
+			this.month = month;
+			this.day = day;
+		}
+	}
 
 	class DisplayedEvent {
 		EventInstance event;
@@ -216,15 +223,11 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 				    && e1.getY () >= de.rect.y
 				    && e1.getY () <= de.rect.y + de.rect.height ) {
 					// Found item
-					try {
-						selectedDate = new Date ( "XXX", de.event.getYear (), de.event
-						    .getMonth (), de.event.getDayOfMonth () );
-						if ( getAllowsEventSelection () ) {
-							selectedItemInd = de.eventNoForDay;
-							selectedEvent = de;
-						}
-					} catch ( BogusDataException e2 ) {
-						e2.printStackTrace ();
+					selectedDate = new Date ( de.event.getYear (), de.event.getMonth (),
+					    de.event.getDayOfMonth () );
+					if ( getAllowsEventSelection () ) {
+						selectedItemInd = de.eventNoForDay;
+						selectedEvent = de;
 					}
 					break;
 				}
@@ -267,7 +270,8 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 				// Date double-clicked
 				for ( int i = 0; i < selectionListeners.size (); i++ ) {
 					CalendarPanelSelectionListener l = selectionListeners.elementAt ( i );
-					l.dateDoubleClicked ( selectedDate );
+					l.dateDoubleClicked ( selectedDate.year, selectedDate.month,
+					    selectedDate.day );
 				}
 			}
 			// System.out.println ( "sel event: " + selectedEvent.event
@@ -536,14 +540,10 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 				int h = ( week < 4 ) ? rowY[week + 1] - rowY[week] : (int) cellHeight;
 				boolean includeMonthName = c.get ( Calendar.DAY_OF_MONTH ) == 1
 				    || ( week == 0 && col == 0 );
-				try {
-					Date d = new Date ( "XXX", c.get ( Calendar.YEAR ), c
-					    .get ( Calendar.MONTH ) + 1, c.get ( Calendar.DAY_OF_MONTH ) );
-					this.displayedDates.addElement ( new DisplayedDate ( d,
-					    new Rectangle ( columnX[col], rowY[week], w, h ) ) );
-				} catch ( BogusDataException bde ) {
-
-				}
+				Date d = new Date ( c.get ( Calendar.YEAR ),
+				    c.get ( Calendar.MONTH ) + 1, c.get ( Calendar.DAY_OF_MONTH ) );
+				this.displayedDates.addElement ( new DisplayedDate ( d, new Rectangle (
+				    columnX[col], rowY[week], w, h ) ) );
 				drawDayOfMonth ( g, c, includeMonthName, columnX[col], rowY[week], w, h );
 				c.set ( Calendar.DAY_OF_YEAR, c.get ( Calendar.DAY_OF_YEAR ) + 1 );
 			}
@@ -614,9 +614,9 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 			if ( events != null ) {
 				Collections.sort ( events );
 				boolean dateIsSelected = this.selectedDate != null
-				    && this.selectedDate.getYear () == day.get ( Calendar.YEAR )
-				    && this.selectedDate.getMonth () == ( day.get ( Calendar.MONTH ) + 1 )
-				    && this.selectedDate.getDay () == day.get ( Calendar.DAY_OF_MONTH );
+				    && this.selectedDate.year == day.get ( Calendar.YEAR )
+				    && this.selectedDate.month == ( day.get ( Calendar.MONTH ) + 1 )
+				    && this.selectedDate.day == day.get ( Calendar.DAY_OF_MONTH );
 				int startY = y + fm.getHeight ();
 				for ( int i = 0; i < events.size (); i++ ) {
 					EventInstance e = (EventInstance) events.elementAt ( i );
@@ -710,8 +710,7 @@ public class CalendarPanel extends JPanel implements MouseWheelListener {
 		if ( this.selectedDate == null )
 			return null;
 		Vector eventsForDate = this.repository.getEventInstancesForDate (
-		    this.selectedDate.getYear (), this.selectedDate.getMonth (),
-		    this.selectedDate.getDay () );
+		    this.selectedDate.year, this.selectedDate.month, this.selectedDate.day );
 		if ( eventsForDate != null )
 			Collections.sort ( eventsForDate );
 		// System.out.println ( "Found " + eventsForDate.size ()

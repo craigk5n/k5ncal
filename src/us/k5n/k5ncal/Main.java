@@ -74,6 +74,7 @@ import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 
+import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Constants;
 import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
@@ -311,8 +312,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	JToolBar createToolBar () {
 		JToolBar toolbar = new JToolBar ();
-		newButton = makeNavigationButton ( "New24.gif", "new",
-		    "Add new entry", "New..." );
+		newButton = makeNavigationButton ( "New24.gif", "new", "Add new entry",
+		    "New..." );
 		newButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				// Make sure there is at least one local calendar.
@@ -333,8 +334,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 		toolbar.add ( newButton );
 
-		editButton = makeNavigationButton ( "Edit24.gif", "edit",
-		    "Edit entry", "Edit..." );
+		editButton = makeNavigationButton ( "Edit24.gif", "edit", "Edit entry",
+		    "Edit..." );
 		toolbar.add ( editButton );
 		editButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -1068,8 +1069,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 	}
 
-	public void dateDoubleClicked ( Date date ) {
-		new EditWindow ( parent, dataRepository, date, null );
+	public void dateDoubleClicked ( int year, int month, int dayOfMonth ) {
+		try {
+			Date d = new Date ( "DTSTART", year, month, dayOfMonth );
+			new EditWindow ( parent, dataRepository, d, null );
+		} catch ( BogusDataException e1 ) {
+			e1.printStackTrace ();
+		}
 	}
 
 	public void eventUnselected () {

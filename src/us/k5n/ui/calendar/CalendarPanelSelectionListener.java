@@ -19,6 +19,6 @@ public interface CalendarPanelSelectionListener {
 
 	public abstract void eventDoubleClicked ( EventInstance eventInstance );
 
-	public abstract void dateDoubleClicked ( Date date );
+	public abstract void dateDoubleClicked ( int year, int month, int dayOfMonth );
 
 }
