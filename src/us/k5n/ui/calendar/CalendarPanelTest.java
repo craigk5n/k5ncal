@@ -8,7 +8,9 @@ import java.util.Vector;
 import javax.swing.JFrame;
 
 /**
- * Simple test/demo class for CalendarPanel.
+ * Simple test/demo class for CalendarPanel that illustrates how to use
+ * the CalendarPanel class and can be used to view the appearance of
+ * the CalendarPanel calss.
  * 
  * @author Craig Knudsen, craig@k5n.us
  * @vesion $Id$
