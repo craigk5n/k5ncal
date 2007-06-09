@@ -13,7 +13,7 @@ import javax.swing.JFrame;
  * the CalendarPanel calss.
  * 
  * @author Craig Knudsen, craig@k5n.us
- * @vesion $Id$
+ * @version $Id$
  * 
  */
 public class CalendarPanelTest extends JFrame implements CalendarDataRepository {
