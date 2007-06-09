@@ -38,7 +38,7 @@
       classpath="${k5n-ical-lib}" />
   </target>
 
-  <target name="dist" depends="compile,copyimages"
+  <target name="dist" depends="compile,copyimages,calendarpanel,doc"
         description="generate the distribution" >
     <!-- Create the distribution directory -->
     <mkdir dir="${dist}"/>
@@ -51,6 +51,31 @@
        <attribute name="Main-Class" value="us.k5n.k5ncal.Main"/>
     </manifest>
     </jar>
+
+    <!-- build source release for CalendarPanel -->
+    <jar jarfile="${dist}/k5nCalendarPanel-src-${version}.jar" basedir="."
+      includes="src/us/k5n/ui/calendar/**,docs/api/**" />
+
+  </target>
+
+  <!-- Build the calendarpanel jar file -->
+  <target name="calendarpanel" depends="compile,doc">
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}"/>
+    <jar jarfile="${dist}/k5nCalendarPanel-${version}.jar" basedir="${build}"
+      includes="us/k5n/ui/calendar/**">
+    <manifest>
+       <attribute name="Main-Class" value="us.k5n.ui.calendar.CalendarPanelTest"/>
+    </manifest>
+    </jar>
+  </target>
+
+  <target name="doc">
+    <javadoc packagenames="us.k5n.ui.calendar.*"
+      sourcepath="src" destdir="docs/api"
+      windowtitle="CalendarPanel API">
+    </javadoc>
+
   </target>
 
 
