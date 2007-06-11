@@ -51,11 +51,6 @@
        <attribute name="Main-Class" value="us.k5n.k5ncal.Main"/>
     </manifest>
     </jar>
-
-    <!-- build source release for CalendarPanel -->
-    <jar jarfile="${dist}/k5nCalendarPanel-src-${version}.jar" basedir="."
-      includes="src/us/k5n/ui/calendar/**,docs/api/**" />
-
   </target>
 
   <!-- Build the calendarpanel jar file -->
@@ -68,6 +63,9 @@
        <attribute name="Main-Class" value="us.k5n.ui.calendar.CalendarPanelTest"/>
     </manifest>
     </jar>
+    <!-- build source release for CalendarPanel -->
+    <jar jarfile="${dist}/k5nCalendarPanel-src-${version}.jar" basedir="."
+      includes="${src}/us/k5n/ui/calendar/**,docs/api/**" />
   </target>
 
   <target name="doc">
