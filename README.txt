@@ -14,13 +14,6 @@ The k5nCal is a desktop calendar application written in Java.  You can
 maintain a local calendar and subscribe to multiple iCalendar-based
 calendars online.
 
-This package includes the following (some of which may or may not be
-included in the package that you downloaded):
-
-  + k5nCal - the desktop calendar application
-  + k5nCalendarPanel - a Swing GUI class that displays a month (5 week)
-    (Note: that the k5nCal package includes this one)
-
 ---------------------------------------------------------------------------
                          STATUS
 ---------------------------------------------------------------------------
@@ -50,11 +43,6 @@ This build process will create the following jar file (Where N.N.N is the
 version number):
 
 	dist/k5nCal-N.N.N.jar
-
-If you have download the k5nCalendarPanel package, then you should use
-the following command to build:
-
-	ant calendarpanel
 
 ---------------------------------------------------------------------------
                          RUNNING THE APP
@@ -89,7 +77,7 @@ This package makes use of the following packages.  The class files from
 these packages are bundled into the k5nCal jar file, so you do not need
 to download them separately.
 
-k5n Java Cal Tools:
+k5n Java Calendar Tools:
   URL: http://www.k5n.us/javacaltools.php
   License: GNU GPL
   License URL: http://www.fsf.org/licensing/licenses/gpl.html
