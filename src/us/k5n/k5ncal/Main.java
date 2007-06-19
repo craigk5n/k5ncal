@@ -41,6 +41,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -73,8 +74,10 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 
 import us.k5n.ical.BogusDataException;
+import us.k5n.ical.CSVParser;
 import us.k5n.ical.Constants;
 import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
@@ -96,7 +99,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
     CalendarPanelSelectionListener {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
-	public static final String VERSION = "0.9.0 (01 Jun 2007)";
+	public static final String VERSION = "0.9.2+CVS (19 Jun 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
 	JFrame parent;
 	EventViewPanel eventView;
@@ -109,6 +112,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	CheckBoxList calendarCheckboxes;
 	String searchText = null;
 	private static File lastExportDirectory = null;
+	private static File lastImportDirectory = null;
 	AppPreferences prefs;
 	File dataDir = null;
 	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
@@ -117,6 +121,21 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_Y = "MainWindow.y";
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
+
+	class CSVFileFilter extends FileFilter {
+		public boolean accept ( File f ) {
+			if ( f.isDirectory () )
+				return true;
+			String name = f.getName ();
+			if ( name.toLowerCase ().endsWith ( ".csv" ) )
+				return true;
+			return false;
+		}
+
+		public String getDescription () {
+			return "*.csv (Comma-Separated Values)";
+		}
+	}
 
 	public Main() {
 		super ( "k5nCal" );
@@ -228,6 +247,28 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		JMenuBar bar = new JMenuBar ();
 
 		JMenu fileMenu = new JMenu ( "File" );
+
+		JMenu importMenu = new JMenu ( "Import" );
+		// exportMenu.setMnemonic ( 'X' );
+		fileMenu.add ( importMenu );
+
+		item = new JMenuItem ( "iCalendar File" );
+		item.setEnabled ( false );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				// importICalendar ();
+			}
+		} );
+		importMenu.add ( item );
+		item = new JMenuItem ( "CSV File" );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				importCSV ();
+			}
+		} );
+		importMenu.add ( item );
+
+		fileMenu.addSeparator ();
 
 		JMenu exportMenu = new JMenu ( "Export" );
 		// exportMenu.setMnemonic ( 'X' );
@@ -485,7 +526,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			editLocalCalendar ( c );
 		} else
 			editRemoteCalendar ( c );
-
 	}
 
 	public void deleteCalendar ( Calendar c ) {
@@ -931,6 +971,166 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		addLocal.setVisible ( true );
 	}
 
+	protected void importCSV () {
+		final JDialog dialog = new JDialog ( this );
+		final JTextField fileField = new JTextField ( 50 );
+		final JTextField nameField = new JTextField ( 50 );
+		final ColorButton colorField = new ColorButton ();
+		int[] props = { 2, 3 };
+
+		nameField.setText ( "Imported From CVS" );
+
+		dialog.setTitle ( "Import CSV File" );
+		dialog.setModal ( true );
+		Container content = dialog.getContentPane ();
+		content.setLayout ( new BorderLayout () );
+		JPanel buttonPanel = new JPanel ();
+		buttonPanel.setLayout ( new FlowLayout () );
+		JButton cancel = new JButton ( "Cancel" );
+		cancel.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				dialog.dispose ();
+			}
+		} );
+		buttonPanel.add ( cancel );
+		JButton ok = new JButton ( "Import" );
+		ok.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					String fname = fileField.getText ();
+					if ( fname == null || fname.trim ().length () == 0 ) {
+						showError ( "You must provide a filename." );
+						return;
+					}
+					File importFile = new File ( fname );
+					if ( !importFile.exists () ) {
+						showError ( "The specified file does not exist." );
+						return;
+					}
+					String name = nameField.getText ();
+					if ( name == null || name.trim ().length () == 0 ) {
+						showError ( "You must provide a name." );
+						return;
+					}
+					Color color = colorField.getSelectedColor ();
+					// import CSV
+					CSVParser csvParser = new CSVParser ( PARSE_LOOSE );
+					FileReader reader = new FileReader ( importFile );
+					csvParser.parse ( reader );
+					// TODO: display/handle parse errors
+					Calendar cal = new Calendar ( getDataDirectory (), name );
+					cal.bg = color;
+					cal.border = cal.fg = getForegroundColorForBackground ( color );
+					cal.lastUpdated = java.util.Calendar.getInstance ()
+					    .getTimeInMillis ();
+					File file = new File ( getDataDirectory (), cal.filename );
+					FileWriter writer = new FileWriter ( file );
+					writer.write ( csvParser.toICalendar () );
+					writer.close ();
+					showStatusMessage ( "New local calendar \"" + name
+					    + "\" added for import.  "
+					    + csvParser.getDataStoreAt ( 0 ).getAllEvents ().size ()
+					    + " events imported." );
+					calendars.addElement ( cal );
+					dataRepository.addCalendar ( getDataDirectory (), cal, false );
+					updateCalendarCheckboxes ();
+					saveCalendars ( getDataDirectory () );
+					dataRepository.rebuild ();
+				} catch ( Exception e1 ) {
+					showError ( "Error writing calendar:\n" + e1.getMessage () );
+					return;
+				}
+				dialog.dispose ();
+			}
+		} );
+		buttonPanel.add ( ok );
+		content.add ( buttonPanel, BorderLayout.SOUTH );
+
+		JPanel main = new JPanel ();
+		main.setBorder ( BorderFactory.createTitledBorder ( "Import CSV File" ) );
+		main.setLayout ( new GridLayout ( 3, 1 ) );
+
+		JPanel filePanel = new JPanel ();
+		filePanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		filePanel.add ( new JLabel ( "CSV File: " ) );
+		JPanel fileNamePanel = new JPanel ();
+		fileNamePanel.setLayout ( new BorderLayout () );
+		JButton browse = new JButton ( "..." );
+		browse.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				String selectedFile = browseForFile ();
+				if ( selectedFile != null )
+					fileField.setText ( selectedFile );
+			}
+		} );
+		fileNamePanel.add ( browse, BorderLayout.EAST );
+		fileNamePanel.add ( fileField, BorderLayout.CENTER );
+		filePanel.add ( fileNamePanel );
+		main.add ( filePanel );
+
+		JPanel namePanel = new JPanel ();
+		namePanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		namePanel.add ( new JLabel ( "New Calendar Name: " ) );
+		namePanel.add ( nameField );
+		main.add ( namePanel );
+
+		JPanel colorPanel = new JPanel ();
+		colorPanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		colorPanel.add ( new JLabel ( "Background Color: " ) );
+		JPanel colorSub = new JPanel ();
+		colorSub.setLayout ( new BorderLayout () );
+		colorField.setBackground ( Color.blue );
+		colorSub.add ( colorField, BorderLayout.WEST );
+		colorPanel.add ( colorSub );
+		main.add ( colorPanel );
+
+		content.add ( main, BorderLayout.CENTER );
+
+		dialog.pack ();
+		dialog.setVisible ( true );
+	}
+
+	String browseForFile () {
+		JFileChooser fileChooser;
+		File outFile = null;
+
+		if ( lastImportDirectory == null )
+			fileChooser = new JFileChooser ();
+		else
+			fileChooser = new JFileChooser ( lastImportDirectory );
+		fileChooser.setFileSelectionMode ( JFileChooser.FILES_ONLY );
+		fileChooser.setFileFilter ( new CSVFileFilter () );
+		fileChooser.setDialogTitle ( "Select Import File" );
+		fileChooser.setApproveButtonText ( "Choose" );
+		fileChooser.setApproveButtonToolTipText ( "Select CSV file to import" );
+		int ret = fileChooser.showOpenDialog ( this );
+		if ( ret == JFileChooser.APPROVE_OPTION ) {
+			outFile = fileChooser.getSelectedFile ();
+		} else {
+			// Cancel
+			return null;
+		}
+		// If no file extension provided, use ".cvs"
+		String basename = outFile.getName ();
+		if ( basename.indexOf ( '.' ) < 0 ) {
+			// No filename extension provided, so add ".csv" to it
+			outFile = new File ( outFile.getParent (), basename + ".csv" );
+		}
+		System.out.println ( "Selected File: " + outFile.toString () );
+		lastImportDirectory = outFile.getParentFile ();
+		if ( outFile.exists () && !outFile.canWrite () ) {
+			JOptionPane.showMessageDialog ( parent,
+			    "You do not have the proper\npermissions to write to:\n\n"
+			        + outFile.toString () + "\n\nPlease select another file.",
+			    "Permissions Error", JOptionPane.WARNING_MESSAGE );
+			return null;
+		}
+		return outFile.getAbsolutePath ();
+	}
+
 	protected void exportAll () {
 		export ( "Export All", dataRepository.getAllEntries () );
 	}
@@ -1142,4 +1342,5 @@ class ColorButton extends JButton {
 	public Dimension preferredSize () {
 		return new Dimension ( 30, 30 );
 	}
+
 }

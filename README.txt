@@ -1,7 +1,7 @@
                            k5nCal
 ****************************************************************************
 
-Version:      0.9.1
+Version:      0.9.2
 URL:          http://k5ncal.sourceforge.net
 Author:       Craig Knudsen, craig [< at >] k5n.us
 License:      GNU GPL
@@ -91,3 +91,8 @@ Google RFC2445
   URL: http://code.google.com/p/google-rfc-2445/
   License: Apache License 2.0
   License URL: http://www.apache.org/licenses/
+  
+Java CSV Library:
+  URL: http://sourceforge.net/projects/javacsv/
+  License: LGPL
+  License URL: http://www.gnu.org/licenses/lgpl.html
