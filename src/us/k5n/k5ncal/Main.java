@@ -41,7 +41,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,10 +73,8 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
-import javax.swing.filechooser.FileFilter;
 
 import us.k5n.ical.BogusDataException;
-import us.k5n.ical.CSVParser;
 import us.k5n.ical.Constants;
 import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
@@ -99,13 +96,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
     CalendarPanelSelectionListener {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
-	public static final String VERSION = "0.9.2+CVS (19 Jun 2007)";
+	public static final String VERSION = "0.9.2 (26 Jun 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
 	JFrame parent;
 	EventViewPanel eventView;
 	JButton newButton, editButton, deleteButton;
 	JLabel messageArea;
-	Vector<Calendar> calendars;
+	// Vector<Calendar> calendars;
 	Repository dataRepository;
 	CalendarPanel eventViewPanel;
 	JSplitPane horizontalSplit = null;
@@ -121,21 +118,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_Y = "MainWindow.y";
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
-
-	class CSVFileFilter extends FileFilter {
-		public boolean accept ( File f ) {
-			if ( f.isDirectory () )
-				return true;
-			String name = f.getName ();
-			if ( name.toLowerCase ().endsWith ( ".csv" ) )
-				return true;
-			return false;
-		}
-
-		public String getDescription () {
-			return "*.csv (Comma-Separated Values)";
-		}
-	}
 
 	public Main() {
 		super ( "k5nCal" );
@@ -153,8 +135,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		// Load data
 		File dataDir = getDataDirectory ();
-		loadCalendars ( dataDir );
-		dataRepository = new Repository ( dataDir, calendars, false );
+		dataRepository = new Repository ( dataDir, loadCalendars ( dataDir ), false );
 		// Ask to be notified when the repository changes (user adds/edits
 		// an entry)
 		dataRepository.addChangeListener ( this );
@@ -172,7 +153,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		messagePanel.add ( messageArea, BorderLayout.CENTER );
 		contentPane.add ( messagePanel, BorderLayout.SOUTH );
 
-		JPanel navArea = createCalendarSelectionPanel ( calendars );
+		JPanel navArea = createCalendarSelectionPanel ( dataRepository
+		    .getCalendars () );
 
 		JPanel rightPanel = new JPanel ();
 		rightPanel.setLayout ( new BorderLayout () );
@@ -196,8 +178,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.setVisible ( true );
 	}
 
-	public void loadCalendars ( File dir ) {
-		this.calendars = new Vector<Calendar> ();
+	public Vector<Calendar> loadCalendars ( File dir ) {
+		Vector<Calendar> ret = new Vector<Calendar> ();
 		File f = new File ( dir, CALENDARS_FILE );
 		if ( !f.exists () ) {
 			String name = (String) System.getProperty ( "user.name" );
@@ -206,14 +188,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			Calendar def = new Calendar ( dir, name );
 			this.showMessage ( "A new calendar named \"" + name
 			    + "\"\nwas created for you." );
-			this.calendars.addElement ( def );
+			ret.addElement ( def );
 		} else {
 			try {
 				FileInputStream f_in = new FileInputStream ( f );
 				ObjectInputStream obj_in = new ObjectInputStream ( f_in );
 				Object obj = obj_in.readObject ();
 				if ( obj instanceof Vector ) {
-					this.calendars = (Vector) obj;
+					ret = (Vector) obj;
 				}
 			} catch ( IOException e1 ) {
 				fatalError ( "Error reading calendar data:\n" + e1.getMessage () );
@@ -223,6 +205,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				e1.printStackTrace ();
 			}
 		}
+		return ret;
 	}
 
 	public void saveCalendars ( File dir ) {
@@ -230,7 +213,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		try {
 			FileOutputStream f_out = new FileOutputStream ( f );
 			ObjectOutputStream obj_out = new ObjectOutputStream ( f_out );
-			obj_out.writeObject ( this.calendars );
+			obj_out.writeObject ( dataRepository.getCalendars () );
 		} catch ( IOException e1 ) {
 			this.showError ( "Error writing calendars:\n" + e1.getMessage () );
 			e1.printStackTrace ();
@@ -253,10 +236,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		fileMenu.add ( importMenu );
 
 		item = new JMenuItem ( "iCalendar File" );
-		item.setEnabled ( false );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
-				// importICalendar ();
+				importICalendar ();
 			}
 		} );
 		importMenu.add ( item );
@@ -359,8 +341,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			public void actionPerformed ( ActionEvent event ) {
 				// Make sure there is at least one local calendar.
 				boolean foundLocal = false;
-				for ( int i = 0; i < calendars.size (); i++ ) {
-					Calendar c = calendars.elementAt ( i );
+				for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
+					Calendar c = dataRepository.getCalendars ().elementAt ( i );
 					if ( c.url == null )
 						foundLocal = true;
 				}
@@ -490,8 +472,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		    } );
 		this.calendarCheckboxes.setRightClickMenu ( menuLabels, menuActions );
 
-		for ( int i = 0; i < this.calendars.size (); i++ ) {
-			Calendar c = this.calendars.elementAt ( i );
+		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
+			Calendar c = dataRepository.getCalendars ().elementAt ( i );
 			JCheckBox cb = this.calendarCheckboxes.getCheckBoxAt ( i );
 			cb.setSelected ( c.selected );
 		}
@@ -505,8 +487,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	void handleCalendarFilterSelection () {
 		// Repaint the calendar view, which will reload the data
 		Vector sel = this.calendarCheckboxes.getSelectedItems ();
-		for ( int i = 0; i < calendars.size (); i++ ) {
-			Calendar c = (Calendar) calendars.elementAt ( i );
+		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
+			Calendar c = (Calendar) dataRepository.getCalendars ().elementAt ( i );
 			boolean selected = false;
 			for ( int j = 0; j < sel.size () && !selected; j++ ) {
 				Calendar selCal = (Calendar) sel.elementAt ( j );
@@ -530,10 +512,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void deleteCalendar ( Calendar c ) {
 		boolean found = false;
-		for ( int i = 0; i < calendars.size () && !found; i++ ) {
-			Calendar c1 = (Calendar) calendars.elementAt ( i );
+		for ( int i = 0; i < dataRepository.getCalendars ().size () && !found; i++ ) {
+			Calendar c1 = (Calendar) dataRepository.getCalendars ().elementAt ( i );
 			if ( c1.equals ( c ) ) {
-				calendars.remove ( i );
 				dataRepository.removeCalendar ( getDataDirectory (), c );
 				found = true;
 			}
@@ -552,9 +533,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * Update the list of Calendars shown to the user
 	 */
 	public void updateCalendarCheckboxes () {
-		this.calendarCheckboxes.setChoices ( calendars );
-		for ( int i = 0; i < calendars.size (); i++ ) {
-			Calendar cal = (Calendar) calendars.elementAt ( i );
+		this.calendarCheckboxes.setChoices ( dataRepository.getCalendars () );
+		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
+			Calendar cal = (Calendar) dataRepository.getCalendars ().elementAt ( i );
 			JCheckBox cb = this.calendarCheckboxes.getCheckBoxAt ( i );
 			cb.setBackground ( cal.bg );
 			cb.setForeground ( cal.fg );
@@ -562,6 +543,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				cb.setToolTipText ( cal.url.toString () );
 			else
 				cb.setToolTipText ( "Local calendar" );
+			cb.setSelected ( cal.selected );
 		}
 		this.calendarCheckboxes.validate ();
 	}
@@ -784,8 +766,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					Color color = colorField.getSelectedColor ();
 					// download
 					showStatusMessage ( "Downloading calendar..." );
-					Calendar cal = new Calendar ( getDataDirectory (), name, url,
-					    updateInterval );
+					Calendar cal = null;
+					if ( c == null ) {
+						cal = new Calendar ( getDataDirectory (), name, url, updateInterval );
+					} else {
+						cal = c;
+					}
 					cal.bg = color;
 					cal.border = cal.fg = getForegroundColorForBackground ( color );
 					cal.lastUpdated = java.util.Calendar.getInstance ()
@@ -808,16 +794,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					if ( c == null ) {
 						showStatusMessage ( "New remote calendar \"" + name + "\" added ("
 						    + totalRead + " bytes)" );
+						dataRepository.addCalendar ( getDataDirectory (), cal, false );
+						// This will call us back with calendarAdded (below)
 					} else {
-						deleteCalendar ( c );
-						showStatusMessage ( "Remote calendar \"" + name + "\" updated ("
-						    + totalRead + " bytes)" );
+						// updating calendar...
+						dataRepository.updateCalendar ( getDataDirectory (), cal );
+						showStatusMessage ( "Updated local calendar \"" + name
+						    + "\" updated" );
 					}
-					calendars.addElement ( cal );
-					dataRepository.addCalendar ( getDataDirectory (), cal, false );
-					updateCalendarCheckboxes ();
-					saveCalendars ( getDataDirectory () );
-					dataRepository.rebuild ();
 				} catch ( Exception e1 ) {
 					showError ( "Error downloading calendar:\n" + e1.getMessage () );
 					return;
@@ -905,7 +889,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					Color color = colorField.getSelectedColor ();
 					// download
 					showStatusMessage ( "Downloading calendar..." );
-					Calendar cal = new Calendar ( getDataDirectory (), name );
+					Calendar cal = null;
+					if ( c == null ) {
+						cal = new Calendar ( getDataDirectory (), name );
+					} else {
+						cal = c;
+					}
 					cal.bg = color;
 					cal.border = cal.fg = getForegroundColorForBackground ( color );
 					cal.lastUpdated = java.util.Calendar.getInstance ()
@@ -922,16 +911,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					}
 					if ( c == null ) {
 						showStatusMessage ( "New local calendar \"" + name + "\" added" );
+						dataRepository.addCalendar ( getDataDirectory (), cal, false );
+						// This will call us back with calendarAdded (below)
 					} else {
-						deleteCalendar ( c );
+						// updating calendar...
+						dataRepository.updateCalendar ( getDataDirectory (), cal );
 						showStatusMessage ( "Updated local calendar \"" + name
 						    + "\" updated" );
 					}
-					calendars.addElement ( cal );
-					dataRepository.addCalendar ( getDataDirectory (), cal, false );
-					updateCalendarCheckboxes ();
-					saveCalendars ( getDataDirectory () );
-					dataRepository.rebuild ();
 				} catch ( Exception e1 ) {
 					showError ( "Error writing calendar:\n" + e1.getMessage () );
 					return;
@@ -972,163 +959,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	protected void importCSV () {
-		final JDialog dialog = new JDialog ( this );
-		final JTextField fileField = new JTextField ( 50 );
-		final JTextField nameField = new JTextField ( 50 );
-		final ColorButton colorField = new ColorButton ();
-		int[] props = { 2, 3 };
-
-		nameField.setText ( "Imported From CVS" );
-
-		dialog.setTitle ( "Import CSV File" );
-		dialog.setModal ( true );
-		Container content = dialog.getContentPane ();
-		content.setLayout ( new BorderLayout () );
-		JPanel buttonPanel = new JPanel ();
-		buttonPanel.setLayout ( new FlowLayout () );
-		JButton cancel = new JButton ( "Cancel" );
-		cancel.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				dialog.dispose ();
-			}
-		} );
-		buttonPanel.add ( cancel );
-		JButton ok = new JButton ( "Import" );
-		ok.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				try {
-					String fname = fileField.getText ();
-					if ( fname == null || fname.trim ().length () == 0 ) {
-						showError ( "You must provide a filename." );
-						return;
-					}
-					File importFile = new File ( fname );
-					if ( !importFile.exists () ) {
-						showError ( "The specified file does not exist." );
-						return;
-					}
-					String name = nameField.getText ();
-					if ( name == null || name.trim ().length () == 0 ) {
-						showError ( "You must provide a name." );
-						return;
-					}
-					Color color = colorField.getSelectedColor ();
-					// import CSV
-					CSVParser csvParser = new CSVParser ( PARSE_LOOSE );
-					FileReader reader = new FileReader ( importFile );
-					csvParser.parse ( reader );
-					// TODO: display/handle parse errors
-					Calendar cal = new Calendar ( getDataDirectory (), name );
-					cal.bg = color;
-					cal.border = cal.fg = getForegroundColorForBackground ( color );
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
-					File file = new File ( getDataDirectory (), cal.filename );
-					FileWriter writer = new FileWriter ( file );
-					writer.write ( csvParser.toICalendar () );
-					writer.close ();
-					showStatusMessage ( "New local calendar \"" + name
-					    + "\" added for import.  "
-					    + csvParser.getDataStoreAt ( 0 ).getAllEvents ().size ()
-					    + " events imported." );
-					calendars.addElement ( cal );
-					dataRepository.addCalendar ( getDataDirectory (), cal, false );
-					updateCalendarCheckboxes ();
-					saveCalendars ( getDataDirectory () );
-					dataRepository.rebuild ();
-				} catch ( Exception e1 ) {
-					showError ( "Error writing calendar:\n" + e1.getMessage () );
-					return;
-				}
-				dialog.dispose ();
-			}
-		} );
-		buttonPanel.add ( ok );
-		content.add ( buttonPanel, BorderLayout.SOUTH );
-
-		JPanel main = new JPanel ();
-		main.setBorder ( BorderFactory.createTitledBorder ( "Import CSV File" ) );
-		main.setLayout ( new GridLayout ( 3, 1 ) );
-
-		JPanel filePanel = new JPanel ();
-		filePanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		filePanel.add ( new JLabel ( "CSV File: " ) );
-		JPanel fileNamePanel = new JPanel ();
-		fileNamePanel.setLayout ( new BorderLayout () );
-		JButton browse = new JButton ( "..." );
-		browse.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				String selectedFile = browseForFile ();
-				if ( selectedFile != null )
-					fileField.setText ( selectedFile );
-			}
-		} );
-		fileNamePanel.add ( browse, BorderLayout.EAST );
-		fileNamePanel.add ( fileField, BorderLayout.CENTER );
-		filePanel.add ( fileNamePanel );
-		main.add ( filePanel );
-
-		JPanel namePanel = new JPanel ();
-		namePanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		namePanel.add ( new JLabel ( "New Calendar Name: " ) );
-		namePanel.add ( nameField );
-		main.add ( namePanel );
-
-		JPanel colorPanel = new JPanel ();
-		colorPanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		colorPanel.add ( new JLabel ( "Background Color: " ) );
-		JPanel colorSub = new JPanel ();
-		colorSub.setLayout ( new BorderLayout () );
-		colorField.setBackground ( Color.blue );
-		colorSub.add ( colorField, BorderLayout.WEST );
-		colorPanel.add ( colorSub );
-		main.add ( colorPanel );
-
-		content.add ( main, BorderLayout.CENTER );
-
-		dialog.pack ();
-		dialog.setVisible ( true );
+		new ImportDialog ( this, ImportDialog.IMPORT_CSV, getDataDirectory (),
+		    dataRepository );
 	}
 
-	String browseForFile () {
-		JFileChooser fileChooser;
-		File outFile = null;
-
-		if ( lastImportDirectory == null )
-			fileChooser = new JFileChooser ();
-		else
-			fileChooser = new JFileChooser ( lastImportDirectory );
-		fileChooser.setFileSelectionMode ( JFileChooser.FILES_ONLY );
-		fileChooser.setFileFilter ( new CSVFileFilter () );
-		fileChooser.setDialogTitle ( "Select Import File" );
-		fileChooser.setApproveButtonText ( "Choose" );
-		fileChooser.setApproveButtonToolTipText ( "Select CSV file to import" );
-		int ret = fileChooser.showOpenDialog ( this );
-		if ( ret == JFileChooser.APPROVE_OPTION ) {
-			outFile = fileChooser.getSelectedFile ();
-		} else {
-			// Cancel
-			return null;
-		}
-		// If no file extension provided, use ".cvs"
-		String basename = outFile.getName ();
-		if ( basename.indexOf ( '.' ) < 0 ) {
-			// No filename extension provided, so add ".csv" to it
-			outFile = new File ( outFile.getParent (), basename + ".csv" );
-		}
-		System.out.println ( "Selected File: " + outFile.toString () );
-		lastImportDirectory = outFile.getParentFile ();
-		if ( outFile.exists () && !outFile.canWrite () ) {
-			JOptionPane.showMessageDialog ( parent,
-			    "You do not have the proper\npermissions to write to:\n\n"
-			        + outFile.toString () + "\n\nPlease select another file.",
-			    "Permissions Error", JOptionPane.WARNING_MESSAGE );
-			return null;
-		}
-		return outFile.getAbsolutePath ();
+	protected void importICalendar () {
+		new ImportDialog ( this, ImportDialog.IMPORT_ICS, getDataDirectory (),
+		    dataRepository );
 	}
 
 	protected void exportAll () {
@@ -1253,6 +1090,24 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void eventSelected ( EventInstance eventInstance ) {
 		updateToolbar ();
+	}
+
+	public void calendarAdded ( Calendar c ) {
+		updateCalendarCheckboxes ();
+		saveCalendars ( getDataDirectory () );
+		this.eventViewPanel.repaint ();
+	}
+
+	public void calendarUpdated ( Calendar c ) {
+		updateCalendarCheckboxes ();
+		saveCalendars ( getDataDirectory () );
+		this.eventViewPanel.repaint ();
+	}
+
+	public void calendarDeleted ( Calendar c ) {
+		updateCalendarCheckboxes ();
+		saveCalendars ( getDataDirectory () );
+		this.eventViewPanel.repaint ();
 	}
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {

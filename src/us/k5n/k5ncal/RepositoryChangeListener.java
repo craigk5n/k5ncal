@@ -25,7 +25,8 @@ import us.k5n.ical.Event;
  * Interface for receiving updates from Repository.
  * 
  * @author Craig Knudsen, craig@k5n.us
- * @version $Id$
+ * @version $Id: RepositoryChangeListener.java,v 1.1 2007/06/05 12:40:26
+ *          cknudsen Exp $
  */
 public interface RepositoryChangeListener {
 
@@ -34,4 +35,11 @@ public interface RepositoryChangeListener {
 	public abstract void eventUpdated ( Event event );
 
 	public abstract void eventDeleted ( Event event );
+
+	public abstract void calendarAdded ( Calendar c );
+
+	public abstract void calendarUpdated ( Calendar c );
+
+	public abstract void calendarDeleted ( Calendar c );
+
 }

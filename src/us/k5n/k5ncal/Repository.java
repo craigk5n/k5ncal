@@ -87,12 +87,39 @@ public class Repository implements CalendarDataRepository {
 				found = true;
 			}
 		}
-		if ( !found )
+		this.rebuild ();
+		if ( !found ) {
 			this.calendars.addElement ( c );
+			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
+				RepositoryChangeListener l = this.changeListeners.elementAt ( i );
+				l.calendarAdded ( c );
+			}
+		}
 		File file = new File ( dir, c.filename );
 		DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
 		if ( f != null ) {
 			this.addDataFile ( f );
+		}
+	}
+
+	// Call this when you have updated the calendar name or other
+	// attributes.
+	public void updateCalendar ( File dir, Calendar c ) {
+		boolean found = false;
+		for ( int i = 0; i < this.calendars.size (); i++ ) {
+			Calendar c1 = this.calendars.elementAt ( i );
+			if ( c1.equals ( c ) ) {
+				// found it
+				found = true;
+				this.calendars.setElementAt ( c, i );
+			}
+		}
+		if ( found ) {
+			this.rebuild ();
+			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
+				RepositoryChangeListener l = this.changeListeners.elementAt ( i );
+				l.calendarUpdated ( c );
+			}
 		}
 	}
 
@@ -120,7 +147,22 @@ public class Repository implements CalendarDataRepository {
 		}
 		if ( !found ) {
 			System.out.println ( "removeCalendar: not found " + c );
+		} else {
+			this.rebuild ();
+			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
+				RepositoryChangeListener l = this.changeListeners.elementAt ( i );
+				l.calendarDeleted ( c );
+			}
 		}
+	}
+
+	/**
+	 * Get a Vector of Calendar objects for all calendars.
+	 * 
+	 * @return
+	 */
+	public Vector<Calendar> getCalendars () {
+		return calendars;
 	}
 
 	private void removeDataFile ( DataFile f ) {
@@ -212,7 +254,13 @@ public class Repository implements CalendarDataRepository {
 		System.out.println ( "rebuildPrivateData" );
 		for ( int i = 0; i < dataFiles.size (); i++ ) {
 			DataFile df = (DataFile) dataFiles.elementAt ( i );
-			System.out.println ( "DataFile#" + i + ": " + df.toString () );
+			System.out
+			    .println ( "DataFile#"
+			        + i
+			        + ": "
+			        + df.toString ()
+			        + ( this.getCalendars ().elementAt ( i ).selected ? "(selected)"
+			            : "" ) );
 			// System.out.println ( " df.getEventCount () =" + df.getEventCount ()
 			// );
 			for ( int j = 0; j < df.getEventCount (); j++ ) {
