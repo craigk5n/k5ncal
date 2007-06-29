@@ -96,7 +96,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
     CalendarPanelSelectionListener {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
-	public static final String VERSION = "0.9.2 (26 Jun 2007)";
+	public static final String VERSION = "0.9.3 (29 Jun 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
 	JFrame parent;
 	EventViewPanel eventView;
@@ -434,8 +434,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * @return
 	 */
 	protected JPanel createCalendarSelectionPanel ( Vector calendars ) {
-		String[] menuLabels = { "Edit...", "Delete" };
-		String[] menuActions = { "EDIT", "DELETE" };
+		String[] menuLabels = { "Edit...", "Refresh", "Delete" };
+		String[] menuActions = { "EDIT", /*"REFRESH",*/ "DELETE" };
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new BorderLayout () );
 		topPanel.setBorder ( BorderFactory.createTitledBorder ( "Calendars" ) );
@@ -456,6 +456,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    Calendar c = (Calendar) item;
 				    if ( "EDIT".equals ( actionCommand ) ) {
 					    editCalendar ( c );
+				    } else if ( "REFRESH".equals ( actionCommand ) ) {
+					    if ( c.url == null ) {
+						    showError ( "You can only refresh\nremote/subscribed calendars" );
+					    } else {
+						    // TODO...
+					    }
 				    } else if ( "DELETE".equals ( actionCommand ) ) {
 					    System.out.println ( "Delete calendar: " + c );
 					    if ( JOptionPane.showConfirmDialog ( parent,

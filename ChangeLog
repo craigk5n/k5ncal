@@ -1,7 +1,13 @@
 ChangeLog
 $Id$
 
+0.9.3 (29 Jun 2007) - Build/packaging fixes
+-----------------------------------------------------------------------
+- Added missing files from release
+- Created source release
+
 0.9.2 (26 Jun 2007) - Added minor new features
+-----------------------------------------------------------------------
 - Added import of CSV files that accept files generated from
   Microsoft Outlook.
 - Added ICS import function
