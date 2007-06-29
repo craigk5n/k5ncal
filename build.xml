@@ -13,7 +13,7 @@
   <property name="test" location="test"/>
   <property name="testbuild" location="testbuild"/>
 
-  <property name="version" value="0.9.2"/>
+  <property name="version" value="0.9.3"/>
 
   <property name="k5n-ical-lib" value="lib/k5n-ical-0.4.1.jar"/>
   <property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.1.jar"/>
@@ -52,6 +52,7 @@
          and designate the main class -->
     <jar jarfile="${dist}/k5nCal-${version}.jar" basedir="${build}">
     <zipfileset src="${k5n-ical-lib}" />
+    <zipfileset src="${k5n-calendarpanel-lib}" />
     <manifest>
        <attribute name="Main-Class" value="us.k5n.k5ncal.Main"/>
     </manifest>
@@ -65,6 +66,18 @@
     <jar jarfile="dist/k5nCal-images.jar" basedir="${build}"
       includes="images/**">
     </jar>
+  </target>
+
+  <!-- for use in making source code releases -->
+  <target name="source-zip">
+    <mkdir dir="${dist}/src"/>
+    <zip destfile="${dist}/src/k5nCal-src-${version}.zip">
+      <zipfileset dir="." prefix="k5nCal-src-${version}"
+        includes="build.xml,README.txt,ChangeLog" />
+      <zipfileset dir="${src}" prefix="k5nCal-src-${version}/src" />
+      <zipfileset dir="images" prefix="k5nCal-src-${version}/images" />
+      <zipfileset dir="lib" prefix="k5nCal-src-${version}/lib" />
+    </zip>
   </target>
 
   <target name="clean"
