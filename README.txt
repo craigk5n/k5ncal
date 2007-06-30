@@ -1,7 +1,7 @@
                            k5nCal
 ****************************************************************************
 
-Version:      0.9.3
+Version:      0.9.4
 URL:          http://k5ncal.sourceforge.net
 Author:       Craig Knudsen, craig [< at >] k5n.us
 License:      GNU GPL

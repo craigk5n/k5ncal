@@ -60,6 +60,12 @@ public class DataFile extends File implements Constants {
 	public DataFile(String filename, Calendar calendar, boolean strictParsing) {
 		super ( filename );
 		this.calendar = calendar;
+		this.parser = new ICalendarParser ( strictParsing ? PARSE_STRICT
+		    : PARSE_LOOSE );
+		readData ( strictParsing );
+	}
+
+	private void readData ( boolean strictParsing ) {
 		parser = new ICalendarParser ( strictParsing ? PARSE_STRICT : PARSE_LOOSE );
 		if ( this.exists () ) {
 			BufferedReader reader = null;
@@ -157,5 +163,14 @@ public class DataFile extends File implements Constants {
 		writer = new FileWriter ( this );
 		writer.write ( parser.toICalendar () );
 		writer.close ();
+	}
+
+	/**
+	 * Write this DataFile object.
+	 * 
+	 * @throws IOException
+	 */
+	public void refresh () {
+		this.readData ( this.parser.isParseStrict () );
 	}
 }

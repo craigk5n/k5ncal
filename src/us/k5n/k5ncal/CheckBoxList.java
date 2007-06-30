@@ -28,19 +28,19 @@ import javax.swing.JScrollPane;
 public class CheckBoxList extends JPanel implements ActionListener,
     MouseListener {
 	Vector choices;
-	Vector checkboxes;
-	Vector listeners;
+	Vector<JCheckBox> checkboxes;
+	Vector<CheckBoxListListener> listeners;
 	private JPanel innerPanel;
 	JPopupMenu menu;
-	String[] actionStrings = null;
 	JCheckBox itemForMenu = null;
+	private String[] menuLabels = null;
 
 	public CheckBoxList(Vector choices) {
 		super ();
 		this.setLayout ( new BorderLayout () );
 		this.choices = choices;
-		this.checkboxes = new Vector ();
-		this.listeners = new Vector ();
+		this.checkboxes = new Vector<JCheckBox> ();
+		this.listeners = new Vector<CheckBoxListListener> ();
 
 		JPanel panel = new JPanel ();
 		panel.setLayout ( new BorderLayout () );
@@ -52,9 +52,9 @@ public class CheckBoxList extends JPanel implements ActionListener,
 		this.add ( scrollPane, BorderLayout.CENTER );
 	}
 
-	public void setRightClickMenu ( String[] labels, String[] actionStrings ) {
+	private void setRightClickMenu ( String[] labels ) {
 		// create right-click menu
-		this.actionStrings = actionStrings;
+		this.menuLabels = labels;
 		menu = new JPopupMenu ();
 		for ( int i = 0; i < labels.length; i++ ) {
 			JMenuItem item = new JMenuItem ( labels[i] );
@@ -69,7 +69,7 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	}
 
 	public void menuSelected ( int menuItemInd ) {
-		System.out.println ( "menuSelected: " + actionStrings[menuItemInd] );
+		//System.out.println ( "menuSelected: " + menuLabels[menuItemInd] );
 		String cmd = itemForMenu.getActionCommand ();
 		if ( cmd.charAt ( 0 ) == '#' ) {
 			int ind = Integer.parseInt ( cmd.substring ( 1 ) );
@@ -77,10 +77,9 @@ public class CheckBoxList extends JPanel implements ActionListener,
 			for ( int i = 0; i < this.listeners.size (); i++ ) {
 				CheckBoxListListener l = (CheckBoxListListener) this.listeners
 				    .elementAt ( i );
-				l.menuChoice ( choices.elementAt ( ind ), actionStrings[menuItemInd] );
+				l.menuChoice ( choices.elementAt ( ind ), menuLabels[menuItemInd] );
 			}
 		}
-		// Determine which
 	}
 
 	public void setChoices ( Vector choices ) {
@@ -103,9 +102,30 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	}
 
 	public void mousePressed ( MouseEvent e ) {
-		if ( menu != null && e.isPopupTrigger ()
-		    && e.getSource () instanceof JCheckBox ) {
-			menu.show ( (Component) e.getSource (), e.getX (), e.getY () );
+		if ( e.getSource () instanceof JCheckBox ) {
+			// Update menu for this choice
+			Object choice = null;
+			for ( int i = 0; i < choices.size () && choice == null; i++ ) {
+				JCheckBox checkbox = checkboxes.elementAt ( i );
+				if ( checkbox.equals ( e.getSource () ) ) {
+					// found it
+					choice = choices.elementAt ( i );
+				}
+			}
+			if ( choice == null ) {
+				System.err.println ( "Could not find choice for " + e.getSource () );
+				return;
+			}
+			Vector<String> menuLabels = new Vector<String> ();
+			for ( int i = 0; i < this.listeners.size (); i++ ) {
+				CheckBoxListListener l = this.listeners.elementAt ( i );
+				menuLabels.addAll ( l.getMenuChoicesForObject ( choice ) );
+			}
+			String[] menuChoices = new String[menuLabels.size ()];
+			for ( int i = 0; i < menuLabels.size (); i++ ) {
+				menuChoices[i] = (String) menuLabels.elementAt ( i );
+			}
+			setRightClickMenu ( menuChoices );
 			itemForMenu = (JCheckBox) e.getSource ();
 		}
 	}
@@ -128,13 +148,13 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	}
 
 	public JCheckBox getCheckBoxAt ( int ind ) {
-		return (JCheckBox) this.checkboxes.elementAt ( ind );
+		return this.checkboxes.elementAt ( ind );
 	}
 
 	public Vector getSelectedItems () {
 		Vector ret = new Vector ();
 		for ( int i = 0; i < choices.size (); i++ ) {
-			JCheckBox checkbox = (JCheckBox) checkboxes.elementAt ( i );
+			JCheckBox checkbox = checkboxes.elementAt ( i );
 			if ( checkbox.isSelected () ) {
 				ret.addElement ( choices.elementAt ( i ) );
 			}

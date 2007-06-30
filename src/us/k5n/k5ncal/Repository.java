@@ -112,6 +112,8 @@ public class Repository implements CalendarDataRepository {
 				// found it
 				found = true;
 				this.calendars.setElementAt ( c, i );
+				DataFile df = this.dataFiles.elementAt ( i );
+				df.refresh ();
 			}
 		}
 		if ( found ) {

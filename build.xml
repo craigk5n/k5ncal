@@ -13,7 +13,7 @@
   <property name="test" location="test"/>
   <property name="testbuild" location="testbuild"/>
 
-  <property name="version" value="0.9.3"/>
+  <property name="version" value="0.9.4"/>
 
   <property name="k5n-ical-lib" value="lib/k5n-ical-0.4.1.jar"/>
   <property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.1.jar"/>

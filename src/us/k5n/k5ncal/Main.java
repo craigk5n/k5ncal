@@ -112,6 +112,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	private static File lastImportDirectory = null;
 	AppPreferences prefs;
 	File dataDir = null;
+	static final String MENU_CALENDAR_EDIT = "Edit";
+	static final String MENU_CALENDAR_REFRESH = "Refresh";
+	static final String MENU_CALENDAR_DELETE = "Delete";
 	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
 	static final String MAIN_WINDOW_WIDTH = "MainWindow.width";
 	static final String MAIN_WINDOW_X = "MainWindow.x";
@@ -435,7 +438,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 */
 	protected JPanel createCalendarSelectionPanel ( Vector calendars ) {
 		String[] menuLabels = { "Edit...", "Refresh", "Delete" };
-		String[] menuActions = { "EDIT", /*"REFRESH",*/ "DELETE" };
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new BorderLayout () );
 		topPanel.setBorder ( BorderFactory.createTitledBorder ( "Calendars" ) );
@@ -452,17 +454,29 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    handleCalendarFilterSelection ();
 			    }
 
+			    public Vector<String> getMenuChoicesForObject ( Object o ) {
+				    Vector<String> ret = new Vector<String> ();
+				    if ( o instanceof Calendar ) {
+					    Calendar c = (Calendar) o;
+					    ret.addElement ( MENU_CALENDAR_EDIT );
+					    if ( c.url != null )
+						    ret.addElement ( MENU_CALENDAR_REFRESH );
+					    ret.addElement ( MENU_CALENDAR_DELETE );
+				    }
+				    return ret;
+			    }
+
 			    public void menuChoice ( Object item, String actionCommand ) {
 				    Calendar c = (Calendar) item;
-				    if ( "EDIT".equals ( actionCommand ) ) {
+				    if ( MENU_CALENDAR_EDIT.equals ( actionCommand ) ) {
 					    editCalendar ( c );
-				    } else if ( "REFRESH".equals ( actionCommand ) ) {
+				    } else if ( MENU_CALENDAR_REFRESH.equals ( actionCommand ) ) {
 					    if ( c.url == null ) {
 						    showError ( "You can only refresh\nremote/subscribed calendars" );
 					    } else {
-						    // TODO...
+						    refreshCalendar ( c );
 					    }
-				    } else if ( "DELETE".equals ( actionCommand ) ) {
+				    } else if ( MENU_CALENDAR_DELETE.equals ( actionCommand ) ) {
 					    System.out.println ( "Delete calendar: " + c );
 					    if ( JOptionPane.showConfirmDialog ( parent,
 					        "Are you sure you want to\nDelete the following calendar?\n\n"
@@ -476,7 +490,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    }
 			    }
 		    } );
-		this.calendarCheckboxes.setRightClickMenu ( menuLabels, menuActions );
 
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 			Calendar c = dataRepository.getCalendars ().elementAt ( i );
@@ -514,6 +527,49 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			editLocalCalendar ( c );
 		} else
 			editRemoteCalendar ( c );
+	}
+
+	public void refreshCalendar ( Calendar cal ) {
+		boolean found = false;
+
+		try {
+			InputStream is = cal.url.openStream ();
+			File tmpFile = new File ( getDataDirectory (), cal.filename + ".new" );
+			OutputStream os = new FileOutputStream ( tmpFile );
+			DataInputStream dis = new DataInputStream ( new BufferedInputStream ( is ) );
+			byte[] buf = new byte[4 * 1024]; // 4K buffer
+			int bytesRead;
+			int totalRead = 0;
+			while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
+				os.write ( buf, 0, bytesRead );
+				totalRead += bytesRead;
+			}
+			os.close ();
+			dis.close ();
+			// TODO: handle HTTP redirect
+			// TODO: handle 404 not found
+			if ( tmpFile.exists () && tmpFile.length () > 0 ) {
+				File file = new File ( getDataDirectory (), cal.filename );
+				file.delete ();
+				if ( !tmpFile.renameTo ( file ) ) {
+					this.showError ( "Unable to rename temporary file:\nOld: "
+					    + tmpFile.getAbsolutePath () + "\nNew: "
+					    + file.getAbsolutePath () );
+				} else {
+					this.showStatusMessage ( "Calendar '" + cal.name + "' refreshed" );
+					cal.lastUpdated = java.util.Calendar.getInstance ()
+					    .getTimeInMillis ();
+					this.saveCalendars ( this.dataDir );
+				}
+			} else {
+				this.showError ( "Unknown error refreshing calendar" );
+			}
+			File file = new File ( getDataDirectory (), cal.filename );
+			dataRepository.updateCalendar ( getDataDirectory (), cal );
+		} catch ( IOException e1 ) {
+			e1.printStackTrace ();
+			this.showError ( "Error refreshing calendar:\n\n" + e1.getMessage () );
+		}
 	}
 
 	public void deleteCalendar ( Calendar c ) {
