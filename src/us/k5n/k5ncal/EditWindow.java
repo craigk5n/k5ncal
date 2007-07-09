@@ -47,6 +47,7 @@ import us.k5n.ical.Categories;
 import us.k5n.ical.Date;
 import us.k5n.ical.Description;
 import us.k5n.ical.Event;
+import us.k5n.ical.Location;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
 
@@ -64,6 +65,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 	JFrame parent;
 	JTextField subject;
 	JTextField categories;
+	JTextField location;
 	JComboBox calendar;
 	JLabel startDate;
 	JTextArea description;
@@ -134,6 +136,8 @@ public class EditWindow extends JDialog implements ComponentListener {
 			this.event.setDescription ( new Description () );
 		if ( this.event.getCategories () == null )
 			this.event.setCategories ( new Categories () );
+		if ( this.event.getLocation () == null )
+			this.event.setLocation ( new Location () );
 
 		createWindow ();
 		setVisible ( true );
@@ -168,7 +172,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 
 		JPanel upperPanel = new JPanel ();
 		upperPanel.setBorder ( BorderFactory.createEtchedBorder () );
-		GridLayout grid = new GridLayout ( 4, 1 );
+		GridLayout grid = new GridLayout ( 5, 1 );
 		grid.setHgap ( 15 );
 		grid.setVgap ( 5 );
 		upperPanel.setLayout ( grid );
@@ -216,6 +220,17 @@ public class EditWindow extends JDialog implements ComponentListener {
 		subDatePanel.add ( dateSel );
 		datePanel.add ( subDatePanel );
 		upperPanel.add ( datePanel );
+
+		JPanel locPanel = new JPanel ();
+		locPanel.setLayout ( new ProportionalLayout ( proportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		prompt = new JLabel ( "Location: " );
+		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
+		locPanel.add ( prompt );
+		location = new JTextField ();
+		location.setText ( this.event.getLocation ().getValue () );
+		locPanel.add ( location );
+		upperPanel.add ( locPanel );
 
 		JPanel calPanel = new JPanel ();
 		calPanel.setLayout ( new ProportionalLayout ( proportions,
@@ -285,6 +300,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 			this.event.getDescription ().setValue ( description.getText () );
 			this.event.getSummary ().setValue ( subject.getText ().trim () );
 			this.event.getCategories ().setValue ( categories.getText ().trim () );
+			this.event.getLocation ().setValue ( location.getText ().trim () );
 			// Did the event move from one calendar to another?
 			if ( c.equals ( this.selectedCalendar ) ) {
 				repo.saveEvent ( c, this.event );

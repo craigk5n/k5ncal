@@ -4,6 +4,7 @@ $Id$
 0.9.4 (?? ??? 2007) - Minor feature changes
 -----------------------------------------------------------------------
 - Added refresh to menu for subscribed calendars
+- Added Location to edit event window
 
 0.9.3 (29 Jun 2007) - Build/packaging fixes
 -----------------------------------------------------------------------
