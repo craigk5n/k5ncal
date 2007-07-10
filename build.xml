@@ -15,8 +15,8 @@
 
   <property name="version" value="0.9.4"/>
 
-  <property name="k5n-ical-lib" value="lib/k5n-ical-0.4.1.jar"/>
-  <property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.1.jar"/>
+  <property name="k5n-ical-lib" value="lib/k5n-ical-0.4.2.jar"/>
+  <property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.2.jar"/>
 
   <target name="init">
     <!-- Create the time stamp -->
