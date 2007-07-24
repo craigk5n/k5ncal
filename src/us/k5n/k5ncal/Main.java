@@ -949,8 +949,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						return;
 					}
 					Color color = colorField.getSelectedColor ();
-					// download
-					showStatusMessage ( "Downloading calendar..." );
+					showStatusMessage ( "Creating calendar..." );
 					Calendar cal = null;
 					if ( c == null ) {
 						cal = new Calendar ( getDataDirectory (), name );
@@ -981,6 +980,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						showStatusMessage ( "Updated local calendar \"" + name
 						    + "\" updated" );
 					}
+					System.out.println ( "Created cal file: " + file );
 				} catch ( Exception e1 ) {
 					showError ( "Error writing calendar:\n" + e1.getMessage () );
 					return;

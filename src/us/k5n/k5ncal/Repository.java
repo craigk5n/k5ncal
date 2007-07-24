@@ -70,7 +70,7 @@ public class Repository implements CalendarDataRepository {
 			DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
 			if ( f != null ) {
 				this.dataFileCalendarHash.put ( c, f );
-				this.addDataFile ( f );
+				this.addDataFile ( f, c );
 			}
 		}
 
@@ -98,7 +98,7 @@ public class Repository implements CalendarDataRepository {
 		File file = new File ( dir, c.filename );
 		DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
 		if ( f != null ) {
-			this.addDataFile ( f );
+			this.addDataFile ( f, c );
 		}
 	}
 
@@ -167,6 +167,18 @@ public class Repository implements CalendarDataRepository {
 		return calendars;
 	}
 
+	public DataFile getDataFileForCalendar ( Calendar c ) {
+		for ( int i = 0; i < this.calendars.size (); i++ ) {
+			Calendar c1 = this.calendars.elementAt ( i );
+			if ( c1.equals ( c ) ) {
+				// found it
+				return this.dataFiles.elementAt ( i );
+			}
+		}
+		// not found
+		return null;
+	}
+
 	private void removeDataFile ( DataFile f ) {
 		for ( int i = 0; i < this.dataFiles.size (); i++ ) {
 			DataFile df = this.dataFiles.elementAt ( i );
@@ -182,7 +194,7 @@ public class Repository implements CalendarDataRepository {
 		System.err.println ( "removeDataFile: not found" );
 	}
 
-	private void addDataFile ( DataFile f ) {
+	private void addDataFile ( DataFile f, Calendar c ) {
 		boolean found = false;
 		for ( int i = 0; i < this.dataFiles.size (); i++ ) {
 			DataFile df = this.dataFiles.elementAt ( i );
@@ -198,6 +210,7 @@ public class Repository implements CalendarDataRepository {
 			// Store in HashMap using just the filename (19991231.ics)
 			// as the key
 			this.dataFileHash.put ( f.getName ().toLowerCase (), f );
+			this.dataFileCalendarHash.put ( c, f );
 		}
 	}
 
@@ -381,6 +394,8 @@ public class Repository implements CalendarDataRepository {
 				    + calendar );
 				return;
 			}
+			System.out.println ( "Added event '" + event.getSummary ().getValue ()
+			    + "' to data file: " + dataFile );
 			dataFile.addEvent ( event );
 			added = true;
 		}

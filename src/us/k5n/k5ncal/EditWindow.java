@@ -70,6 +70,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 	JLabel startDate;
 	JTextArea description;
 	AppPreferences prefs;
+	private boolean newEvent = true;
 
 	/**
 	 * Create a new event window for the specified date.
@@ -115,6 +116,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 		this.selectedCalendar = selectedCalendar;
 
 		if ( this.event == null ) {
+			newEvent = true;
 			if ( date == null )
 				this.event = new Event ( "", "", Date.getCurrentDateTime ( "DTSTART" ) );
 			else {
@@ -122,6 +124,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 				this.event = new Event ( "", "", date );
 			}
 		} else {
+			newEvent = false;
 			// Create an updated sequence number for use only if we save
 			// (So don't put it in the original Event object yet)
 			if ( this.event.getSequence () == null )
@@ -293,6 +296,8 @@ public class EditWindow extends JDialog implements ComponentListener {
 
 		// Note: LAST-MODIFIED gets updated by call to saveEvent
 		if ( seq != null ) {
+			// TODO: some have suggested that the sequence number should
+			// only change if the date/time or location is modified.
 			event.setSequence ( seq );
 			seq = null;
 		}
@@ -305,9 +310,15 @@ public class EditWindow extends JDialog implements ComponentListener {
 			if ( c.equals ( this.selectedCalendar ) ) {
 				repo.saveEvent ( c, this.event );
 			} else {
-				// Calendar moved from one calendar to another.
-				// Delete from old calendar
-				repo.deleteEvent ( this.selectedCalendar, this.event );
+				// New event?
+				if ( !this.newEvent ) {
+					// Calendar moved from one calendar to another.
+					// Delete from old calendar
+					repo.deleteEvent ( this.selectedCalendar, this.event );
+					// Clear out the user data for the event (where the calendar
+					// info is stored.)
+					this.event.setUserData ( null );
+				}
 				// Add to new calendar
 				repo.saveEvent ( c, this.event );
 			}
