@@ -368,7 +368,6 @@ public class Repository implements CalendarDataRepository {
 	 * @param j
 	 * @throws IOException
 	 */
-	// TODO: specify which calendar to save on
 	public void saveEvent ( Calendar calendar, Event event ) throws IOException {
 		boolean added = false;
 
