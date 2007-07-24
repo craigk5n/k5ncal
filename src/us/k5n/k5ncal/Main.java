@@ -163,7 +163,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		rightPanel.setLayout ( new BorderLayout () );
 		rightPanel.add ( createToolBar (), BorderLayout.NORTH );
 
-		eventViewPanel = new CalendarPanel ( dataRepository );
+		eventViewPanel = new MyCalendarPanel ( dataRepository );
 		eventViewPanel.addSelectionListener ( this );
 		rightPanel.add ( eventViewPanel, BorderLayout.CENTER );
 
