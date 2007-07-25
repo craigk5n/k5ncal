@@ -35,7 +35,7 @@ public class AppPreferences {
 	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
 	static final String MAIN_WINDOW_X = "MainWindow.x";
 	static final String MAIN_WINDOW_Y = "MainWindow.y";
-	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
+	static final String MAIN_WINDOW_LEFT_VERTICAL_SPLIT_POSITION = "MainWindow.lvSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
 
 	static final String EDIT_WINDOW_WIDTH = "EditWindow.width";
@@ -105,8 +105,8 @@ public class AppPreferences {
 	 * 
 	 * @return
 	 */
-	public int getMainWindowVerticalSplitPosition () {
-		return prefs.getInt ( MAIN_WINDOW_VERTICAL_SPLIT_POSITION, 200 );
+	public int getMainWindowLeftVerticalSplitPosition () {
+		return prefs.getInt ( MAIN_WINDOW_LEFT_VERTICAL_SPLIT_POSITION, 300 );
 	}
 
 	/**
@@ -117,9 +117,9 @@ public class AppPreferences {
 	 *          The new divider location (in pixels)
 	 * @return
 	 */
-	public void setMainWindowVerticalSplitPosition (
+	public void setMainWindowLeftVerticalSplitPosition (
 	    int mainWindowVerticalSplitPosition ) {
-		prefs.putInt ( MAIN_WINDOW_VERTICAL_SPLIT_POSITION,
+		prefs.putInt ( MAIN_WINDOW_LEFT_VERTICAL_SPLIT_POSITION,
 		    mainWindowVerticalSplitPosition );
 	}
 

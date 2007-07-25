@@ -28,12 +28,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import us.k5n.ical.Journal;
-import us.k5n.ical.Summary;
+import us.k5n.ical.Date;
+import us.k5n.ical.Event;
 
 public class EventViewPanel extends JPanel {
 	private JLabel date;
 	private JLabel subject;
+	private JLabel location;
+	private JLabel calendar;
 	private JLabel categories;
 	private JTextArea text;
 
@@ -43,7 +45,7 @@ public class EventViewPanel extends JPanel {
 		setLayout ( new BorderLayout () );
 
 		JPanel topPanel = new JPanel ();
-		topPanel.setLayout ( new GridLayout ( 3, 1 ) );
+		topPanel.setLayout ( new GridLayout ( 5, 1 ) );
 		topPanel.setBorder ( BorderFactory.createEmptyBorder ( 2, 4, 2, 4 ) );
 
 		JPanel subpanel = new JPanel ();
@@ -58,6 +60,20 @@ public class EventViewPanel extends JPanel {
 		subpanel.add ( new JLabel ( "Subject: " ), BorderLayout.WEST );
 		subject = new JLabel ();
 		subpanel.add ( subject, BorderLayout.CENTER );
+		topPanel.add ( subpanel );
+
+		subpanel = new JPanel ();
+		subpanel.setLayout ( new BorderLayout () );
+		subpanel.add ( new JLabel ( "Location: " ), BorderLayout.WEST );
+		location = new JLabel ();
+		subpanel.add ( location, BorderLayout.CENTER );
+		topPanel.add ( subpanel );
+
+		subpanel = new JPanel ();
+		subpanel.setLayout ( new BorderLayout () );
+		subpanel.add ( new JLabel ( "Calendar: " ), BorderLayout.WEST );
+		calendar = new JLabel ();
+		subpanel.add ( calendar, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
@@ -81,10 +97,45 @@ public class EventViewPanel extends JPanel {
 	}
 
 	public void clear () {
-		date.setText ( "" );
-		subject.setText ( "" );
-		categories.setText ( "" );
-		text.setText ( "" );
+		this.date.setText ( "" );
+		this.subject.setText ( "" );
+		this.location.setText ( "" );
+		this.calendar.setText ( "" );
+		this.categories.setText ( "" );
+		this.text.setText ( "" );
 	}
 
+	public void update ( Date eventDate, Event event, Calendar calendar ) {
+		if ( event == null ) {
+			this.clear ();
+			return;
+		}
+		DisplayDate dd = new DisplayDate ( eventDate );
+		this.date.setText ( dd.toString () );
+
+		if ( event.getSummary () != null )
+			this.subject.setText ( event.getSummary ().getValue () );
+		else
+			this.subject.setText ( "" );
+
+		if ( event.getLocation () != null )
+			this.location.setText ( event.getLocation ().getValue () );
+		else
+			this.location.setText ( "" );
+
+		if ( calendar != null ) {
+			this.calendar.setText ( calendar.name );
+		} else
+			this.calendar.setText ( "" );
+
+		if ( event.getCategories () != null )
+			this.categories.setText ( event.getCategories ().getValue () );
+		else
+			this.categories.setText ( "" );
+
+		if ( event.getDescription () != null )
+			this.text.setText ( event.getDescription ().getValue () );
+		else
+			this.text.setText ( "" );
+	}
 }

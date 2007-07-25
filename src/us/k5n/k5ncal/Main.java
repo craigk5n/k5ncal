@@ -99,13 +99,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public static final String VERSION = "0.9.3 (29 Jun 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
 	JFrame parent;
-	EventViewPanel eventView;
+	EventViewPanel eventViewPanel;
 	JButton newButton, editButton, deleteButton;
 	JLabel messageArea;
 	// Vector<Calendar> calendars;
 	Repository dataRepository;
-	CalendarPanel eventViewPanel;
-	JSplitPane horizontalSplit = null;
+	CalendarPanel calendarPanel;
+	JSplitPane horizontalSplit = null, leftVerticalSplit = null;
 	CheckBoxList calendarCheckboxes;
 	String searchText = null;
 	private static File lastExportDirectory = null;
@@ -156,19 +156,30 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		messagePanel.add ( messageArea, BorderLayout.CENTER );
 		contentPane.add ( messagePanel, BorderLayout.SOUTH );
 
+		JPanel leftPanel = new JPanel ();
+
 		JPanel navArea = createCalendarSelectionPanel ( dataRepository
 		    .getCalendars () );
+		eventViewPanel = new EventViewPanel ();
+		eventViewPanel.setBorder ( BorderFactory
+		    .createTitledBorder ( "Event Details" ) );
+		leftVerticalSplit = new JSplitPane ( JSplitPane.VERTICAL_SPLIT, navArea,
+		    eventViewPanel );
+		leftVerticalSplit.setOneTouchExpandable ( true );
+		leftVerticalSplit.setDividerLocation ( prefs
+		    .getMainWindowLeftVerticalSplitPosition () );
+		leftVerticalSplit.addPropertyChangeListener ( this );
 
 		JPanel rightPanel = new JPanel ();
 		rightPanel.setLayout ( new BorderLayout () );
 		rightPanel.add ( createToolBar (), BorderLayout.NORTH );
 
-		eventViewPanel = new MyCalendarPanel ( dataRepository );
-		eventViewPanel.addSelectionListener ( this );
-		rightPanel.add ( eventViewPanel, BorderLayout.CENTER );
+		calendarPanel = new MyCalendarPanel ( dataRepository );
+		calendarPanel.addSelectionListener ( this );
+		rightPanel.add ( calendarPanel, BorderLayout.CENTER );
 
-		horizontalSplit = new JSplitPane ( JSplitPane.HORIZONTAL_SPLIT, navArea,
-		    rightPanel );
+		horizontalSplit = new JSplitPane ( JSplitPane.HORIZONTAL_SPLIT,
+		    leftVerticalSplit, rightPanel );
 		horizontalSplit.setOneTouchExpandable ( true );
 		horizontalSplit.setDividerLocation ( prefs
 		    .getMainWindowHorizontalSplitPosition () );
@@ -366,7 +377,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		editButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				// Get selected item and open edit window
-				EventInstance eventInstance = eventViewPanel.getSelectedEvent ();
+				EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 				if ( eventInstance != null ) {
 					// TODO: support editing events with recurrance.
 					SingleEvent se = (SingleEvent) eventInstance;
@@ -385,7 +396,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		deleteButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				// Get selected item and open edit window
-				EventInstance eventInstance = eventViewPanel.getSelectedEvent ();
+				EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 				if ( eventInstance != null ) {
 					// TODO: support deleting events with recurrance.
 					SingleEvent se = (SingleEvent) eventInstance;
@@ -419,7 +430,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	void updateToolbar () {
 		boolean isLocal = false;
 		boolean selected = false;
-		EventInstance eventInstance = eventViewPanel.getSelectedEvent ();
+		EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 		selected = ( eventInstance != null );
 		if ( selected && eventInstance instanceof SingleEvent ) {
 			SingleEvent se = (SingleEvent) eventInstance;
@@ -517,9 +528,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 			c.selected = selected;
 		}
-		this.eventViewPanel.clearSelection ();
+		this.calendarPanel.clearSelection ();
 		this.dataRepository.rebuild ();
-		this.eventViewPanel.repaint ();
+		this.calendarPanel.repaint ();
 	}
 
 	public void editCalendar ( Calendar c ) {
@@ -584,7 +595,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		if ( found ) {
 			updateCalendarCheckboxes ();
 			this.dataRepository.rebuild ();
-			this.eventViewPanel.repaint ();
+			this.calendarPanel.repaint ();
 			saveCalendars ( getDataDirectory () );
 		} else {
 			System.err.println ( "deleteCalendar: could not find calendar!" );
@@ -1134,42 +1145,65 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		prefs.setMainWindowY ( this.getY () );
 		prefs.setMainWindowWidth ( this.getWidth () );
 		prefs.setMainWindowHeight ( this.getHeight () );
+		prefs.setMainWindowLeftVerticalSplitPosition ( leftVerticalSplit
+		    .getDividerLocation () );
 		prefs.setMainWindowHorizontalSplitPosition ( horizontalSplit
 		    .getDividerLocation () );
 	}
 
 	public void eventAdded ( Event event ) {
 		handleCalendarFilterSelection ();
+		this.eventViewPanel.clear ();
 	}
 
 	public void eventUpdated ( Event event ) {
 		handleCalendarFilterSelection ();
+		this.eventViewPanel.clear ();
 	}
 
 	public void eventDeleted ( Event event ) {
 		handleCalendarFilterSelection ();
+		this.eventViewPanel.clear ();
 	}
 
 	public void eventSelected ( EventInstance eventInstance ) {
+		SingleEvent se = (SingleEvent) eventInstance;
+		Date eventDate = null;
+		try {
+			eventDate = new Date ( "DTSTART", eventInstance.getYear (), eventInstance
+			    .getMonth (), eventInstance.getDayOfMonth () );
+		} catch ( BogusDataException e1 ) {
+			e1.printStackTrace ();
+			return;
+		}
+		if ( eventInstance.hasTime () ) {
+			eventDate.setDateOnly ( false );
+			eventDate.setHour ( eventInstance.getHour () );
+			eventDate.setMinute ( eventInstance.getMinute () );
+			eventDate.setSecond ( eventInstance.getSecond () );
+		} else {
+			eventDate.setDateOnly ( true );
+		}
 		updateToolbar ();
+		this.eventViewPanel.update ( eventDate, se.event, se.calendar );
 	}
 
 	public void calendarAdded ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
-		this.eventViewPanel.repaint ();
+		this.calendarPanel.repaint ();
 	}
 
 	public void calendarUpdated ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
-		this.eventViewPanel.repaint ();
+		this.calendarPanel.repaint ();
 	}
 
 	public void calendarDeleted ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
-		this.eventViewPanel.repaint ();
+		this.calendarPanel.repaint ();
 	}
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
@@ -1197,6 +1231,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void eventUnselected () {
 		updateToolbar ();
+		this.eventViewPanel.clear ();
 	}
 
 	/**

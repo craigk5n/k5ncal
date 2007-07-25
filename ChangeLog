@@ -3,6 +3,8 @@ $Id$
 
 0.9.4 (?? ??? 2007) - Minor feature changes
 -----------------------------------------------------------------------
+- Added event details area on main window for displaying event details
+  when user selects an event
 - Added refresh to menu for subscribed calendars
 - Added Location to edit event window
 - Fixed bug 1759136: cannot add event to newly added local calendar
