@@ -877,6 +877,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					}
 				} catch ( Exception e1 ) {
 					showError ( "Error downloading calendar:\n" + e1.getMessage () );
+					e1.printStackTrace ();
 					return;
 				}
 				addRemote.dispose ();
@@ -1191,18 +1192,21 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void calendarAdded ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
+		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 	}
 
 	public void calendarUpdated ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
+		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 	}
 
 	public void calendarDeleted ( Calendar c ) {
 		updateCalendarCheckboxes ();
 		saveCalendars ( getDataDirectory () );
+		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 	}
 

@@ -30,7 +30,6 @@ import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.Utils;
 import us.k5n.ui.calendar.CalendarDataRepository;
-import us.k5n.ui.calendar.EventInstance;
 
 /**
  * The Repository class manages all loading and saving of data files. All
@@ -52,6 +51,7 @@ public class Repository implements CalendarDataRepository {
 	private HashMap<String, Vector> cachedEvents;
 	private Vector<RepositoryChangeListener> changeListeners;
 	private Vector<String> categories; // Vector of String categories
+	private boolean needsRebuilding = true;
 
 	public Repository(File dir, Vector<Calendar> calendars, boolean strictParsing) {
 		this.directory = dir;
@@ -74,6 +74,7 @@ public class Repository implements CalendarDataRepository {
 			}
 		}
 
+		this.needsRebuilding = true;
 		rebuildPrivateData ();
 	}
 
@@ -87,7 +88,11 @@ public class Repository implements CalendarDataRepository {
 				found = true;
 			}
 		}
-		this.rebuild ();
+		File file = new File ( dir, c.filename );
+		DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
+		if ( f != null ) {
+			this.addDataFile ( f, c );
+		}
 		if ( !found ) {
 			this.calendars.addElement ( c );
 			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
@@ -95,11 +100,7 @@ public class Repository implements CalendarDataRepository {
 				l.calendarAdded ( c );
 			}
 		}
-		File file = new File ( dir, c.filename );
-		DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
-		if ( f != null ) {
-			this.addDataFile ( f, c );
-		}
+		needsRebuilding = true;
 	}
 
 	// Call this when you have updated the calendar name or other
@@ -117,12 +118,12 @@ public class Repository implements CalendarDataRepository {
 			}
 		}
 		if ( found ) {
-			this.rebuild ();
 			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
 				RepositoryChangeListener l = this.changeListeners.elementAt ( i );
 				l.calendarUpdated ( c );
 			}
 		}
+		needsRebuilding = true;
 	}
 
 	public void removeCalendar ( File dir, Calendar c ) {
@@ -150,7 +151,7 @@ public class Repository implements CalendarDataRepository {
 		if ( !found ) {
 			System.out.println ( "removeCalendar: not found " + c );
 		} else {
-			this.rebuild ();
+			needsRebuilding = true;
 			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
 				RepositoryChangeListener l = this.changeListeners.elementAt ( i );
 				l.calendarDeleted ( c );
@@ -187,6 +188,7 @@ public class Repository implements CalendarDataRepository {
 				parseErrorCount -= f.getParseErrorCount ();
 				this.dataFileHash.remove ( f.getName ().toLowerCase () );
 				this.dataFiles.remove ( i );
+				this.needsRebuilding = true;
 				return;
 			}
 		}
@@ -211,6 +213,7 @@ public class Repository implements CalendarDataRepository {
 			// as the key
 			this.dataFileHash.put ( f.getName ().toLowerCase (), f );
 			this.dataFileCalendarHash.put ( c, f );
+			this.needsRebuilding = true;
 		}
 	}
 
@@ -252,21 +255,22 @@ public class Repository implements CalendarDataRepository {
 
 	/**
 	 * Rebuild internal cached data after one or more calendar
-	 * 
 	 */
 	public void rebuild () {
-		rebuildPrivateData ();
+		this.needsRebuilding = true;
 	}
 
 	/**
-	 * Update the EventInstance objects array. Update the Vector of existing
-	 * categories.
+	 * Rebuild internal cached data after one or more calendar. Update the
+	 * EventInstance objects array. Update the Vector of existing categories. The
+	 * following objects will be updated: categories, cachedEvents
 	 */
 	private void rebuildPrivateData () {
+		if ( !needsRebuilding )
+			return;
 		this.categories = new Vector<String> ();
 		this.cachedEvents = new HashMap<String, Vector> ();
 		HashMap<String, String> catH = new HashMap<String, String> ();
-		System.out.println ( "rebuildPrivateData" );
 		for ( int i = 0; i < dataFiles.size (); i++ ) {
 			DataFile df = (DataFile) dataFiles.elementAt ( i );
 			System.out
@@ -358,9 +362,12 @@ public class Repository implements CalendarDataRepository {
 				}
 			}
 		}
+		this.needsRebuilding = false;
 	}
 
 	public Vector getEventInstancesForDate ( int year, int month, int day ) {
+		if ( needsRebuilding )
+			this.rebuildPrivateData ();
 		try {
 			Date date = new Date ( "DTSTART", year, month, day );
 			String YMD = Utils.DateToYYYYMMDD ( date );
@@ -403,7 +410,7 @@ public class Repository implements CalendarDataRepository {
 		event.setUserData ( dataFile );
 		dataFile.write ();
 
-		rebuildPrivateData ();
+		this.needsRebuilding = true;
 
 		if ( added ) {
 			for ( int i = 0; this.changeListeners != null
@@ -439,7 +446,7 @@ public class Repository implements CalendarDataRepository {
 			if ( dataFile.removeEvent ( e ) ) {
 				deleted = true;
 				dataFile.write ();
-				rebuildPrivateData ();
+				this.needsRebuilding = true;
 				for ( int i = 0; this.changeListeners != null
 				    && i < this.changeListeners.size (); i++ ) {
 					RepositoryChangeListener l = (RepositoryChangeListener) this.changeListeners
@@ -465,6 +472,8 @@ public class Repository implements CalendarDataRepository {
 	}
 
 	public Vector getCategories () {
+		if ( needsRebuilding )
+			this.rebuildPrivateData ();
 		return this.categories;
 	}
 

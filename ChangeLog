@@ -8,6 +8,7 @@ $Id$
 - Added refresh to menu for subscribed calendars
 - Added Location to edit event window
 - Fixed bug 1759136: cannot add event to newly added local calendar
+- Fixed bug: newly added remote calendars do not show up immediately
 - Override CalendarPanel background painting to use gradient backgrounds
 
 0.9.3 (29 Jun 2007) - Build/packaging fixes
