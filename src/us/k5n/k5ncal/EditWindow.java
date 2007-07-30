@@ -44,6 +44,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import us.k5n.ical.Categories;
+import us.k5n.ical.Constants;
 import us.k5n.ical.Date;
 import us.k5n.ical.Description;
 import us.k5n.ical.Event;
@@ -57,7 +58,7 @@ import us.k5n.ical.Summary;
  * @author Craig Knudsen, craig@k5n.us
  * @version $Id$
  */
-public class EditWindow extends JDialog implements ComponentListener {
+public class EditWindow extends JDialog implements Constants, ComponentListener {
 	Repository repo;
 	Event event;
 	Calendar selectedCalendar;
@@ -66,11 +67,26 @@ public class EditWindow extends JDialog implements ComponentListener {
 	JTextField subject;
 	JTextField categories;
 	JTextField location;
+	JComboBox status;
 	JComboBox calendar;
 	JLabel startDate;
 	JTextArea description;
 	AppPreferences prefs;
 	private boolean newEvent = true;
+
+	class IntegerChoice {
+		String label;
+		int value;
+
+		public IntegerChoice(String label, int value) {
+			this.label = label;
+			this.value = value;
+		}
+
+		public String toString () {
+			return label;
+		}
+	}
 
 	/**
 	 * Create a new event window for the specified date.
@@ -160,13 +176,13 @@ public class EditWindow extends JDialog implements ComponentListener {
 			}
 		} );
 		buttonPanel.add ( saveButton );
-		JButton closeButton = new JButton ( "Close" );
-		closeButton.addActionListener ( new ActionListener () {
+		JButton cancelButton = new JButton ( "Cancel" );
+		cancelButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				close ();
 			}
 		} );
-		buttonPanel.add ( closeButton );
+		buttonPanel.add ( cancelButton );
 		getContentPane ().add ( buttonPanel, BorderLayout.SOUTH );
 
 		JPanel allButButtons = new JPanel ();
@@ -175,7 +191,7 @@ public class EditWindow extends JDialog implements ComponentListener {
 
 		JPanel upperPanel = new JPanel ();
 		upperPanel.setBorder ( BorderFactory.createEtchedBorder () );
-		GridLayout grid = new GridLayout ( 5, 1 );
+		GridLayout grid = new GridLayout ( 6, 1 );
 		grid.setHgap ( 15 );
 		grid.setVgap ( 5 );
 		upperPanel.setLayout ( grid );
@@ -234,6 +250,36 @@ public class EditWindow extends JDialog implements ComponentListener {
 		location.setText ( this.event.getLocation ().getValue () );
 		locPanel.add ( location );
 		upperPanel.add ( locPanel );
+
+		JPanel statusPanel = new JPanel ();
+		statusPanel.setLayout ( new ProportionalLayout ( proportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		prompt = new JLabel ( "Status: " );
+		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
+		statusPanel.add ( prompt );
+		Vector<IntegerChoice> statusOptions = new Vector<IntegerChoice> ();
+		statusOptions.addElement ( new IntegerChoice ( "Confirmed",
+		    STATUS_CONFIRMED ) );
+		statusOptions.addElement ( new IntegerChoice ( "Tentative",
+		    STATUS_TENTATIVE ) );
+		statusOptions.addElement ( new IntegerChoice ( "Cancelled",
+		    STATUS_CANCELLED ) );
+		status = new JComboBox ( statusOptions );
+		switch ( event.getStatus () ) {
+			case STATUS_CANCELLED:
+				status.setSelectedIndex ( 2 );
+				break;
+			case STATUS_TENTATIVE:
+				status.setSelectedIndex ( 1 );
+				break;
+			case STATUS_CONFIRMED:
+			case STATUS_UNDEFINED:
+			default:
+				status.setSelectedIndex ( 0 );
+				break;
+		}
+		statusPanel.add ( status );
+		upperPanel.add ( statusPanel );
 
 		JPanel calPanel = new JPanel ();
 		calPanel.setLayout ( new ProportionalLayout ( proportions,
@@ -306,6 +352,8 @@ public class EditWindow extends JDialog implements ComponentListener {
 			this.event.getSummary ().setValue ( subject.getText ().trim () );
 			this.event.getCategories ().setValue ( categories.getText ().trim () );
 			this.event.getLocation ().setValue ( location.getText ().trim () );
+			IntegerChoice ic = (IntegerChoice) status.getSelectedItem ();
+			this.event.setStatus ( ic.value );
 			// Did the event move from one calendar to another?
 			if ( c.equals ( this.selectedCalendar ) ) {
 				repo.saveEvent ( c, this.event );
