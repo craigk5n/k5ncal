@@ -39,10 +39,9 @@ To build with ant:
 
 	ant
 
-This build process will create the following jar file (Where N.N.N is the
-version number):
+This build process will create the following jar file:
 
-	dist/k5nCal-N.N.N.jar
+	dist/k5nCal-0.9.4.jar
 
 ---------------------------------------------------------------------------
                          RUNNING THE APP
@@ -52,9 +51,7 @@ To run the k5nCal application, you can double-click on the file
 in your file browser (Windows Explorer, Mac OS X Finder, etc.), or you
 can start it from the command line:
 
-java -jar k5nCal-N.N.N.jar
-
-(where N.N.N is the version)
+java -jar k5nCal-0.9.4.jar
 
 ---------------------------------------------------------------------------
                          LICENSE
