@@ -1,7 +1,7 @@
 ChangeLog
 $Id$
 
-0.9.4 (?? ??? 2007) - Minor feature changes
+0.9.4 (01 Aug 2007) - Minor feature changes
 -----------------------------------------------------------------------
 - Added event details area on main window for displaying event details
   when user selects an event
@@ -11,6 +11,7 @@ $Id$
 - Fixed bug 1759136: cannot add event to newly added local calendar
 - Fixed bug: newly added remote calendars do not show up immediately
 - Override CalendarPanel background painting to use gradient backgrounds
+- Updated k5n-ical and k5n-calendarpanel libs to version 0.4.2.
 
 0.9.3 (29 Jun 2007) - Build/packaging fixes
 -----------------------------------------------------------------------
