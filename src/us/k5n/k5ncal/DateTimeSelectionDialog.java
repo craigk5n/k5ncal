@@ -24,6 +24,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -31,11 +33,13 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.text.MaskFormatter;
 
 import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Date;
@@ -159,19 +163,22 @@ public class DateTimeSelectionDialog extends JDialog {
 		FlowLayout leftFlow = new FlowLayout ();
 		leftFlow.setAlignment ( FlowLayout.LEFT );
 		hmsPanel.setLayout ( leftFlow );
-		hour = new JTextField ();
+		hour = new JFormattedTextField ( createFormatter ( "##" ) );
 		hour.setColumns ( 2 );
 		hour.setText ( "" + date.getHour () );
+		addFocusListener ( hour );
 		hmsPanel.add ( hour );
 		hmsPanel.add ( new JLabel ( ":" ) );
-		minute = new JTextField ();
+		minute = new JFormattedTextField ( createFormatter ( "##" ) );
 		minute.setColumns ( 2 );
 		minute.setText ( "" + date.getMinute () );
+		addFocusListener ( minute );
 		hmsPanel.add ( minute );
 		hmsPanel.add ( new JLabel ( ":" ) );
-		second = new JTextField ();
+		second = new JFormattedTextField ( createFormatter ( "##" ) );
 		second.setColumns ( 2 );
 		second.setText ( "" + date.getSecond () );
+		addFocusListener ( second );
 		hmsPanel.add ( second );
 		timeSubPanel.add ( hmsPanel );
 
@@ -182,6 +189,17 @@ public class DateTimeSelectionDialog extends JDialog {
 		panel.setBorder ( BorderFactory.createEtchedBorder () );
 
 		return panel;
+	}
+
+	protected MaskFormatter createFormatter ( String s ) {
+		MaskFormatter formatter = null;
+		try {
+			formatter = new MaskFormatter ( s );
+		} catch ( java.text.ParseException exc ) {
+			System.err.println ( "formatter is bad: " + exc.getMessage () );
+			System.exit ( -1 );
+		}
+		return formatter;
 	}
 
 	protected void cancel () {
@@ -202,6 +220,20 @@ public class DateTimeSelectionDialog extends JDialog {
 			ret = -1;
 		}
 		return ret;
+	}
+
+	void addFocusListener ( final JTextField text ) {
+		text.addFocusListener ( new FocusListener () {
+			public void focusLost ( FocusEvent e ) {
+				// text.setSelectionStart ( 0 );
+				// text.setSelectionEnd ( 0 );
+			}
+
+			public void focusGained ( FocusEvent e ) {
+				// text.setSelectionStart ( 0 );
+				// text.setSelectionEnd ( text.getText ().length () - 1 );
+			}
+		} );
 	}
 
 	protected void ok () {
