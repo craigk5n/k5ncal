@@ -1,6 +1,11 @@
 ChangeLog
 $Id$
 
+0.9.5 (?? ??? 2007) - Minor feature changes
+-----------------------------------------------------------------------
+- Replaced own date selection code with LGPL JCalendar JDateChooser.
+
+
 0.9.4 (01 Aug 2007) - Minor feature changes
 -----------------------------------------------------------------------
 - Added event details area on main window for displaying event details

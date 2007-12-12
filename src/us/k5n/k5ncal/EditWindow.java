@@ -20,20 +20,24 @@
 package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -42,6 +46,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.text.MaskFormatter;
 
 import us.k5n.ical.Categories;
 import us.k5n.ical.Constants;
@@ -51,6 +56,8 @@ import us.k5n.ical.Event;
 import us.k5n.ical.Location;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
+
+import com.toedter.calendar.JDateChooser;
 
 /**
  * Create a Event entry edit window.
@@ -65,6 +72,13 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 	Sequence seq = null;
 	JFrame parent;
 	JTextField subject;
+	JCheckBox allDay;
+	JDateChooser dateChooser;
+	JLabel timeAt;
+	JTextField timeHour;
+	JLabel timeSep;
+	JTextField timeMinute;
+	ToggleLabel ampm;
 	JTextField categories;
 	JTextField location;
 	JComboBox status;
@@ -195,7 +209,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 
 		JPanel upperPanel = new JPanel ();
 		upperPanel.setBorder ( BorderFactory.createEtchedBorder () );
-		GridLayout grid = new GridLayout ( 7, 1 );
+		GridLayout grid = new GridLayout ( 8, 1 );
 		grid.setHgap ( 15 );
 		grid.setVgap ( 5 );
 		upperPanel.setLayout ( grid );
@@ -213,6 +227,25 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		subjectPanel.add ( subject );
 		upperPanel.add ( subjectPanel );
 
+		JPanel allDayPanel = new JPanel ();
+		allDayPanel.setLayout ( new ProportionalLayout ( proportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		prompt = new JLabel ( "All-day: " );
+		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
+		allDayPanel.add ( prompt );
+		allDay = new JCheckBox ();
+		allDay.setHorizontalAlignment ( SwingConstants.LEFT );
+		if ( event != null && event.getStartDate () != null ) {
+			allDay.setSelected ( event.getStartDate ().isDateOnly () );
+		}
+		allDay.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				toggleAllDay ();
+			}
+		} );
+		allDayPanel.add ( allDay );
+		upperPanel.add ( allDayPanel );
+
 		JPanel datePanel = new JPanel ();
 		datePanel.setLayout ( new ProportionalLayout ( proportions,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
@@ -220,29 +253,48 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
 		datePanel.add ( prompt );
 		JPanel subDatePanel = new JPanel ();
-		FlowLayout flow = new FlowLayout ();
-		flow.setAlignment ( FlowLayout.LEFT );
-		subDatePanel.setLayout ( flow );
-		startDate = new JLabel ();
-		DisplayDate d = new DisplayDate ( event.getStartDate () );
-		startDate.setText ( d.toString () );
-		subDatePanel.add ( startDate );
-		JButton dateSel = new JButton ( "..." );
-		dateSel.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent ae ) {
-				Date newDate = DateTimeSelectionDialog.showDateTimeSelectionDialog (
-				    parent, event.getStartDate () );
-				if ( newDate != null ) {
-					event.setStartDate ( newDate );
-					DisplayDate d = new DisplayDate ( event.getStartDate () );
-					startDate.setText ( d.toString () );
-				}
-			}
-		} );
-		dateSel.setMargin ( new Insets ( 0, 5, 0, 5 ) );
-		subDatePanel.add ( dateSel );
+		subDatePanel.setLayout ( new FlowLayout ( FlowLayout.LEFT ) );
+		dateChooser = new JDateChooser ();
+		dateChooser.setDateFormatString ( "EEE, MMM dd, YYYY" );
+		dateChooser.setCalendar ( this.event.getStartDate ().toCalendar () );
+		subDatePanel.add ( dateChooser );
+		timeAt = new JLabel ( " at " );
+		subDatePanel.add ( timeAt );
+		timeHour = new JFormattedTextField ( createFormatter ( "##" ) );
+		timeHour.setColumns ( 2 );
+		subDatePanel.add ( timeHour );
+		timeSep = new JLabel ( ":" );
+		subDatePanel.add ( timeSep );
+		timeMinute = new JFormattedTextField ( createFormatter ( "##" ) );
+		timeMinute.setColumns ( 2 );
+		subDatePanel.add ( timeMinute );
+		String[] ampmStr = { "AM", "PM" };
+		ampm = new ToggleLabel ( ampmStr );
+		subDatePanel.add ( ampm );
 		datePanel.add ( subDatePanel );
 		upperPanel.add ( datePanel );
+		if ( event.getStartDate () == null || event.getStartDate ().isDateOnly () ) {
+			timeHour.setText ( "12" );
+			timeMinute.setText ( "00" );
+			ampm.setSelected ( "PM" );
+		} else {
+			int h = event.getStartDate ().getHour ();
+			int m = event.getStartDate ().getMinute ();
+			h %= 12;
+			if ( h == 0 ) {
+				timeHour.setText ( "12" );
+			} else if ( h < 10 ) {
+				timeHour.setText ( "0" + h );
+			} else {
+				timeHour.setText ( "" + h );
+			}
+			if ( event.getStartDate ().getHour () < 12 ) {
+				ampm.setSelected ( "AM" );
+			} else {
+				ampm.setSelected ( "PM" );
+			}
+			timeMinute.setText ( ( m < 10 ? "0" : "" ) + m );
+		}
 
 		JPanel repeatPanel = new JPanel ();
 		repeatPanel.setLayout ( new ProportionalLayout ( proportions,
@@ -366,7 +418,24 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		descrPanel.add ( scrollPane, BorderLayout.CENTER );
 		allButButtons.add ( descrPanel, BorderLayout.CENTER );
 
+		if ( newEvent )
+			allDay.setSelected ( false );
+		else
+			allDay.setSelected ( event.getStartDate ().isDateOnly () );
+		toggleAllDay ();
+
 		getContentPane ().add ( allButButtons, BorderLayout.CENTER );
+	}
+
+	protected MaskFormatter createFormatter ( String s ) {
+		MaskFormatter formatter = null;
+		try {
+			formatter = new MaskFormatter ( s );
+		} catch ( java.text.ParseException exc ) {
+			System.err.println ( "formatter is bad: " + exc.getMessage () );
+			System.exit ( -1 );
+		}
+		return formatter;
 	}
 
 	void save () {
@@ -376,6 +445,44 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 			JOptionPane.showMessageDialog ( parent, "You must select a calendar.",
 			    "Error", JOptionPane.ERROR_MESSAGE );
 			return;
+		}
+
+		// Verify a valid date was entered
+		java.util.Calendar calendar = dateChooser.getCalendar ();
+		if ( calendar == null ) {
+			JOptionPane.showMessageDialog ( parent,
+			    "You have not entered a valid start date.", "Error",
+			    JOptionPane.ERROR_MESSAGE );
+		}
+		this.event.getStartDate ().setYear (
+		    calendar.get ( java.util.Calendar.YEAR ) );
+		this.event.getStartDate ().setMonth (
+		    calendar.get ( java.util.Calendar.MONTH ) + 1 );
+		this.event.getStartDate ().setDay (
+		    calendar.get ( java.util.Calendar.DAY_OF_MONTH ) );
+
+		if ( this.allDay.isSelected () ) {
+			this.event.getStartDate ().setDateOnly ( true );
+		} else {
+			this.event.getStartDate ().setDateOnly ( false );
+			int h = Integer.parseInt ( timeHour.getText () );
+			int m = Integer.parseInt ( timeMinute.getText () );
+			if ( h > 23 || m > 59 ) {
+				JOptionPane.showMessageDialog ( parent,
+				    "You have not entered a valid start time.", "Error",
+				    JOptionPane.ERROR_MESSAGE );
+			}
+			if ( ampm.getText ().equals ( "AM" ) ) {
+				if ( h == 12 )
+					h = 0;
+			} else {
+				// PM
+				if ( h < 12 )
+					h += 12;
+			}
+			this.event.getStartDate ().setHour ( h );
+			this.event.getStartDate ().setMinute ( m );
+			this.event.getStartDate ().setSecond ( 0 );
 		}
 
 		// Note: LAST-MODIFIED gets updated by call to saveEvent
@@ -415,9 +522,14 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		this.dispose ();
 	}
 
-	void chooseDate () {
-		DateTimeSelectionDialog dts = new DateTimeSelectionDialog ( parent, event
-		    .getStartDate () );
+	void toggleAllDay () {
+		this.event.getStartDate ().setDateOnly ( allDay.isSelected () );
+		// Hide/Unhide the time edit
+		timeAt.setVisible ( !allDay.isSelected () );
+		timeHour.setVisible ( !allDay.isSelected () );
+		timeSep.setVisible ( !allDay.isSelected () );
+		timeMinute.setVisible ( !allDay.isSelected () );
+		ampm.setVisible ( !allDay.isSelected () );
 	}
 
 	void close () {
@@ -450,4 +562,47 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		prefs.setEditWindowY ( this.getY () );
 	}
 
+}
+
+class ToggleLabel extends JLabel implements MouseListener {
+	String[] choices;
+	int selected;
+	Color fg;
+
+	public ToggleLabel(String[] choices) {
+		super ( choices[0] );
+		this.choices = choices;
+		this.selected = 0;
+		this.addMouseListener ( this );
+		this.fg = this.getForeground ();
+	}
+
+	public void setSelected ( String str ) {
+		for ( int i = 0; i < choices.length; i++ ) {
+			if ( str.equals ( choices[i] ) ) {
+				this.selected = i;
+				this.setText ( choices[i] );
+			}
+		}
+	}
+
+	public void mousePressed ( MouseEvent e ) {
+	}
+
+	public void mouseReleased ( MouseEvent e ) {
+	}
+
+	public void mouseClicked ( MouseEvent e ) {
+		this.selected++;
+		this.selected %= choices.length;
+		this.setText ( choices[this.selected] );
+	}
+
+	public void mouseEntered ( MouseEvent e ) {
+		this.setForeground ( Color.GREEN );
+	}
+
+	public void mouseExited ( MouseEvent e ) {
+		this.setForeground ( fg );
+	}
 }
