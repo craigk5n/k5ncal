@@ -67,7 +67,7 @@
        jar file for the images. -->
   <target name="imagejar" depends="copyimages">
     <jar jarfile="dist/k5nCal-images.jar" basedir="${build}"
-      includes="images/**">
+      includes="images/*.gif">
     </jar>
   </target>
 
