@@ -26,12 +26,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -44,12 +42,15 @@ import javax.swing.text.MaskFormatter;
 import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Date;
 
+import com.toedter.calendar.JDateChooser;
+
 public class DateTimeSelectionDialog extends JDialog {
-	JTextField dayOfMonth, year;
-	JComboBox month;
+	JDateChooser dateChooser;
+	// JTextField dayOfMonth, year;
+	// JComboBox month;
 	JTextField hour, minute, second;
 	JCheckBox timeEnabled;
-	Date date;
+	us.k5n.ical.Date date;
 	boolean userAccepted = false;
 
 	public static Date showDateTimeSelectionDialog ( JFrame parent, Date date ) {
@@ -87,10 +88,9 @@ public class DateTimeSelectionDialog extends JDialog {
 		this.getContentPane ().add ( buttonPanel, BorderLayout.SOUTH );
 
 		JPanel topPanel = createDateTimeSelection ( date );
-
 		this.getContentPane ().add ( topPanel, BorderLayout.CENTER );
 
-		this.pack ();
+		this.setSize ( 250, 175 );
 		this.setVisible ( true );
 	}
 
@@ -104,40 +104,13 @@ public class DateTimeSelectionDialog extends JDialog {
 		panel.setLayout ( vLayout );
 
 		JPanel datePanel = new JPanel ();
-		ProportionalLayout hLayout1 = new ProportionalLayout ( hProportions,
-		    ProportionalLayout.HORIZONTAL_LAYOUT );
-		datePanel.add ( new JLabel ( "Date: " ) );
-		JPanel dateSelPanel = new JPanel ();
-		dateSelPanel.setLayout ( new FlowLayout () );
-
-		dayOfMonth = new JTextField ();
-		dayOfMonth.setColumns ( 2 );
-		dayOfMonth.setText ( "" + date.getDay () );
-		dateSelPanel.add ( dayOfMonth );
-
-		Vector sortOptions = new Vector ();
-		sortOptions.add ( "Jan" );
-		sortOptions.add ( "Feb" );
-		sortOptions.add ( "Mar" );
-		sortOptions.add ( "Apr" );
-		sortOptions.add ( "May" );
-		sortOptions.add ( "Jun" );
-		sortOptions.add ( "Jul" );
-		sortOptions.add ( "Aug" );
-		sortOptions.add ( "Sep" );
-		sortOptions.add ( "Oct" );
-		sortOptions.add ( "Nov" );
-		sortOptions.add ( "Dec" );
-		month = new JComboBox ( sortOptions );
-		month.setSelectedIndex ( date.getMonth () - 1 );
-		dateSelPanel.add ( month );
-
-		year = new JTextField ();
-		year.setColumns ( 4 );
-		year.setText ( "" + date.getYear () );
-		dateSelPanel.add ( year );
-
-		datePanel.add ( dateSelPanel );
+		datePanel.setLayout ( new ProportionalLayout ( hProportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		datePanel.add ( new JLabel ( "Date: ", JLabel.RIGHT ) );
+		dateChooser = new JDateChooser ();
+		dateChooser.setDate ( new java.util.Date ( date.getYear () - 1900, date
+		    .getMonth () - 1, date.getDay () ) );
+		datePanel.add ( dateChooser );
 		panel.add ( datePanel );
 
 		JPanel timePanel = new JPanel ();
@@ -146,7 +119,7 @@ public class DateTimeSelectionDialog extends JDialog {
 		JPanel enabledPanel = new JPanel ();
 		enabledPanel.setLayout ( new ProportionalLayout ( hProportions,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		enabledPanel.add ( new JLabel ( "Time: " ) );
+		enabledPanel.add ( new JLabel ( "Time: ", JLabel.RIGHT ) );
 
 		timeEnabled = new JCheckBox ( "Enabled" );
 		timeEnabled.setSelected ( !date.isDateOnly () );
@@ -237,13 +210,16 @@ public class DateTimeSelectionDialog extends JDialog {
 	}
 
 	protected void ok () {
-		Date d = null;
+		us.k5n.ical.Date d = null;
 		int Y, M, D, h, m, s;
-		if ( ( Y = getIntValue ( year, "year", 1900, 3000 ) ) < 0 )
+		java.util.Date chosenDate = dateChooser.getDate ();
+		if ( chosenDate == null ) {
+			// Invalid date
 			return;
-		M = month.getSelectedIndex () + 1;
-		if ( ( D = getIntValue ( dayOfMonth, "day of month", 1, 31 ) ) < 0 )
-			return;
+		}
+		Y = chosenDate.getYear () + 1900;
+		M = chosenDate.getMonth () + 1;
+		D = chosenDate.getDate ();
 		try {
 			if ( timeEnabled.isSelected () ) {
 				if ( ( h = getIntValue ( hour, "hour", 0, 23 ) ) < 0 )

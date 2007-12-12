@@ -70,9 +70,13 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 	JComboBox status;
 	JComboBox calendar;
 	JLabel startDate;
+	JComboBox repeatType;
 	JTextArea description;
 	AppPreferences prefs;
 	private boolean newEvent = true;
+	private static final int REPEAT_NONE = 0, REPEAT_DAILY = 1,
+	    REPEAT_WEEKLY = 2, REPEAT_MONTHLY = 3, REPEAT_YEARLY = 4,
+	    REPEAT_CUSTOM = 5;
 
 	class IntegerChoice {
 		String label;
@@ -191,7 +195,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 
 		JPanel upperPanel = new JPanel ();
 		upperPanel.setBorder ( BorderFactory.createEtchedBorder () );
-		GridLayout grid = new GridLayout ( 6, 1 );
+		GridLayout grid = new GridLayout ( 7, 1 );
 		grid.setHgap ( 15 );
 		grid.setVgap ( 5 );
 		upperPanel.setLayout ( grid );
@@ -239,6 +243,40 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		subDatePanel.add ( dateSel );
 		datePanel.add ( subDatePanel );
 		upperPanel.add ( datePanel );
+
+		JPanel repeatPanel = new JPanel ();
+		repeatPanel.setLayout ( new ProportionalLayout ( proportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		prompt = new JLabel ( "Repeat: " );
+		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
+		repeatPanel.add ( prompt );
+		Vector<IntegerChoice> repeatOptions = new Vector<IntegerChoice> ();
+		repeatOptions.addElement ( new IntegerChoice ( "None", REPEAT_NONE ) );
+		repeatOptions.addElement ( new IntegerChoice ( "Every day", REPEAT_DAILY ) );
+		repeatOptions
+		    .addElement ( new IntegerChoice ( "Every week", REPEAT_WEEKLY ) );
+		repeatOptions.addElement ( new IntegerChoice ( "Every month",
+		    REPEAT_MONTHLY ) );
+		repeatOptions
+		    .addElement ( new IntegerChoice ( "Every year", REPEAT_YEARLY ) );
+		repeatOptions
+		    .addElement ( new IntegerChoice ( "custom...", REPEAT_CUSTOM ) );
+		status = new JComboBox ( repeatOptions );
+		switch ( event.getStatus () ) {
+			case STATUS_CANCELLED:
+				status.setSelectedIndex ( 2 );
+				break;
+			case STATUS_TENTATIVE:
+				status.setSelectedIndex ( 1 );
+				break;
+			case STATUS_CONFIRMED:
+			case STATUS_UNDEFINED:
+			default:
+				status.setSelectedIndex ( 0 );
+				break;
+		}
+		repeatPanel.add ( status );
+		upperPanel.add ( repeatPanel );
 
 		JPanel locPanel = new JPanel ();
 		locPanel.setLayout ( new ProportionalLayout ( proportions,
