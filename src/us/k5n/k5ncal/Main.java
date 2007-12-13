@@ -96,7 +96,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
     CalendarPanelSelectionListener {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
-	public static final String VERSION = "0.9.3 (29 Jun 2007)";
+	public static final String VERSION = "0.9.5 (12 Dec 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
 	static ClassLoader cl = null;
 	private URL baseURL = null;
