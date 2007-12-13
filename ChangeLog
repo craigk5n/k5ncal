@@ -4,6 +4,7 @@ $Id$
 0.9.5 (?? ??? 2007) - Minor feature changes
 -----------------------------------------------------------------------
 - Replaced own date selection code with LGPL JCalendar JDateChooser.
+- Fixed Ctrl-Click popup menu on calendar names on Mac OS X.
 
 
 0.9.4 (01 Aug 2007) - Minor feature changes

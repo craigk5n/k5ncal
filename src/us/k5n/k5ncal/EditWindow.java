@@ -21,6 +21,7 @@ package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -567,7 +568,9 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 class ToggleLabel extends JLabel implements MouseListener {
 	String[] choices;
 	int selected;
-	Color fg;
+	Color fg, mouseOverColor;
+	private Cursor defaultCursor = null;
+	private Cursor handCursor = null;
 
 	public ToggleLabel(String[] choices) {
 		super ( choices[0] );
@@ -575,6 +578,7 @@ class ToggleLabel extends JLabel implements MouseListener {
 		this.selected = 0;
 		this.addMouseListener ( this );
 		this.fg = this.getForeground ();
+		this.mouseOverColor = new Color ( 0, 0, 255 );
 	}
 
 	public void setSelected ( String str ) {
@@ -599,10 +603,17 @@ class ToggleLabel extends JLabel implements MouseListener {
 	}
 
 	public void mouseEntered ( MouseEvent e ) {
-		this.setForeground ( Color.GREEN );
+		this.setForeground ( mouseOverColor );
+		// change cursor
+		if ( this.defaultCursor == null )
+			this.defaultCursor = this.getCursor ();
+		if ( this.handCursor == null )
+			this.handCursor = new Cursor ( Cursor.HAND_CURSOR );
+		this.setCursor ( this.handCursor );
 	}
 
 	public void mouseExited ( MouseEvent e ) {
 		this.setForeground ( fg );
+		this.setCursor ( this.defaultCursor );
 	}
 }

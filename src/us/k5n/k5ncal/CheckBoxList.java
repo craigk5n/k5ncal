@@ -32,6 +32,7 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	Vector<CheckBoxListListener> listeners;
 	private JPanel innerPanel;
 	JPopupMenu menu;
+	boolean isPopupTrigger = false;
 	JCheckBox itemForMenu = null;
 	private String[] menuLabels = null;
 
@@ -69,7 +70,7 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	}
 
 	public void menuSelected ( int menuItemInd ) {
-		//System.out.println ( "menuSelected: " + menuLabels[menuItemInd] );
+		// System.out.println ( "menuSelected: " + menuLabels[menuItemInd] );
 		String cmd = itemForMenu.getActionCommand ();
 		if ( cmd.charAt ( 0 ) == '#' ) {
 			int ind = Integer.parseInt ( cmd.substring ( 1 ) );
@@ -103,6 +104,10 @@ public class CheckBoxList extends JPanel implements ActionListener,
 
 	public void mousePressed ( MouseEvent e ) {
 		if ( e.getSource () instanceof JCheckBox ) {
+			// We need to check isPopupTrigger here and in mouseReleased. It wil be
+			// true here for Mac (false for Windows). In mouseReleased, it will be
+			// true for Windows and false for Mac.
+			this.isPopupTrigger = e.isPopupTrigger ();
 			// Update menu for this choice
 			Object choice = null;
 			for ( int i = 0; i < choices.size () && choice == null; i++ ) {
@@ -130,8 +135,13 @@ public class CheckBoxList extends JPanel implements ActionListener,
 		}
 	}
 
+	/**
+	 * Check to see if this event should create a popup menu. In Windows,
+	 * isPopupTrigger gets set to true here, while it gets set to true in
+	 * mousePressed on Mac OS X (just to keep us programmers on our toes).
+	 */
 	public void mouseReleased ( MouseEvent e ) {
-		if ( menu != null && e.isPopupTrigger ()
+		if ( menu != null && ( e.isPopupTrigger () || this.isPopupTrigger )
 		    && e.getSource () instanceof JCheckBox ) {
 			menu.show ( (Component) e.getSource (), e.getX (), e.getY () );
 			itemForMenu = (JCheckBox) e.getSource ();
