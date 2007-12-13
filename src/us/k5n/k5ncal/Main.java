@@ -98,6 +98,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
 	public static final String VERSION = "0.9.3 (29 Jun 2007)";
 	public static final String CALENDARS_FILE = "calendars.dat";
+	static ClassLoader cl = null;
+	private URL baseURL = null;
 	JFrame parent;
 	EventViewPanel eventViewPanel;
 	JButton newButton, editButton, deleteButton;
@@ -690,7 +692,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		// Look for the image.
 		imgLocation = "images/" + imageName;
 		if ( imageName != null ) {
-			imgLocation = "images/" + imageName;
 			imageURL = this.getClass ().getClassLoader ().getResource ( imgLocation );
 		}
 
@@ -1212,12 +1213,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
 		if ( eventInstance != null ) {
-			// TODO: support editing events with recurrance.
 			SingleEvent se = (SingleEvent) eventInstance;
 			if ( se.calendar.url != null ) {
 				showError ( "You cannot edit events\non remote/subscribed calendars." );
-			} else if ( se.event.getRrule () != null ) {
-				showError ( "Editing events with recurrance\nnot yet supported." );
 			} else {
 				new EditWindow ( parent, dataRepository, se.event, se.calendar );
 			}
@@ -1236,6 +1234,27 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void eventUnselected () {
 		updateToolbar ();
 		this.eventViewPanel.clear ();
+	}
+
+	public URL getResourceFromFilename ( String urlStr, boolean errorIfNotFound ) {
+		try {
+			URL u = null;
+			URL ret = null;
+			if ( urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
+				ret = new URL ( urlStr );
+			} else {
+				u = new URL ( baseURL, urlStr );
+				ret = cl.getResource ( u.toString () );
+			}
+			if ( ret == null )
+				ret = cl.getResource ( urlStr );
+			return ret;
+		} catch ( java.net.MalformedURLException e ) {
+			System.err.println ( "Error finding filename '" + urlStr + ": "
+			    + e.toString () );
+			e.printStackTrace ();
+			return null;
+		}
 	}
 
 	/**

@@ -22,6 +22,7 @@ package us.k5n.k5ncal;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,7 @@ import us.k5n.ical.Date;
 import us.k5n.ical.Description;
 import us.k5n.ical.Event;
 import us.k5n.ical.Location;
+import us.k5n.ical.Rrule;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
 
@@ -255,7 +257,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		datePanel.add ( prompt );
 		JPanel subDatePanel = new JPanel ();
 		subDatePanel.setLayout ( new FlowLayout ( FlowLayout.LEFT ) );
-		dateChooser = new JDateChooser ();
+		dateChooser = new MyDateChooser ();
 		dateChooser.setDateFormatString ( "EEE, MMM dd, YYYY" );
 		dateChooser.setCalendar ( this.event.getStartDate ().toCalendar () );
 		subDatePanel.add ( dateChooser );
@@ -314,21 +316,63 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		    .addElement ( new IntegerChoice ( "Every year", REPEAT_YEARLY ) );
 		repeatOptions
 		    .addElement ( new IntegerChoice ( "custom...", REPEAT_CUSTOM ) );
-		status = new JComboBox ( repeatOptions );
-		switch ( event.getStatus () ) {
-			case STATUS_CANCELLED:
-				status.setSelectedIndex ( 2 );
-				break;
-			case STATUS_TENTATIVE:
-				status.setSelectedIndex ( 1 );
-				break;
-			case STATUS_CONFIRMED:
-			case STATUS_UNDEFINED:
-			default:
-				status.setSelectedIndex ( 0 );
-				break;
+		repeatType = new JComboBox ( repeatOptions );
+		Rrule rrule = event.getRrule ();
+		String error = null;
+		if ( rrule == null ) {
+			repeatType.setSelectedIndex ( REPEAT_NONE );
+		} else {
+			switch ( rrule.getFrequency () ) {
+				case Rrule.FREQ_DAILY:
+					repeatType.setSelectedIndex ( REPEAT_DAILY );
+					break;
+				case Rrule.FREQ_WEEKLY:
+					repeatType.setSelectedIndex ( REPEAT_WEEKLY );
+					break;
+				case Rrule.FREQ_MONTHLY:
+					repeatType.setSelectedIndex ( REPEAT_MONTHLY );
+					break;
+				case Rrule.FREQ_YEARLY:
+					repeatType.setSelectedIndex ( REPEAT_YEARLY );
+					break;
+				default:
+					// TODO: implement hourly, etc.
+					error = "Unsupported frequency";
+					break;
+			}
 		}
-		repeatPanel.add ( status );
+		// Check for other advanced Rrule options that are not yet supported in our
+		// UI.
+		if ( error == null && rrule != null ) {
+			if ( rrule.exceptions != null && rrule.exceptions.size () > 0 )
+				error = "Exceptions not yet supported";
+			else if ( rrule.byhour != null && rrule.byhour.length > 0 )
+				error = "BYHOUR not supported";
+			else if ( rrule.byminute != null && rrule.byminute.length > 0 )
+				error = "BYMINUTE not supported";
+			else if ( rrule.bysecond != null && rrule.bysecond.length > 0 )
+				error = "BYSECOND not supported";
+			else if ( rrule.bymonth != null && rrule.bymonth.length > 0 )
+				error = "BYMONTH not supported";
+			else if ( rrule.bymonthday != null && rrule.bymonthday.length > 0 )
+				error = "BYMONTHDAY not supported";
+			else if ( rrule.bysetpos != null && rrule.bysetpos.length > 0 )
+				error = "BYSETPOS not supported";
+			else if ( rrule.count > 0 )
+				error = "COUNT not supported";
+			else if ( rrule.inclusions != null && rrule.inclusions.size () > 0 )
+				error = "Inclusions not yet supported";
+			else if ( rrule.interval > 1 )
+				error = "Interval not yet supported";
+		}
+		if ( error != null ) {
+			JOptionPane.showMessageDialog ( parent,
+			    "Warning: The recurrence type of this\n"
+			        + "event is not yet supported\nby k5nCal.  Editing this event\n"
+			        + "will result in data loss.\n\nIssue: " + error, "Error",
+			    JOptionPane.ERROR_MESSAGE );
+		}
+		repeatPanel.add ( repeatType );
 		upperPanel.add ( repeatPanel );
 
 		JPanel locPanel = new JPanel ();
@@ -461,6 +505,25 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		    calendar.get ( java.util.Calendar.MONTH ) + 1 );
 		this.event.getStartDate ().setDay (
 		    calendar.get ( java.util.Calendar.DAY_OF_MONTH ) );
+
+		// handle repeat type
+		switch ( repeatType.getSelectedIndex () ) {
+			case REPEAT_NONE:
+				this.event.setRrule ( null );
+				break;
+			case REPEAT_DAILY:
+				this.event.setRrule ( new Rrule ( Rrule.FREQ_DAILY ) );
+				break;
+			case REPEAT_WEEKLY:
+				this.event.setRrule ( new Rrule ( Rrule.FREQ_WEEKLY ) );
+				break;
+			case REPEAT_MONTHLY:
+				this.event.setRrule ( new Rrule ( Rrule.FREQ_MONTHLY ) );
+				break;
+			case REPEAT_YEARLY:
+				this.event.setRrule ( new Rrule ( Rrule.FREQ_YEARLY ) );
+				break;
+		}
 
 		if ( this.allDay.isSelected () ) {
 			this.event.getStartDate ().setDateOnly ( true );
@@ -615,5 +678,20 @@ class ToggleLabel extends JLabel implements MouseListener {
 	public void mouseExited ( MouseEvent e ) {
 		this.setForeground ( fg );
 		this.setCursor ( this.defaultCursor );
+	}
+}
+
+/**
+ * Override JDateChooser so that we can expand the minimum width, which normally
+ * doesn't leave enough width to display the full text of the date.
+ */
+class MyDateChooser extends JDateChooser {
+	public MyDateChooser() {
+		super ();
+	}
+
+	public Dimension getPreferredSize () {
+		Dimension d = super.getPreferredSize ();
+		return new Dimension ( d.width + 10, d.height );
 	}
 }
