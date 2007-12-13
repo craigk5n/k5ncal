@@ -1,8 +1,12 @@
 ChangeLog
 $Id$
 
-0.9.5 (?? ??? 2007) - Minor feature changes
+0.9.5 (12 Dec 2007) - New features
 -----------------------------------------------------------------------
+- Implemented repeating events for simple type (daily, weekly, monthly, yearly)
+  Does not yet support end dates, interval (every other) and more complicated
+  features of RFC2445 RRULE.
+- Updated ical library to 0.4.4.
 - Replaced own date selection code with LGPL JCalendar JDateChooser.
 - Fixed Ctrl-Click popup menu on calendar names on Mac OS X.
 
