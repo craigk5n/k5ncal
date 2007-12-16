@@ -37,6 +37,7 @@ import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,6 +45,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -96,7 +98,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
     CalendarPanelSelectionListener {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
-	public static final String VERSION = "0.9.5 (12 Dec 2007)";
+	public String version = null;;
 	public static final String CALENDARS_FILE = "calendars.dat";
 	static ClassLoader cl = null;
 	private URL baseURL = null;
@@ -128,6 +130,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		super ( "k5nCal" );
 		setWindowsLAF ();
 		this.parent = this;
+
+		// Get version from ChangeLog
+		this.getVersionFromChangeLog ();
 
 		// TODO: save user's preferred size on exit and set here
 		prefs = AppPreferences.getInstance ();
@@ -337,7 +342,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			public void actionPerformed ( ActionEvent event ) {
 				// TODO: add logo, etc...
 				JOptionPane
-				    .showMessageDialog ( parent, "k5nCal\nVersion " + VERSION
+				    .showMessageDialog ( parent, "k5nCal\n"
+				        + ( version == null ? "Unknown Version" : version )
 				        + "\n\nDeveloped by k5n.us\n\n"
 				        + "Go to www.k5n.us for more info." );
 			}
@@ -1255,6 +1261,36 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			e.printStackTrace ();
 			return null;
 		}
+	}
+
+	void getVersionFromChangeLog () {
+		if ( this.version != null )
+			return;
+
+		URL url = this.getClass ().getClassLoader ().getResource ( "ChangeLog" );
+		if ( url == null ) {
+			System.err.println ( "Error: could not find ChangeLog in your CLASSPATH" );
+			return;
+		}
+		try {
+			InputStream is = url.openStream ();
+			BufferedReader reader = new BufferedReader ( new InputStreamReader ( is ) );
+			while ( this.version == null ) {
+				String line = reader.readLine ();
+				if ( line == null )
+					break; // not found
+				line = line.trim ();
+				if ( line.toUpperCase ().startsWith ( "VERSION" ) ) {
+					String[] args = line.split ( "-" );
+					this.version = args[0].trim ();
+				}
+			}
+			is.close ();
+		} catch ( IOException e1 ) {
+			e1.printStackTrace ();
+			this.version = "Unknown Version (" + e1.getMessage () + ")";
+		}
+		return;
 	}
 
 	/**

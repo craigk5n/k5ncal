@@ -2,92 +2,89 @@
 <!-- $Id$ -->
 
 <project name="k5nCal" default="dist" basedir=".">
-  <description>Top-level build file for k5nCal</description>
+	<description>Top-level build file for k5nCal</description>
 
-  <!-- set global properties for this build -->
-  <property name="src" location="src"/>
-  <property name="imagedir" location="images"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="imagedir" location="images" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
 
-  <property name="test" location="test"/>
-  <property name="testbuild" location="testbuild"/>
+	<property name="test" location="test" />
+	<property name="testbuild" location="testbuild" />
 
-  <property name="version" value="0.9.5"/>
+	<property name="version" value="0.9.5" />
 
-  <property name="k5n-ical-lib" value="lib/k5n-ical-0.4.4.jar"/>
-  <property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.4.jar"/>
-  <property name="jcalendar-lib" value="lib/jcalendar-1.3.2.jar"/>
+	<property name="k5n-ical-lib" value="lib/k5n-ical-0.4.4.jar" />
+	<property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.4.jar" />
+	<property name="jcalendar-lib" value="lib/jcalendar-1.3.2.jar" />
 
-  <target name="init">
-    <!-- Create the time stamp -->
-    <tstamp/>
-    <!-- Create the build directory structure used by compile -->
-    <mkdir dir="${build}"/>
-  </target>
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+	</target>
 
-  <target name="copyimages" depends="" description="Copy images files">
-    <mkdir dir="${build}/images"/>
-    <copy todir="${build}/images">
-      <fileset dir="${imagedir}" />
-    </copy>
-  </target>
+	<target name="copy-static" depends="" description="Copy static files">
+		<mkdir dir="${build}" />
+		<mkdir dir="${build}/images" />
+		<copy todir="${build}/images">
+			<fileset dir="${imagedir}" />
+		</copy>
+		<copy todir="${build}" file="ChangeLog" />
+	</target>
 
-  <target name="compile" depends="init"
-        description="compile the source " >
-    <!-- Compile the java code from ${src} into ${build} -->
-    <javac srcdir="${src}" destdir="${build}">
-      <classpath>
-        <pathelement path="${k5n-ical-lib}"/>
-        <pathelement path="${k5n-calendarpanel-lib}"/>
-      	<pathelement path="${jcalendar-lib}"/>
-      </classpath>
-    </javac>
-  </target>
+	<target name="compile" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}">
+			<classpath>
+				<pathelement path="${k5n-ical-lib}" />
+				<pathelement path="${k5n-calendarpanel-lib}" />
+				<pathelement path="${jcalendar-lib}" />
+			</classpath>
+		</javac>
+	</target>
 
-  <target name="dist" depends="compile,copyimages"
-        description="generate the distribution" >
-    <!-- Create the distribution directory -->
-    <mkdir dir="${dist}"/>
+	<target name="dist" depends="compile,copy-static" description="generate the distribution">
+		<!-- Create the distribution directory -->
+		<mkdir dir="${dist}" />
 
-    <!-- Put all the k5nCal files into a single jar
+		<!-- Put all the k5nCal files into a single jar
          and designate the main class -->
-    <jar jarfile="${dist}/k5nCal-${version}.jar" basedir="${build}">
-    <zipfileset src="${k5n-ical-lib}" />
-    <zipfileset src="${k5n-calendarpanel-lib}" />
-    <zipfileset src="${jcalendar-lib}" />
-    <manifest>
-       <attribute name="Main-Class" value="us.k5n.k5ncal.Main"/>
-    </manifest>
-    </jar>
-  </target>
+		<jar jarfile="${dist}/k5nCal-${version}.jar" basedir="${build}">
+			<zipfileset src="${k5n-ical-lib}" />
+			<zipfileset src="${k5n-calendarpanel-lib}" />
+			<zipfileset src="${jcalendar-lib}" />
+			<manifest>
+				<attribute name="Main-Class" value="us.k5n.k5ncal.Main" />
+			</manifest>
+		</jar>
+	</target>
 
-  <!-- This target can be useful inside Eclipse when you are having
+	<!-- This target can be useful inside Eclipse when you are having
        problems loading the images.  Just use ant to build a separate
        jar file for the images. -->
-  <target name="imagejar" depends="copyimages">
-    <jar jarfile="dist/k5nCal-images.jar" basedir="${build}"
-      includes="images/*.gif">
-    </jar>
-  </target>
+	<target name="static-files-jar" depends="copy-static">
+		<jar jarfile="dist/k5nCal-static-files.jar" basedir="${build}" includes="images/*.gif,ChangeLog">
+		</jar>
+	</target>
 
-  <!-- for use in making source code releases -->
-  <target name="source-zip">
-    <mkdir dir="${dist}/src"/>
-    <zip destfile="${dist}/src/k5nCal-src-${version}.zip">
-      <zipfileset dir="." prefix="k5nCal-src-${version}"
-        includes="build.xml,README.txt,ChangeLog" />
-      <zipfileset dir="${src}" prefix="k5nCal-src-${version}/src" />
-      <zipfileset dir="images" prefix="k5nCal-src-${version}/images" />
-      <zipfileset dir="lib" prefix="k5nCal-src-${version}/lib" />
-    </zip>
-  </target>
+	<!-- for use in making source code releases -->
+	<target name="source-zip">
+		<mkdir dir="${dist}/src" />
+		<zip destfile="${dist}/src/k5nCal-src-${version}.zip">
+			<zipfileset dir="." prefix="k5nCal-src-${version}" includes="build.xml,README.txt,ChangeLog" />
+			<zipfileset dir="${src}" prefix="k5nCal-src-${version}/src" />
+			<zipfileset dir="images" prefix="k5nCal-src-${version}/images" />
+			<zipfileset dir="lib" prefix="k5nCal-src-${version}/lib" />
+		</zip>
+	</target>
 
-  <target name="clean"
-        description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
-    <delete dir="${build}"/>
-    <delete dir="${dist}"/>
-  </target>
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
 
 </project>
