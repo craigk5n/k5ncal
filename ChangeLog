@@ -6,6 +6,9 @@ Version 0.9.6dev (?? Dec 2007) - New features
 - Use "Quit" instead of "Exit" for Mac
 - Added "View ChangeLog" to Help menu
 - Added "View License" to Help menu
+- Added "Go to k5n Home Page" to Help menu
+- Added "Report But" to Help Menu
+- Added BrowserLauncher2 3rd party jar (LGPL) to open up browser window 
 
 Version 0.9.5 (12 Dec 2007) - New features
 -----------------------------------------------------------------------

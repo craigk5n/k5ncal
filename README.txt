@@ -98,3 +98,8 @@ JCalendar:
   URL: http://www.toedter.com/en/jcalendar/index.html
   License: LGPL
   Licence URL: http://www.toedter.com/en/jcalendar/license.html
+  
+BrowserLauncher2:
+  URL: http://browserlaunch2.sourceforge.net/
+  License: LGPL
+  License URL: http://www.gnu.org/licenses/lgpl.html

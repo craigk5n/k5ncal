@@ -87,6 +87,7 @@ import us.k5n.ical.ICalendarParser;
 import us.k5n.ui.calendar.CalendarPanel;
 import us.k5n.ui.calendar.CalendarPanelSelectionListener;
 import us.k5n.ui.calendar.EventInstance;
+import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  * Main class for k5nCal application. This application makes use of the k5n
@@ -103,6 +104,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public String version = null;;
 	public static final String CALENDARS_FILE = "calendars.dat";
 	static final String APP_ICON = "images/k5nCal-128x128.png";
+	static final String APP_URL = "http://www.k5n.us/k5ncal.php";
+	static final String REPORT_BUG_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952950";
 	static final String LICENSE_FILE = "License.html";
 	static ClassLoader cl = null;
 	private URL baseURL = null;
@@ -377,6 +380,36 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				viewLicense ();
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "Go to k5nCal Home Page..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					BrowserLauncher bl = new BrowserLauncher ();
+					bl.openURLinBrowser ( APP_URL );
+				} catch ( Exception e1 ) {
+					System.err.println ( "Error starting web browser: "
+					    + e1.getMessage () );
+					e1.printStackTrace ();
+				}
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "Report Bug..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					BrowserLauncher bl = new BrowserLauncher ();
+					bl.openURLinBrowser ( REPORT_BUG_URL );
+				} catch ( Exception e1 ) {
+					System.err.println ( "Error starting web browser: "
+					    + e1.getMessage () );
+					e1.printStackTrace ();
+				}
 			}
 		} );
 		helpMenu.add ( item );
