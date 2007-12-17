@@ -2,6 +2,8 @@ ChangeLog
 $Id$
 
 Version 0.9.6dev (?? Dec 2007) - New features
+- Added filter by category using new AccordionPane
+- Added k5nAccordionPane-1.0.0.jar
 - Added app icon to About dialog; added java version info to about dialog.
 - Use "Quit" instead of "Exit" for Mac
 - Added "View ChangeLog" to Help menu

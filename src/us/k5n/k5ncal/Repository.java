@@ -48,6 +48,9 @@ public class Repository implements CalendarDataRepository {
 	HashMap<Calendar, DataFile> dataFileCalendarHash;
 	int parseErrorCount = 0;
 	int eventCount = 0;
+	private HashMap<String, String> categoryFilter = null;
+	private boolean categoryFilterIncludeUncat = false;
+	private boolean categoryFilterEnabled = false;
 	private HashMap<String, Vector> cachedEvents;
 	private Vector<RepositoryChangeListener> changeListeners;
 	private Vector<String> categories; // Vector of String categories
@@ -253,6 +256,22 @@ public class Repository implements CalendarDataRepository {
 		return ret;
 	}
 
+	public void clearCategoryFilter () {
+		this.categoryFilterEnabled = false;
+		this.categoryFilter = null;
+	}
+
+	public void setCategoryFilter ( boolean includeUncategorized,
+	    Vector<String> cats ) {
+		this.categoryFilterEnabled = true;
+		this.categoryFilterIncludeUncat = includeUncategorized;
+		this.categoryFilter = new HashMap<String, String> ();
+		for ( int i = 0; i < cats.size (); i++ ) {
+			String cat = cats.elementAt ( i ).toUpperCase ().trim ();
+			this.categoryFilter.put ( cat, cat );
+		}
+	}
+
 	/**
 	 * Rebuild internal cached data after one or more calendar
 	 */
@@ -285,7 +304,27 @@ public class Repository implements CalendarDataRepository {
 			for ( int j = 0; j < df.getEventCount (); j++ ) {
 				Event event = df.eventEntryAt ( j );
 				if ( event.getStartDate () != null ) {
-					if ( df.calendar.selected ) {
+					boolean matchesCategoryFilter = false;
+					if ( this.categoryFilterEnabled ) {
+						// Does category match filter?
+						if ( event.getCategories () == null
+						    && this.categoryFilterIncludeUncat ) {
+							matchesCategoryFilter = true;
+						} else if ( event.getCategories () == null ) {
+							matchesCategoryFilter = false;
+						} else {
+							String[] cats = splitCategories ( event.getCategories ()
+							    .getValue () );
+							for ( int k = 0; k < cats.length && !matchesCategoryFilter; k++ ) {
+								if ( this.categoryFilter.containsKey ( cats[k].toUpperCase ()
+								    .trim () ) )
+									matchesCategoryFilter = true;
+							}
+						}
+					} else {
+						matchesCategoryFilter = true;
+					}
+					if ( df.calendar.selected && matchesCategoryFilter ) {
 						SingleEvent se = null;
 						if ( event.isValid () && event.getStartDate () != null ) {
 							Date startDate = event.getStartDate ();

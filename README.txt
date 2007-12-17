@@ -84,6 +84,11 @@ Joda Time
   License: Apache License 2.0
   License URL: http://joda-time.sourceforge.net/license.html
   
+k5n AccordionPane
+  URL: http://www.k5n.us/k5naccordion.php
+  License: GNU GPL
+  License URL: http://www.fsf.org/licensing/licenses/gpl.html
+  
 Google RFC2445
   URL: http://code.google.com/p/google-rfc-2445/
   License: Apache License 2.0

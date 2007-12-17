@@ -51,6 +51,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -64,6 +66,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -77,6 +80,8 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Constants;
@@ -84,6 +89,7 @@ import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.ICalendarParser;
+import us.k5n.ui.AccordionPane;
 import us.k5n.ui.calendar.CalendarPanel;
 import us.k5n.ui.calendar.CalendarPanelSelectionListener;
 import us.k5n.ui.calendar.EventInstance;
@@ -117,7 +123,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	Repository dataRepository;
 	CalendarPanel calendarPanel;
 	JSplitPane horizontalSplit = null, leftVerticalSplit = null;
+	AccordionPane ap;
 	CheckBoxList calendarCheckboxes;
+	JList categoryJList;
 	String searchText = null;
 	private static File lastExportDirectory = null;
 	private static File lastImportDirectory = null;
@@ -170,14 +178,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		messagePanel.add ( messageArea, BorderLayout.CENTER );
 		contentPane.add ( messagePanel, BorderLayout.SOUTH );
 
-		JPanel leftPanel = new JPanel ();
+		ap = new AccordionPane ();
+		ap.addPanel ( "Calendars", createCalendarSelectionPanel ( dataRepository
+		    .getCalendars () ) );
+		ap.addPanel ( "Categories", createCategorySelectionPanel ( dataRepository
+		    .getCategories () ) );
 
-		JPanel navArea = createCalendarSelectionPanel ( dataRepository
-		    .getCalendars () );
 		eventViewPanel = new EventViewPanel ();
 		eventViewPanel.setBorder ( BorderFactory
 		    .createTitledBorder ( "Event Details" ) );
-		leftVerticalSplit = new JSplitPane ( JSplitPane.VERTICAL_SPLIT, navArea,
+		leftVerticalSplit = new JSplitPane ( JSplitPane.VERTICAL_SPLIT, ap,
 		    eventViewPanel );
 		leftVerticalSplit.setOneTouchExpandable ( true );
 		leftVerticalSplit.setDividerLocation ( prefs
@@ -523,7 +533,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		String[] menuLabels = { "Edit...", "Refresh", "Delete" };
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new BorderLayout () );
-		topPanel.setBorder ( BorderFactory.createTitledBorder ( "Calendars" ) );
 
 		this.calendarCheckboxes = new CheckBoxList ( new Vector () );
 		updateCalendarCheckboxes ();
@@ -666,6 +675,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 		if ( found ) {
 			updateCalendarCheckboxes ();
+			updateCategoryJList ();
 			this.dataRepository.rebuild ();
 			this.calendarPanel.repaint ();
 			saveCalendars ( getDataDirectory () );
@@ -691,6 +701,100 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			cb.setSelected ( cal.selected );
 		}
 		this.calendarCheckboxes.validate ();
+	}
+
+	protected JPanel createCategorySelectionPanel ( Vector categories ) {
+		JPanel panel = new JPanel ();
+		panel.setLayout ( new BorderLayout () );
+		this.categoryJList = new JList ( categories );
+		final JList list = this.categoryJList;
+		updateCategoryJList ();
+
+		JPanel buttonPanel = new JPanel ();
+		buttonPanel.setLayout ( new FlowLayout () );
+		JButton allButton = new JButton ( "Select All" );
+		allButton.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent e ) {
+				int len = list.getModel ().getSize ();
+				if ( len > 0 )
+					list.getSelectionModel ().setSelectionInterval ( 0, len - 1 );
+			}
+		} );
+		buttonPanel.add ( allButton );
+		JButton noneButton = new JButton ( "Clear" );
+		noneButton.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent e ) {
+				list.clearSelection ();
+			}
+		} );
+		buttonPanel.add ( noneButton );
+		panel.add ( buttonPanel, BorderLayout.SOUTH );
+
+		// Add handler for when user changes category selectios
+		list.addListSelectionListener ( new ListSelectionListener () {
+			public void valueChanged ( ListSelectionEvent e ) {
+				handleCategoryFilterSelection ();
+			}
+		} );
+
+		JScrollPane sp = new JScrollPane ( this.categoryJList );
+		panel.add ( sp, BorderLayout.CENTER );
+		return panel;
+	}
+
+	// Handle user selecting a category to filter by
+	void handleCategoryFilterSelection () {
+		boolean uncategorized = this.categoryJList.getSelectionModel ()
+		    .isSelectedIndex ( 0 );
+		int[] selected = this.categoryJList.getSelectedIndices ();
+		Vector selectedCats = new Vector<String> ();
+		for ( int i = 0; i < selected.length; i++ ) {
+			if ( selected[i] > 0 ) {
+				String cat = (String) this.categoryJList.getModel ().getElementAt (
+				    selected[i] );
+				selectedCats.addElement ( cat );
+			}
+		}
+		if ( selected == null || selected.length == 0 ) {
+			ap.setTitleAt ( 1, "Categories" );
+			this.dataRepository.clearCategoryFilter ();
+		} else {
+			ap.setTitleAt ( 1, "Categories [" + selected.length + "]" );
+			this.dataRepository.setCategoryFilter ( uncategorized, selectedCats );
+		}
+		this.calendarPanel.clearSelection ();
+		this.dataRepository.rebuild ();
+		this.calendarPanel.repaint ();
+	}
+
+	/**
+	 * Update the list of Calendars shown to the user
+	 */
+	public void updateCategoryJList () {
+		// Get current selections so we can preserve
+		Object[] oldSelections = this.categoryJList.getSelectedValues ();
+		HashMap<String, String> old = new HashMap<String, String> ();
+		for ( int i = 0; i < oldSelections.length; i++ ) {
+			old.put ( oldSelections[i].toString (), oldSelections[i].toString () );
+		}
+		Vector cats = dataRepository.getCategories ();
+		// Sort categories alphabetically
+		Collections.sort ( cats );
+		cats.insertElementAt ( "Uncategorized", 0 );
+		this.categoryJList.setListData ( cats );
+		int[] newSelections = new int[oldSelections.length];
+		int j = 0;
+		for ( int i = 0; i < dataRepository.getCategories ().size (); i++ ) {
+			String cat = (String) dataRepository.getCategories ().elementAt ( i );
+			if ( old.containsKey ( cat ) )
+				newSelections[j++] = i + 1; // skip over "uncategorized"
+		}
+		int[] indices = new int[j];
+		for ( int i = 0; i < j; i++ ) {
+			indices[i] = newSelections[i];
+		}
+		this.categoryJList.setSelectedIndices ( indices );
+		this.categoryJList.validate ();
 	}
 
 	/**
@@ -1224,16 +1328,19 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void eventAdded ( Event event ) {
+		this.updateCategoryJList ();
 		handleCalendarFilterSelection ();
 		this.eventViewPanel.clear ();
 	}
 
 	public void eventUpdated ( Event event ) {
+		this.updateCategoryJList ();
 		handleCalendarFilterSelection ();
 		this.eventViewPanel.clear ();
 	}
 
 	public void eventDeleted ( Event event ) {
+		this.updateCategoryJList ();
 		handleCalendarFilterSelection ();
 		this.eventViewPanel.clear ();
 	}
@@ -1262,6 +1369,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void calendarAdded ( Calendar c ) {
 		updateCalendarCheckboxes ();
+		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
@@ -1269,6 +1377,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void calendarUpdated ( Calendar c ) {
 		updateCalendarCheckboxes ();
+		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
@@ -1276,6 +1385,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void calendarDeleted ( Calendar c ) {
 		updateCalendarCheckboxes ();
+		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
