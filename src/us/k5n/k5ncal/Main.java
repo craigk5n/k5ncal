@@ -374,8 +374,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		helpMenu.add ( item );
 
 		item = new JMenuItem ( "View License..." );
-		item.setAccelerator ( KeyStroke.getKeyStroke ( 'L', Toolkit
-		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				viewLicense ();
