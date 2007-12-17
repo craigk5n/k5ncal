@@ -69,7 +69,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -100,6 +102,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
 	public String version = null;;
 	public static final String CALENDARS_FILE = "calendars.dat";
+	static final String APP_ICON = "images/k5nCal-128x128.png";
+	static final String LICENSE_FILE = "License.html";
 	static ClassLoader cl = null;
 	private URL baseURL = null;
 	JFrame parent;
@@ -294,7 +298,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		fileMenu.addSeparator ();
 
-		item = new JMenuItem ( "Exit" );
+		/* Mac users see "Quit", everyone else gets "Exit" */
+		boolean isMac = System.getProperty ( "mrj.version" ) != null;
+		item = new JMenuItem ( isMac ? "Quit k5nCal" : "Exit" );
 		item.setAccelerator ( KeyStroke.getKeyStroke ( 'Q', Toolkit
 		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
@@ -340,12 +346,39 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
-				// TODO: add logo, etc...
-				JOptionPane
-				    .showMessageDialog ( parent, "k5nCal\n"
-				        + ( version == null ? "Unknown Version" : version )
+				// Get application icon
+				URL url = getResource ( APP_ICON );
+				ImageIcon icon = new ImageIcon ( url, "k5nCal" );
+				// Get java version
+				String javaVersion = System.getProperty ( "java.version" );
+				if ( javaVersion == null )
+					javaVersion = "Unknown";
+				JOptionPane.showMessageDialog ( parent,
+				    "k5nCal " + ( version == null ? "Unknown Version" : version )
+				        + "\n\nJava Version: " + javaVersion
 				        + "\n\nDeveloped by k5n.us\n\n"
-				        + "Go to www.k5n.us for more info." );
+				        + "Go to www.k5n.us for more info.", "About k5nCal",
+				    JOptionPane.INFORMATION_MESSAGE, icon );
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "View ChangeLog..." );
+		item.setAccelerator ( KeyStroke.getKeyStroke ( 'C', Toolkit
+		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				viewChangeLog ();
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "View License..." );
+		item.setAccelerator ( KeyStroke.getKeyStroke ( 'L', Toolkit
+		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				viewLicense ();
 			}
 		} );
 		helpMenu.add ( item );
@@ -698,7 +731,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		// Look for the image.
 		imgLocation = "images/" + imageName;
 		if ( imageName != null ) {
-			imageURL = this.getClass ().getClassLoader ().getResource ( imgLocation );
+			imageURL = getResource ( imgLocation );
 		}
 
 		if ( imageURL != null ) { // image found
@@ -1242,32 +1275,15 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.eventViewPanel.clear ();
 	}
 
-	public URL getResourceFromFilename ( String urlStr, boolean errorIfNotFound ) {
-		try {
-			URL u = null;
-			URL ret = null;
-			if ( urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
-				ret = new URL ( urlStr );
-			} else {
-				u = new URL ( baseURL, urlStr );
-				ret = cl.getResource ( u.toString () );
-			}
-			if ( ret == null )
-				ret = cl.getResource ( urlStr );
-			return ret;
-		} catch ( java.net.MalformedURLException e ) {
-			System.err.println ( "Error finding filename '" + urlStr + ": "
-			    + e.toString () );
-			e.printStackTrace ();
-			return null;
-		}
+	URL getResource ( String name ) {
+		return this.getClass ().getClassLoader ().getResource ( name );
 	}
 
 	void getVersionFromChangeLog () {
 		if ( this.version != null )
 			return;
 
-		URL url = this.getClass ().getClassLoader ().getResource ( "ChangeLog" );
+		URL url = getResource ( "ChangeLog" );
 		if ( url == null ) {
 			System.err.println ( "Error: could not find ChangeLog in your CLASSPATH" );
 			return;
@@ -1291,6 +1307,84 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			this.version = "Unknown Version (" + e1.getMessage () + ")";
 		}
 		return;
+	}
+
+	public void viewChangeLog () {
+		URL url = getResource ( "ChangeLog" );
+		try {
+			InputStream is = url.openStream ();
+			BufferedReader reader = new BufferedReader ( new InputStreamReader ( is ) );
+			String line;
+			StringBuffer sb = new StringBuffer ();
+			while ( ( line = reader.readLine () ) != null ) {
+				sb.append ( line );
+				sb.append ( "\n" );
+			}
+			is.close ();
+			final JDialog d = new JDialog ();
+			d.getContentPane ().setLayout ( new BorderLayout () );
+			d.setTitle ( "Change Log" );
+			d.setSize ( 500, 400 );
+			d.setLocationByPlatform ( true );
+			JPanel buttonPanel = new JPanel ();
+			buttonPanel.setLayout ( new FlowLayout () );
+			JButton b = new JButton ( "Close" );
+			b.addActionListener ( // Anonymous class as a listener.
+			    new ActionListener () {
+				    public void actionPerformed ( ActionEvent e ) {
+					    d.dispose ();
+				    }
+			    } );
+			buttonPanel.add ( b );
+			d.getContentPane ().add ( buttonPanel, BorderLayout.SOUTH );
+			JTextArea te = new JTextArea ( sb.toString () );
+			Font f = new Font ( te.getFont ().getFamily (), Font.PLAIN, 10 );
+			te.setFont ( f );
+			te.setEditable ( false );
+			JScrollPane sp = new JScrollPane ( te );
+			sp.getVerticalScrollBar ().setValue ( 0 );
+			JPanel p = new JPanel ();
+			p.setLayout ( new BorderLayout () );
+			p.setBorder ( BorderFactory.createTitledBorder ( "Change Log" ) );
+			p.add ( sp, BorderLayout.CENTER );
+			d.getContentPane ().add ( p, BorderLayout.CENTER );
+			d.show ();
+		} catch ( Exception e1 ) {
+			e1.printStackTrace ();
+			showMessage ( "Error:\n" + e1.getMessage () );
+		}
+	}
+
+	public void viewLicense () {
+		URL url = getResource ( LICENSE_FILE );
+		if ( url == null ) {
+			System.err.println ( "Unable to find license file: " + LICENSE_FILE );
+			return;
+		}
+		try {
+			final JDialog d = new JDialog ();
+			d.getContentPane ().setLayout ( new BorderLayout () );
+			d.setTitle ( "k5nCal License" );
+			d.setSize ( 500, 400 );
+			d.setLocationByPlatform ( true );
+			JPanel buttonPanel = new JPanel ();
+			buttonPanel.setLayout ( new FlowLayout () );
+			JButton b = new JButton ( "Close" );
+			b.addActionListener ( // Anonymous class as a listener.
+			    new ActionListener () {
+				    public void actionPerformed ( ActionEvent e ) {
+					    d.dispose ();
+				    }
+			    } );
+			buttonPanel.add ( b );
+			d.getContentPane ().add ( buttonPanel, BorderLayout.SOUTH );
+			HelpPanel licenseText = new HelpPanel ( url );
+			d.getContentPane ().add ( licenseText, BorderLayout.CENTER );
+			d.show ();
+		} catch ( Exception e1 ) {
+			e1.printStackTrace ();
+			showMessage ( "Error:\n" + e1.getMessage () );
+		}
 	}
 
 	/**

@@ -33,6 +33,7 @@
 			<fileset dir="${imagedir}" />
 		</copy>
 		<copy todir="${build}" file="ChangeLog" />
+		<copy todir="${build}" file="License.html" />
 	</target>
 
 	<target name="compile" depends="init" description="compile the source ">
@@ -66,7 +67,7 @@
        problems loading the images.  Just use ant to build a separate
        jar file for the images. -->
 	<target name="static-files-jar" depends="copy-static">
-		<jar jarfile="dist/k5nCal-static-files.jar" basedir="${build}" includes="images/*.gif,ChangeLog">
+		<jar jarfile="dist/k5nCal-static-files.jar" basedir="${build}" includes="images/*.gif,images/*.png,ChangeLog,License.html">
 		</jar>
 	</target>
 
@@ -74,7 +75,7 @@
 	<target name="source-zip">
 		<mkdir dir="${dist}/src" />
 		<zip destfile="${dist}/src/k5nCal-src-${version}.zip">
-			<zipfileset dir="." prefix="k5nCal-src-${version}" includes="build.xml,README.txt,ChangeLog" />
+			<zipfileset dir="." prefix="k5nCal-src-${version}" includes="build.xml,README.txt,ChangeLog,License.html" />
 			<zipfileset dir="${src}" prefix="k5nCal-src-${version}/src" />
 			<zipfileset dir="images" prefix="k5nCal-src-${version}/images" />
 			<zipfileset dir="lib" prefix="k5nCal-src-${version}/lib" />

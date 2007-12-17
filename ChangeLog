@@ -1,6 +1,12 @@
 ChangeLog
 $Id$
 
+Version 0.9.6dev (?? Dec 2007) - New features
+- Added app icon to About dialog; added java version info to about dialog.
+- Use "Quit" instead of "Exit" for Mac
+- Added "View ChangeLog" to Help menu
+- Added "View License" to Help menu
+
 Version 0.9.5 (12 Dec 2007) - New features
 -----------------------------------------------------------------------
 - Implemented repeating events for simple type (daily, weekly, monthly, yearly)
