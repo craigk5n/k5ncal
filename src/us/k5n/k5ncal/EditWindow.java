@@ -314,8 +314,9 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		    REPEAT_MONTHLY ) );
 		repeatOptions
 		    .addElement ( new IntegerChoice ( "Every year", REPEAT_YEARLY ) );
-		repeatOptions
-		    .addElement ( new IntegerChoice ( "custom...", REPEAT_CUSTOM ) );
+		// TODO: implement custom recurrence
+		// repeatOptions.addElement ( new IntegerChoice ( "custom...", REPEAT_CUSTOM
+		// ) );
 		repeatType = new JComboBox ( repeatOptions );
 		Rrule rrule = event.getRrule ();
 		String error = null;
