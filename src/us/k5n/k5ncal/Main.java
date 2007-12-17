@@ -97,7 +97,9 @@ import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  * Main class for k5nCal application. This application makes use of the k5n
- * iCalendar library (part of Java Calendar Tools).
+ * iCalendar library (part of Java Calendar Tools) as well as many other 3rd
+ * party libraries and tools. See the README.txt file for details. Please see
+ * the License.html file for licensing details.
  * 
  * @author Craig Knudsen, craig@k5n.us
  * @version $Id$
@@ -346,7 +348,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 		calMenu.add ( item );
-
+		
+		calMenu.addSeparator ();
+		
+		JMenu sharedCalMenu = new JMenu ( "Find Shared Calendars" );
+		SharedCalendars.updateSharedCalendars ( sharedCalMenu );
+		calMenu.add ( sharedCalMenu );
+		
 		bar.add ( calMenu );
 
 		// Add help bar to right end of menubar
