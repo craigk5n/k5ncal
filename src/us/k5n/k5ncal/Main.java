@@ -41,6 +41,7 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -50,6 +51,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -348,13 +350,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 		calMenu.add ( item );
-		
+
 		calMenu.addSeparator ();
-		
+
 		JMenu sharedCalMenu = new JMenu ( "Find Shared Calendars" );
 		SharedCalendars.updateSharedCalendars ( sharedCalMenu );
 		calMenu.add ( sharedCalMenu );
-		
+
 		bar.add ( calMenu );
 
 		// Add help bar to right end of menubar
@@ -629,47 +631,97 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			editRemoteCalendar ( c );
 	}
 
-	public void refreshCalendar ( Calendar cal ) {
+	/**
+	 * Refresh the specified calendar by reloading it from its URL. Because this
+	 * is likely to take a second or more in ideal circumstances (and much longer
+	 * in many cases), we will use the SwingWorker class to execute this in a
+	 * separate thread so we don't lock up the UI.
+	 * 
+	 * @param cal
+	 *          The Calendar to refresh
+	 */
+	public void refreshCalendar ( final Calendar cal ) {
 		boolean found = false;
 
-		try {
-			InputStream is = cal.url.openStream ();
-			File tmpFile = new File ( getDataDirectory (), cal.filename + ".new" );
-			OutputStream os = new FileOutputStream ( tmpFile );
-			DataInputStream dis = new DataInputStream ( new BufferedInputStream ( is ) );
-			byte[] buf = new byte[4 * 1024]; // 4K buffer
-			int bytesRead;
-			int totalRead = 0;
-			while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
-				os.write ( buf, 0, bytesRead );
-				totalRead += bytesRead;
+		// Before we get started, update the status bar to indicate we are loading
+		// the calendar.
+		showStatusMessage ( "Refreshing calendar '" + cal.name + "' ..." );
+
+		SwingWorker refreshWorker = new SwingWorker () {
+			private String error = null;
+			private String statusMsg = null;
+
+			public Object construct () {
+				// Execute time-consuming task
+				try {
+					// For now, we only support HTTP since 99.99% of all users will use it
+					// instead of something like FTP.
+					HttpURLConnection urlC = (HttpURLConnection) cal.url
+					    .openConnection ();
+					InputStream is = urlC.getInputStream ();
+					File tmpFile = new File ( getDataDirectory (), cal.filename + ".new" );
+					OutputStream os = new FileOutputStream ( tmpFile );
+					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
+					    is ) );
+					byte[] buf = new byte[4 * 1024]; // 4K buffer
+					int bytesRead;
+					int totalRead = 0;
+					while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
+						os.write ( buf, 0, bytesRead );
+						totalRead += bytesRead;
+					}
+					os.close ();
+					dis.close ();
+					// not required to disconnect, but nice since we won't be connecting
+					// to the same server before we get a timeout anyway.
+					urlC.disconnect ();
+					// Handle the HTTP status code
+					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
+						// Handle this one individually since it will be the most common.
+						this.error = "Invalid calendar URL (not found).\n\nServer response: "
+						    + urlC.getResponseMessage ();
+					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
+						this.error = "Invalid calendar URL.\n\nServer response: "
+						    + urlC.getResponseMessage ();
+					} else if ( tmpFile.exists () && tmpFile.length () > 0 ) {
+						// Make sure the contents look like iCalendar data
+						File file = new File ( getDataDirectory (), cal.filename );
+						file.delete ();
+						if ( !tmpFile.renameTo ( file ) ) {
+							this.error = "Unable to rename temporary file:\nOld: "
+							    + tmpFile.getAbsolutePath () + "\nNew: "
+							    + file.getAbsolutePath ();
+						} else {
+							this.statusMsg = "Calendar '" + cal.name + "' refreshed";
+						}
+					} else {
+						this.error = "Unknown error refreshing calendar";
+					}
+				} catch ( FileNotFoundException e1 ) {
+					this.error = "Invalid URL (not found)";
+				} catch ( IOException e1 ) {
+					e1.printStackTrace ();
+					this.error = "Error refreshing calendar:\n\n" + e1.getMessage ();
+				}
+				return null;
 			}
-			os.close ();
-			dis.close ();
-			// TODO: handle HTTP redirect
-			// TODO: handle 404 not found
-			if ( tmpFile.exists () && tmpFile.length () > 0 ) {
-				File file = new File ( getDataDirectory (), cal.filename );
-				file.delete ();
-				if ( !tmpFile.renameTo ( file ) ) {
-					this.showError ( "Unable to rename temporary file:\nOld: "
-					    + tmpFile.getAbsolutePath () + "\nNew: "
-					    + file.getAbsolutePath () );
-				} else {
-					this.showStatusMessage ( "Calendar '" + cal.name + "' refreshed" );
+
+			public void finished () {
+				// Update UI
+				if ( error != null )
+					showError ( error );
+				if ( this.statusMsg != null )
+					showStatusMessage ( statusMsg );
+				if ( error == null ) {
+					// If no error, then save calendar update
 					cal.lastUpdated = java.util.Calendar.getInstance ()
 					    .getTimeInMillis ();
-					this.saveCalendars ( this.dataDir );
+					saveCalendars ( dataDir );
+					dataRepository.updateCalendar ( getDataDirectory (), cal );
 				}
-			} else {
-				this.showError ( "Unknown error refreshing calendar" );
 			}
-			File file = new File ( getDataDirectory (), cal.filename );
-			dataRepository.updateCalendar ( getDataDirectory (), cal );
-		} catch ( IOException e1 ) {
-			e1.printStackTrace ();
-			this.showError ( "Error refreshing calendar:\n\n" + e1.getMessage () );
-		}
+		};
+		refreshWorker.start ();
 	}
 
 	public void deleteCalendar ( Calendar c ) {
@@ -1010,6 +1062,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					// convert "webcal://" to "http://";
 					if ( urlStr.startsWith ( "webcal:" ) )
 						urlStr = urlStr.replaceFirst ( "webcal:", "http:" );
+					// Only allow HTTP
+					if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
+						showError ( "Invalid URL.\n\nOnly the HTTP protocol\nis supported." );
+						return;
+					}
 					URL url = null;
 					try {
 						url = new URL ( urlStr );
@@ -1032,7 +1089,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					cal.border = cal.fg = getForegroundColorForBackground ( color );
 					cal.lastUpdated = java.util.Calendar.getInstance ()
 					    .getTimeInMillis ();
-					InputStream is = url.openStream ();
+					HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
+					InputStream is = urlC.getInputStream ();
 					File file = new File ( getDataDirectory (), cal.filename );
 					OutputStream os = new FileOutputStream ( file );
 					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
@@ -1046,6 +1104,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					}
 					os.close ();
 					dis.close ();
+					urlC.disconnect ();
+					// Handle the HTTP status code
+					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
+						// Handle this one individually since it will be the most common.
+						showError ( "Invalid calendar URL (not found).\n\nServer response: "
+						    + urlC.getResponseMessage () );
+						return;
+					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
+						showError ( "Invalid calendar URL.\n\nServer response: "
+						    + urlC.getResponseMessage () );
+						return;
+					}
 					// Delete old calendar
 					if ( c == null ) {
 						showStatusMessage ( "New remote calendar \"" + name + "\" added ("
@@ -1058,9 +1128,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						showStatusMessage ( "Updated local calendar \"" + name
 						    + "\" updated" );
 					}
-				} catch ( Exception e1 ) {
-					showError ( "Error downloading calendar:\n" + e1.getMessage () );
-					e1.printStackTrace ();
+				} catch ( FileNotFoundException e1 ) {
+					showError ( "Invalid URL (not found)" );
+					return;
+				} catch ( Exception e2 ) {
+					showError ( "Error downloading calendar:\n" + e2.getMessage () );
+					e2.printStackTrace ();
 					return;
 				}
 				addRemote.dispose ();
