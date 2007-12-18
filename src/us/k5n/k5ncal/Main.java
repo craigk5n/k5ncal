@@ -339,7 +339,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 		calMenu.add ( item );
-		item = new JMenuItem ( "Subscribe..." );
+		item = new JMenuItem ( "Subscribe to Remote..." );
 		item.setAccelerator ( KeyStroke.getKeyStroke ( 'S', Toolkit
 		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
@@ -966,7 +966,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		int defChoice = 5;
 		final JComboBox updateField = new JComboBox ( choices );
 		final ColorButton colorField = new ColorButton ();
-		int[] props = { 2, 3 };
+		int[] props = { 1, 3 };
 
 		if ( c != null ) {
 			for ( int i = 0; i < choiceValues.length; i++ ) {
@@ -1112,9 +1112,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	protected void editLocalCalendar ( final Calendar c ) {
 		final JDialog addLocal = new JDialog ( this );
-		final JTextField nameField = new JTextField ( 50 );
+		final JTextField nameField = new JTextField ( 30 );
 		final ColorButton colorField = new ColorButton ();
-		int[] props = { 2, 3 };
+		int[] props = { 1, 2 };
 
 		if ( c != null ) {
 			nameField.setText ( c.name );
