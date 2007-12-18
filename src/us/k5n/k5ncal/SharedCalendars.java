@@ -1,13 +1,11 @@
 package us.k5n.k5ncal;
 
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
 
 import edu.stanford.ejalbert.BrowserLauncher;
 
@@ -56,16 +54,8 @@ public class SharedCalendars {
 
 	// This method to be replaced by a call to obtain this info dynamically.
 	private static void initStaticData () {
-		// Add Apple calendars
-		CalendarSite site = new CalendarSite ( "Apple" );
-		site.addCalendar ( new SharedCalendar ( "Most Popular",
-		    "http://www.apple.com/downloads/macosx/calendars/index_top.html" ) );
-		site.addCalendar ( new SharedCalendar ( "Most Recent",
-		    "http://www.apple.com/downloads/macosx/calendars/index.html" ) );
-		sites.add ( site );
-
 		// Add iCalShare
-		site = new CalendarSite ( "iCalShare" );
+		CalendarSite site = new CalendarSite ( "iCalShare" );
 		site.addCalendar ( new SharedCalendar ( "Most Popular",
 		    "http://icalshare.com/top.php" ) );
 		site.addCalendar ( new SharedCalendar ( "Most Recent",
