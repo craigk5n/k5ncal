@@ -12,6 +12,8 @@ Version 0.9.6dev (?? Dec 2007) - New features
 - Added "Report But" to Help Menu
 - Added BrowserLauncher2 3rd party jar (LGPL) to open up browser window 
 - Added links to popular sites to find shared calendars (Apple, iCalShare)
+- When adding a new event, the default calendar will be the first local
+  calendar (rather than none)
 
 Version 0.9.5 (12 Dec 2007) - New features
 -----------------------------------------------------------------------

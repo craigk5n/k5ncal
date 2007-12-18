@@ -432,7 +432,10 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		}
 		// TODO: show error if no local calendars found
 		calendar = new JComboBox ( localCalendars );
-		calendar.setSelectedItem ( selectedCalendar );
+		if ( selectedCalendar == null )
+			calendar.setSelectedIndex ( 0 );
+		else
+			calendar.setSelectedItem ( selectedCalendar );
 		calPanel.add ( calendar );
 		upperPanel.add ( calPanel );
 
