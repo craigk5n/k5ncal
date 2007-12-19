@@ -131,7 +131,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	String searchText = null;
 	private static File lastExportDirectory = null;
 	AppPreferences prefs;
-	private boolean developerMode;
 	File dataDir = null;
 	static final String MENU_CALENDAR_EDIT = "Edit";
 	static final String MENU_CALENDAR_REFRESH = "Refresh";
@@ -143,9 +142,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
 
-	public Main(boolean enableDeveloperOptions) {
+	public Main() {
 		super ( "k5nCal" );
-		this.developerMode = enableDeveloperOptions;
 		setWindowsLAF ();
 		this.parent = this;
 
@@ -1615,7 +1613,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * @param args
 	 */
 	public static void main ( String[] args ) {
-		boolean devMode = false;
 		Vector<String> remoteNames = new Vector<String> ();
 		Vector<String> remoteURLs = new Vector<String> ();
 
@@ -1641,7 +1638,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 
 		}
-		Main app = new Main ( devMode );
+		Main app = new Main ();
 		// Add calendars if not there...
 		for ( int i = 0; i < remoteURLs.size (); i++ ) {
 			String name = remoteNames.elementAt ( i );
