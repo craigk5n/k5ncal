@@ -62,6 +62,10 @@ public class Calendar implements Serializable {
 		// Generate a unique
 		this.filename = generateFileName ( dir );
 		this.updateIntervalMS = updateIntervalHours * 1000 * 3600;
+		// kludge: should have made this a long since 30 days exceeds
+		// the max int for ms.
+		if ( this.updateIntervalMS < 0 )
+			this.updateIntervalMS = 1000 * 3600 * 14; // 14 days default
 	}
 
 	public String toString () {

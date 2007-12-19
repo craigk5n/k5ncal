@@ -18,7 +18,6 @@
  */
 package us.k5n.k5ncal;
 
-
 /**
  * A helper thread class to periodically check to see if we should update a
  * remote calendar. When we find a calendar needs updating, we call the
@@ -71,11 +70,15 @@ public class RemoteCalendarUpdater extends Thread {
 		java.util.Calendar time = java.util.Calendar.getInstance ();
 		time.setTimeInMillis ( c.lastUpdated );
 
-		// System.out.println ( "Calendar: " + c.name );
+		// Kludge: oops... 30 days in ms is larger than MAXINT (so it appears as
+		// a negative).
+		if ( c.updateIntervalMS <= 0 )
+			c.updateIntervalMS = 1000 * 3600 * 14; // change to 14 days
+		//System.out.println ( "Calendar: " + c.name );
 		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
 		long updateTimeMS = c.lastUpdated + c.updateIntervalMS;
-		// System.out.println ( " update interval: "
-		// + ( c.updateIntervalMS / ( 3600 * 1000 ) ) + " hours" );
+		//System.out.println ( " update interval: "
+		//    + ( c.updateIntervalMS / ( 3600 * 1000 ) ) + " hours" );
 
 		time.setTimeInMillis ( c.lastUpdated );
 		// System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time

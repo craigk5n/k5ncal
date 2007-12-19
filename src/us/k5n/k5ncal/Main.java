@@ -126,7 +126,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	CalendarPanel calendarPanel;
 	JSplitPane horizontalSplit = null, leftVerticalSplit = null;
 	AccordionPane ap;
-	CheckBoxList calendarCheckboxes;
+	JListWithCheckBoxes calendarJList;
 	JList categoryJList;
 	String searchText = null;
 	private static File lastExportDirectory = null;
@@ -547,32 +547,32 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new BorderLayout () );
 
-		this.calendarCheckboxes = new CheckBoxList ( new Vector () );
-		updateCalendarCheckboxes ();
-		this.calendarCheckboxes
-		    .addCheckBoxListListener ( new CheckBoxListListener () {
-			    public void itemSelected ( Object item ) {
+		this.calendarJList = new JListWithCheckBoxes ( new Vector<Object> () );
+		updateCalendarJList ();
+		this.calendarJList
+		    .addListItemChangeListener ( new ListItemChangeListener () {
+			    public void itemSelected ( int ind ) {
+				    dataRepository.getCalendars ().elementAt ( ind ).selected = true;
 				    handleCalendarFilterSelection ();
 			    }
 
-			    public void itemUnselected ( Object item ) {
+			    public void itemUnselected ( int ind ) {
+				    dataRepository.getCalendars ().elementAt ( ind ).selected = true;
 				    handleCalendarFilterSelection ();
 			    }
 
-			    public Vector<String> getMenuChoicesForObject ( Object o ) {
+			    public Vector<String> getMenuChoicesForIndex ( int ind ) {
 				    Vector<String> ret = new Vector<String> ();
-				    if ( o instanceof Calendar ) {
-					    Calendar c = (Calendar) o;
-					    ret.addElement ( MENU_CALENDAR_EDIT );
-					    if ( c.url != null )
-						    ret.addElement ( MENU_CALENDAR_REFRESH );
-					    ret.addElement ( MENU_CALENDAR_DELETE );
-				    }
+				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
+				    ret.addElement ( MENU_CALENDAR_EDIT );
+				    if ( c.url != null )
+					    ret.addElement ( MENU_CALENDAR_REFRESH );
+				    ret.addElement ( MENU_CALENDAR_DELETE );
 				    return ret;
 			    }
 
-			    public void menuChoice ( Object item, String actionCommand ) {
-				    Calendar c = (Calendar) item;
+			    public void menuChoice ( int ind, String actionCommand ) {
+				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
 				    if ( MENU_CALENDAR_EDIT.equals ( actionCommand ) ) {
 					    editCalendar ( c );
 				    } else if ( MENU_CALENDAR_REFRESH.equals ( actionCommand ) ) {
@@ -598,11 +598,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 			Calendar c = dataRepository.getCalendars ().elementAt ( i );
-			JCheckBox cb = this.calendarCheckboxes.getCheckBoxAt ( i );
-			cb.setSelected ( c.selected );
+			ListItem item = this.calendarJList.getListItemAt ( i );
+			item.setState ( c.selected ? ListItem.STATE_YES : ListItem.STATE_OFF );
 		}
 
-		topPanel.add ( this.calendarCheckboxes, BorderLayout.CENTER );
+		topPanel
+		    .add ( new MyScrollPane ( this.calendarJList ), BorderLayout.CENTER );
 
 		return topPanel;
 	}
@@ -610,17 +611,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	// Handle user selecting a calendar checkbox to display/hide a calendar
 	void handleCalendarFilterSelection () {
 		// Repaint the calendar view, which will reload the data
-		Vector sel = this.calendarCheckboxes.getSelectedItems ();
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
-			Calendar c = (Calendar) dataRepository.getCalendars ().elementAt ( i );
-			boolean selected = false;
-			for ( int j = 0; j < sel.size () && !selected; j++ ) {
-				Calendar selCal = (Calendar) sel.elementAt ( j );
-				if ( c.equals ( selCal ) ) {
-					selected = true;
-				}
-			}
-			c.selected = selected;
+			dataRepository.getCalendars ().elementAt ( i ).selected = ( this.calendarJList
+			    .getListItemAt ( i ).getState () == ListItem.STATE_YES );
 		}
 		this.calendarPanel.clearSelection ();
 		this.dataRepository.rebuild ();
@@ -735,7 +728,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		}
 		if ( found ) {
-			updateCalendarCheckboxes ();
+			updateCalendarJList ();
 			updateCategoryJList ();
 			this.dataRepository.rebuild ();
 			this.calendarPanel.repaint ();
@@ -748,20 +741,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	/**
 	 * Update the list of Calendars shown to the user
 	 */
-	public void updateCalendarCheckboxes () {
-		this.calendarCheckboxes.setChoices ( dataRepository.getCalendars () );
+	public void updateCalendarJList () {
+		this.calendarJList.setChoices ( dataRepository.getCalendars () );
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 			Calendar cal = (Calendar) dataRepository.getCalendars ().elementAt ( i );
-			JCheckBox cb = this.calendarCheckboxes.getCheckBoxAt ( i );
-			cb.setBackground ( cal.bg );
-			cb.setForeground ( cal.fg );
-			if ( cal.url != null )
-				cb.setToolTipText ( cal.url.toString () );
-			else
-				cb.setToolTipText ( "Local calendar" );
-			cb.setSelected ( cal.selected );
+			ListItem item = this.calendarJList.getListItemAt ( i );
+			item.setBackground ( cal.bg );
+			item.setForeground ( cal.fg );
+			item.setState ( cal.selected ? ListItem.STATE_YES : ListItem.STATE_OFF );
 		}
-		this.calendarCheckboxes.validate ();
+		this.calendarJList.validate ();
 	}
 
 	protected JPanel createCategorySelectionPanel ( Vector categories ) {
@@ -1451,7 +1440,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void calendarAdded ( Calendar c ) {
-		updateCalendarCheckboxes ();
+		updateCalendarJList ();
 		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
@@ -1459,7 +1448,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void calendarUpdated ( Calendar c ) {
-		updateCalendarCheckboxes ();
+		updateCalendarJList ();
 		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
@@ -1467,7 +1456,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void calendarDeleted ( Calendar c ) {
-		updateCalendarCheckboxes ();
+		updateCalendarJList ();
 		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
 		this.dataRepository.rebuild ();
