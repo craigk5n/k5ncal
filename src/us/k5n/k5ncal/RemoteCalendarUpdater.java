@@ -8,7 +8,8 @@ import us.k5n.ical.Utils;
  * CalendarRefresher class specified in the constructor.
  * 
  * @author Craig Knudsen, craig@k5n.us
- * @version $Id$
+ * @version $Id: RemoteCalendarUpdater.java,v 1.1 2007/12/19 01:58:13 cknudsen
+ *          Exp $
  */
 public class RemoteCalendarUpdater extends Thread {
 	Repository repo;
@@ -60,18 +61,18 @@ public class RemoteCalendarUpdater extends Thread {
 		// + ( c.updateIntervalMS / ( 3600 * 1000 ) ) + " hours" );
 
 		time.setTimeInMillis ( c.lastUpdated );
-		// System.out
-		// .println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time ) );
+		// System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time
+		// ) );
 		time.setTimeInMillis ( updateTimeMS );
-		// System.out
-		// .println ( " next update: " + Utils.CalendarToYYYYMMDD ( time ) );
+		// System.out.println ( " next update: " + Utils.CalendarToYYYYMMDD ( time )
+		// );
 
 		if ( currentTimeMS >= updateTimeMS ) {
 			// We need to update this calendar!
 			// Calling refreshCalendar will start another thread, so it should
 			// return immediately, so we may be refreshing multiple calendars
 			// at the same time.
-			System.out.println ( "Updating calendar '" + c.name + "'" );
+			// System.out.println ( "Updating calendar '" + c.name + "'" );
 			refresher.refreshCalendar ( c );
 		} else {
 			/*

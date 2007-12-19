@@ -1655,7 +1655,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				app.addCalendarFromCommandLine ( name, url );
 			}
 		}
-		System.out.println ( "Done with main..." );
 	}
 
 	private void addCalendarFromCommandLine ( String name, String urlStr ) {
@@ -1668,12 +1667,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 		final URL url2 = url;
 		showStatusMessage ( "Downloading calendar '" + name + "'" );
-		final Calendar cal = new Calendar ( getDataDirectory (), name, url,
-		    3600 * 1000 * 30 );
+		final Calendar cal = new Calendar ( getDataDirectory (), name, url, 30 );
 		cal.bg = Color.blue;
 		cal.border = cal.fg = getForegroundColorForBackground ( Color.blue );
 		cal.lastUpdated = java.util.Calendar.getInstance ().getTimeInMillis ();
-		cal.updateIntervalMS = 30 * 3600 * 1000;
 
 		SwingWorker addWorker = new SwingWorker () {
 			private String error = null;
