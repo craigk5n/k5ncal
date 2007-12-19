@@ -462,7 +462,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		if ( event != null && event.getDescription () != null )
 			description.setText ( event.getDescription ().getValue () );
 		description.setCaretPosition ( 0 );
-		JScrollPane scrollPane = new JScrollPane ( description );
+		JScrollPane scrollPane = new MyScrollPane ( description );
 		descrPanel.add ( scrollPane, BorderLayout.CENTER );
 		allButButtons.add ( descrPanel, BorderLayout.CENTER );
 

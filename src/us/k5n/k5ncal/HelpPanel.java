@@ -53,7 +53,7 @@ public class HelpPanel extends JPanel implements HyperlinkListener,
 			htmlPane = new JEditorPane ( initialURL );
 			htmlPane.setEditable ( false );
 			htmlPane.addHyperlinkListener ( this );
-			JScrollPane scrollPane = new JScrollPane ( htmlPane );
+			JScrollPane scrollPane = new MyScrollPane ( htmlPane );
 			add ( scrollPane, BorderLayout.CENTER );
 		} catch ( IOException ioe ) {
 			warnUser ( "Can't build HTML pane for " + initialURL + ": " + ioe );

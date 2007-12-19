@@ -68,7 +68,7 @@ public class CheckBoxList extends JPanel implements ActionListener,
 		innerPanel = new JPanel ();
 		this.setChoices ( choices );
 		panel.add ( innerPanel, BorderLayout.NORTH );
-		JScrollPane scrollPane = new JScrollPane ( panel );
+		JScrollPane scrollPane = new MyScrollPane ( panel );
 		this.add ( scrollPane, BorderLayout.CENTER );
 	}
 
@@ -159,11 +159,14 @@ public class CheckBoxList extends JPanel implements ActionListener,
 	 * mousePressed on Mac OS X (just to keep us programmers on our toes).
 	 */
 	public void mouseReleased ( MouseEvent e ) {
-		if ( menu != null && ( e.isPopupTrigger () || this.isPopupTrigger )
+		if ( e.isPopupTrigger () )
+			this.isPopupTrigger = true;
+		if ( menu != null && this.isPopupTrigger
 		    && e.getSource () instanceof JCheckBox ) {
 			menu.show ( (Component) e.getSource (), e.getX (), e.getY () );
 			itemForMenu = (JCheckBox) e.getSource ();
 		}
+		this.isPopupTrigger = false;
 	}
 
 	public void mouseEntered ( MouseEvent e ) {
@@ -194,9 +197,14 @@ public class CheckBoxList extends JPanel implements ActionListener,
 		this.listeners.addElement ( l );
 	}
 
+	/**
+	 * Select/unselect an item, but only if they clicked on the icon rather than
+	 * the text.
+	 */
 	public void actionPerformed ( ActionEvent event ) {
 		Object o = event.getSource ();
-		if ( o instanceof JCheckBox ) {
+		System.out.println ( "isPopupTrigger = " + this.isPopupTrigger );
+		if ( o instanceof JCheckBox && this.isPopupTrigger == false ) {
 			JCheckBox checkbox = (JCheckBox) o;
 			String cmd = event.getActionCommand ();
 			if ( cmd.charAt ( 0 ) == '#' ) {

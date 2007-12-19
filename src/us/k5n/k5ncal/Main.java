@@ -184,6 +184,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		    .getCalendars () ) );
 		ap.addPanel ( "Categories", createCategorySelectionPanel ( dataRepository
 		    .getCategories () ) );
+		ap.setTooltipTextAt ( 0, "Manage Calendars" );
+		ap.setTooltipTextAt ( 1, "Filter displayed events by category" );
 
 		eventViewPanel = new EventViewPanel ();
 		eventViewPanel.setBorder ( BorderFactory
@@ -796,7 +798,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 
-		JScrollPane sp = new JScrollPane ( this.categoryJList );
+		JScrollPane sp = new MyScrollPane ( this.categoryJList );
 		panel.add ( sp, BorderLayout.CENTER );
 		return panel;
 	}
@@ -1563,7 +1565,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			Font f = new Font ( te.getFont ().getFamily (), Font.PLAIN, 10 );
 			te.setFont ( f );
 			te.setEditable ( false );
-			JScrollPane sp = new JScrollPane ( te );
+			JScrollPane sp = new MyScrollPane ( te );
 			sp.getVerticalScrollBar ().setValue ( 0 );
 			JPanel p = new JPanel ();
 			p.setLayout ( new BorderLayout () );
