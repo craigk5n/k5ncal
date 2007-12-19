@@ -12,7 +12,7 @@ Version 0.9.6dev (?? Dec 2007) - New features
 - Added filter by category using new AccordionPane
 - Modified calendar checkboxes: replaced the series of JCheckBox objects
   with a customized JList object that adds a checkbox.
-- Added k5nAccordionPane-1.0.0.jar
+- Added k5nAccordionPane-1.0.1.jar
 - Added app icon to About dialog; added java version info to about dialog.
 - Use "Quit" instead of "Exit" for Mac
 - Added "View ChangeLog" to Help menu
