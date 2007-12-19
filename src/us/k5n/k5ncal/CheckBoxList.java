@@ -74,7 +74,6 @@ public class CheckBoxList extends JPanel implements ActionListener,
 		String cmd = itemForMenu.getActionCommand ();
 		if ( cmd.charAt ( 0 ) == '#' ) {
 			int ind = Integer.parseInt ( cmd.substring ( 1 ) );
-			Object selectedObject = this.choices.elementAt ( ind );
 			for ( int i = 0; i < this.listeners.size (); i++ ) {
 				CheckBoxListListener l = (CheckBoxListListener) this.listeners
 				    .elementAt ( i );
