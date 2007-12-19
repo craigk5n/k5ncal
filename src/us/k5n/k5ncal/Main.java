@@ -109,7 +109,7 @@ import edu.stanford.ejalbert.BrowserLauncher;
  */
 public class Main extends JFrame implements Constants, ComponentListener,
     PropertyChangeListener, RepositoryChangeListener,
-    CalendarPanelSelectionListener {
+    CalendarPanelSelectionListener, CalendarRefresher {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
 	public String version = null;;
 	public static final String CALENDARS_FILE = "calendars.dat";
@@ -118,7 +118,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String REPORT_BUG_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952950";
 	static final String LICENSE_FILE = "License.html";
 	static ClassLoader cl = null;
-	private URL baseURL = null;
 	JFrame parent;
 	EventViewPanel eventViewPanel;
 	JButton newButton, editButton, deleteButton;
@@ -132,8 +131,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	JList categoryJList;
 	String searchText = null;
 	private static File lastExportDirectory = null;
-	private static File lastImportDirectory = null;
 	AppPreferences prefs;
+	private boolean developerMode;
 	File dataDir = null;
 	static final String MENU_CALENDAR_EDIT = "Edit";
 	static final String MENU_CALENDAR_REFRESH = "Refresh";
@@ -145,8 +144,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
 
-	public Main() {
+	public Main(boolean enableDeveloperOptions) {
 		super ( "k5nCal" );
+		this.developerMode = enableDeveloperOptions;
 		setWindowsLAF ();
 		this.parent = this;
 
@@ -218,6 +218,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.addComponentListener ( this );
 		updateToolbar ();
 		this.setVisible ( true );
+
+		// Start a thread to update the remote calendars as needed.
+		RemoteCalendarUpdater updater = new RemoteCalendarUpdater (
+		    this.dataRepository, this );
+		updater.start ();
 	}
 
 	public Vector<Calendar> loadCalendars ( File dir ) {
@@ -540,7 +545,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * @return
 	 */
 	protected JPanel createCalendarSelectionPanel ( Vector calendars ) {
-		String[] menuLabels = { "Edit...", "Refresh", "Delete" };
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new BorderLayout () );
 
@@ -641,8 +645,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 *          The Calendar to refresh
 	 */
 	public void refreshCalendar ( final Calendar cal ) {
-		boolean found = false;
-
 		// Before we get started, update the status bar to indicate we are loading
 		// the calendar.
 		showStatusMessage ( "Refreshing calendar '" + cal.name + "' ..." );
@@ -1089,6 +1091,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					cal.border = cal.fg = getForegroundColorForBackground ( color );
 					cal.lastUpdated = java.util.Calendar.getInstance ()
 					    .getTimeInMillis ();
+					cal.updateIntervalMS = updateInterval * 3600 * 1000;
 					HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
 					InputStream is = urlC.getInputStream ();
 					File file = new File ( getDataDirectory (), cal.filename );
@@ -1613,9 +1616,127 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * @param args
 	 */
 	public static void main ( String[] args ) {
-		new Main ();
+		boolean devMode = false;
+		Vector<String> remoteNames = new Vector<String> ();
+		Vector<String> remoteURLs = new Vector<String> ();
+
+		// Check for command line options
+		for ( int i = 0; i < args.length; i++ ) {
+			if ( args[i].equals ( "-addcalendar" ) ) {
+				if ( args.length >= i + 1 ) {
+					String name = args[++i].trim ();
+					String url = args[++i].trim ();
+					if ( url.startsWith ( "http://" ) ) {
+						remoteNames.addElement ( name );
+						remoteURLs.addElement ( url );
+					} else {
+						System.err.println ( "Ignoring invalid url: " + url );
+					}
+				} else {
+					System.err
+					    .println ( "Error: -addcalendar requires name and URL parameter" );
+					System.exit ( 1 );
+				}
+			} else {
+				System.err.println ( "Unknown command line option: " + args[i] );
+			}
+
+		}
+		Main app = new Main ( devMode );
+		// Add calendars if not there...
+		for ( int i = 0; i < remoteURLs.size (); i++ ) {
+			String name = remoteNames.elementAt ( i );
+			String url = remoteURLs.elementAt ( i );
+			if ( app.dataRepository.hasCalendarWithURL ( url ) ) {
+				System.out
+				    .println ( "Ignoring add calendar from duplicate URL: " + url );
+			} else {
+				// auto-add the calendar....
+				app.addCalendarFromCommandLine ( name, url );
+			}
+		}
+		System.out.println ( "Done with main..." );
 	}
 
+	private void addCalendarFromCommandLine ( String name, String urlStr ) {
+		URL url = null;
+		try {
+			url = new URL ( urlStr );
+		} catch ( Exception e1 ) {
+			showError ( "Invalid URL:\n" + e1.getMessage () );
+			return;
+		}
+		final URL url2 = url;
+		showStatusMessage ( "Downloading calendar '" + name + "'" );
+		final Calendar cal = new Calendar ( getDataDirectory (), name, url,
+		    3600 * 1000 * 30 );
+		cal.bg = Color.blue;
+		cal.border = cal.fg = getForegroundColorForBackground ( Color.blue );
+		cal.lastUpdated = java.util.Calendar.getInstance ().getTimeInMillis ();
+		cal.updateIntervalMS = 30 * 3600 * 1000;
+
+		SwingWorker addWorker = new SwingWorker () {
+			private String error = null;
+			private String statusMsg = null;
+
+			public Object construct () {
+				try {
+					HttpURLConnection urlC = (HttpURLConnection) url2.openConnection ();
+					InputStream is = urlC.getInputStream ();
+					File file = new File ( getDataDirectory (), cal.filename );
+					OutputStream os = new FileOutputStream ( file );
+					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
+					    is ) );
+					byte[] buf = new byte[4 * 1024]; // 4K buffer
+					int bytesRead;
+					int totalRead = 0;
+					while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
+						os.write ( buf, 0, bytesRead );
+						totalRead += bytesRead;
+					}
+					os.close ();
+					dis.close ();
+					urlC.disconnect ();
+					// Handle the HTTP status code
+					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
+						// Handle this one individually since it will be the most common.
+						error = "Invalid calendar URL (not found).\n\nServer response: "
+						    + urlC.getResponseMessage ();
+					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
+						error = "Invalid calendar URL.\n\nServer response: "
+						    + urlC.getResponseMessage ();
+					}
+				} catch ( FileNotFoundException e1 ) {
+					error = "Invalid URL (not found)";
+				} catch ( Exception e2 ) {
+					error = "Error from server: " + e2.getMessage ();
+					e2.printStackTrace ();
+				}
+				return null;
+			}
+
+			public void finished () {
+				if ( error == null )
+					dataRepository.addCalendar ( getDataDirectory (), cal, false );
+				// Update UI
+				if ( error != null )
+					showError ( error );
+				if ( this.statusMsg != null )
+					showStatusMessage ( statusMsg );
+				if ( error == null ) {
+					// If no error, then save calendar update
+					cal.lastUpdated = java.util.Calendar.getInstance ()
+					    .getTimeInMillis ();
+					saveCalendars ( dataDir );
+					dataRepository.updateCalendar ( getDataDirectory (), cal );
+				}
+			}
+		};
+		addWorker.start ();
+		// updating calendar...
+		dataRepository.updateCalendar ( getDataDirectory (), cal );
+		showStatusMessage ( "Calendar \"" + name + "\" added" );
+	}
 }
 
 /**

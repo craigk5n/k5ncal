@@ -500,6 +500,26 @@ public class Repository implements CalendarDataRepository {
 	}
 
 	/**
+	 * Is there a calendar with the specified URL already in the repository?
+	 * 
+	 * @param url
+	 *          The URL to check for
+	 * @return
+	 */
+	public boolean hasCalendarWithURL ( String url ) {
+		for ( int i = 0; i < this.calendars.size (); i++ ) {
+			Calendar c = this.calendars.elementAt ( i );
+			if ( c.url == null )
+				continue;
+			String urlS = c.url.toString ();
+			if ( url.equals ( urlS ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Ask to be notified when changes are made to the Repository.
 	 * 
 	 * @param l

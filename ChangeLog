@@ -4,6 +4,9 @@ $Id$
 Version 0.9.6dev (?? Dec 2007) - New features
 - Added SwingWorker class so that calendar refresh of subscribed calendars
   now happens in the background.
+- Remote calendars will be automatically updated based on their specified
+  update interval.
+- Fixed bug: update interval of remote calendars was not being saved properly
 - Check HTTP status code when downloading a remote calendar.  Anything other
   that 200 OK will display an error to the user.
 - Added filter by category using new AccordionPane
