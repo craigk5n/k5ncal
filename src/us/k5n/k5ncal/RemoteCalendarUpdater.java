@@ -18,6 +18,8 @@
  */
 package us.k5n.k5ncal;
 
+import us.k5n.ical.Utils;
+
 /**
  * A helper thread class to periodically check to see if we should update a
  * remote calendar. When we find a calendar needs updating, we call the
@@ -70,10 +72,27 @@ public class RemoteCalendarUpdater extends Thread {
 		}
 	}
 
+	private void printDebugInfo ( Calendar c ) {
+		java.util.Calendar time = java.util.Calendar.getInstance ();
+		time.setTimeInMillis ( c.lastUpdated );
+		System.out.println ( "Calendar: " + c.name );
+		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
+		long updateTimeMS = c.lastUpdated
+		    + ( (long) c.updateIntervalSecs * (long) 1000 );
+		System.out.println ( " update interval: "
+		    + ( c.updateIntervalSecs / ( 3600 ) ) + " hours" );
+
+		time.setTimeInMillis ( c.lastUpdated );
+		System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time ) );
+		time.setTimeInMillis ( updateTimeMS );
+		System.out.println ( " next update: " + Utils.CalendarToYYYYMMDD ( time ) );
+	}
+
 	public void updateCalendarIfNeeded ( Calendar c ) {
 		if ( c.updateIntervalSecs == 0 ) // update never?
 			return;
 
+		// printDebugInfo ( c );
 		java.util.Calendar time = java.util.Calendar.getInstance ();
 		time.setTimeInMillis ( c.lastUpdated );
 
@@ -90,18 +109,9 @@ public class RemoteCalendarUpdater extends Thread {
 			// about 4 seconds.
 			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
 		}
-		// System.out.println ( "Calendar: " + c.name );
 		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
-		long updateTimeMS = c.lastUpdated + ( c.updateIntervalSecs * 1000 );
-		// System.out.println ( " update interval: "
-		// + ( c.updateIntervalSecs / ( 3600 ) ) + " hours" );
-
-		// time.setTimeInMillis ( c.lastUpdated );
-		// System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time
-		// ) );
-		// time.setTimeInMillis ( updateTimeMS );
-		// System.out.println ( " next update: " + Utils.CalendarToYYYYMMDD ( time )
-		// );
+		long updateTimeMS = c.lastUpdated
+		    + ( (long) c.updateIntervalSecs * (long) 1000 );
 
 		if ( currentTimeMS >= updateTimeMS ) {
 			// We need to update this calendar!
