@@ -58,6 +58,7 @@ import us.k5n.ical.Location;
 import us.k5n.ical.Rrule;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
+import us.k5n.ical.URL;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -82,6 +83,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 	JTextField timeMinute;
 	ToggleLabel ampm;
 	JTextField categories;
+	JTextField url;
 	JTextField location;
 	JComboBox status;
 	JComboBox calendar;
@@ -177,6 +179,8 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 			this.event.setCategories ( new Categories () );
 		if ( this.event.getLocation () == null )
 			this.event.setLocation ( new Location () );
+		if ( this.event.getUrl () == null )
+			this.event.setUrl ( new URL () );
 
 		createWindow ();
 		setVisible ( true );
@@ -211,7 +215,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 
 		JPanel upperPanel = new JPanel ();
 		upperPanel.setBorder ( BorderFactory.createEtchedBorder () );
-		GridLayout grid = new GridLayout ( 8, 1 );
+		GridLayout grid = new GridLayout ( 9, 1 );
 		grid.setHgap ( 15 );
 		grid.setVgap ( 5 );
 		upperPanel.setLayout ( grid );
@@ -385,6 +389,18 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		location.setText ( this.event.getLocation ().getValue () );
 		locPanel.add ( location );
 		upperPanel.add ( locPanel );
+
+		JPanel urlPanel = new JPanel ();
+		urlPanel.setLayout ( new ProportionalLayout ( proportions,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		prompt = new JLabel ( "URL: " );
+		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
+		urlPanel.add ( prompt );
+		url = new JTextField ();
+		url.setText ( this.event.getUrl () == null ? "" : this.event.getUrl ()
+		    .getValue () );
+		urlPanel.add ( url );
+		upperPanel.add ( urlPanel );
 
 		JPanel statusPanel = new JPanel ();
 		statusPanel.setLayout ( new ProportionalLayout ( proportions,
@@ -564,6 +580,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 			this.event.getSummary ().setValue ( subject.getText ().trim () );
 			this.event.getCategories ().setValue ( categories.getText ().trim () );
 			this.event.getLocation ().setValue ( location.getText ().trim () );
+			this.event.getUrl ().setValue ( url.getText ().trim () );
 			IntegerChoice ic = (IntegerChoice) status.getSelectedItem ();
 			this.event.setStatus ( ic.value );
 			// Did the event move from one calendar to another?

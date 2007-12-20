@@ -54,6 +54,7 @@ public class Repository implements CalendarDataRepository {
 	private Vector<RepositoryChangeListener> changeListeners;
 	private Vector<String> categories; // Vector of String categories
 	private boolean needsRebuilding = true;
+	private static boolean looseCategoryHandling = true;
 
 	public Repository(File dir, Vector<Calendar> calendars, boolean strictParsing) {
 		this.directory = dir;
@@ -529,13 +530,19 @@ public class Repository implements CalendarDataRepository {
 		this.changeListeners.addElement ( l );
 	}
 
-	public Vector getCategories () {
+	public Vector<String> getCategories () {
 		if ( needsRebuilding )
 			this.rebuildPrivateData ();
 		return this.categories;
 	}
 
 	private static String[] splitCategories ( String categories ) {
-		return categories.trim ().split ( "," );
+		if ( looseCategoryHandling && categories.indexOf ( ',' ) < 0
+		    && categories.indexOf ( ' ' ) > 0 ) {
+			return categories.trim ().split ( "[, ]" );
+		} else {
+			return categories.trim ().split ( "," );
+		}
 	}
+
 }

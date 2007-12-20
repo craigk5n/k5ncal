@@ -15,6 +15,7 @@ Version 0.9.6dev (?? Dec 2007) - New features
   a local calendar from the list on the left and new events will default to
   the selected local calendar.
 - Added k5nAccordionPane-1.0.1.jar
+- Added URL field to event edit and view areas
 - Added app icon to About dialog; added java version info to about dialog.
 - Use "Quit" instead of "Exit" for Mac
 - Added "View ChangeLog" to Help menu

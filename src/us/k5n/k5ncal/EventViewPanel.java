@@ -19,13 +19,19 @@
 package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+
+import edu.stanford.ejalbert.BrowserLauncher;
 
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
@@ -34,17 +40,23 @@ public class EventViewPanel extends JPanel {
 	private JLabel date;
 	private JLabel subject;
 	private JLabel location;
+	private JLabel url;
 	private JLabel calendar;
 	private JLabel categories;
 	private JTextArea text;
+	private static Cursor handCursor = null, defaultCursor = null;
 
 	public EventViewPanel() {
 		super ();
 
+		if ( defaultCursor == null ) {
+			defaultCursor = this.getCursor ();
+			handCursor = Cursor.getPredefinedCursor ( Cursor.HAND_CURSOR );
+		}
 		setLayout ( new BorderLayout () );
 
 		JPanel topPanel = new JPanel ();
-		topPanel.setLayout ( new GridLayout ( 5, 1 ) );
+		topPanel.setLayout ( new GridLayout ( 6, 1 ) );
 		topPanel.setBorder ( BorderFactory.createEmptyBorder ( 2, 4, 2, 4 ) );
 
 		JPanel subpanel = new JPanel ();
@@ -67,6 +79,46 @@ public class EventViewPanel extends JPanel {
 		location = new JLabel ();
 		subpanel.add ( location, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
+
+		subpanel = new JPanel ();
+		subpanel.setLayout ( new BorderLayout () );
+		subpanel.add ( new JLabel ( "URL: " ), BorderLayout.WEST );
+		url = new JLabel ();
+		JPanel subSubPanel = new JPanel ();
+		subSubPanel.setLayout ( new BorderLayout () );
+		subSubPanel.add ( url, BorderLayout.WEST );
+		subpanel.add ( subSubPanel, BorderLayout.CENTER );
+		topPanel.add ( subpanel );
+		final JLabel myUrl = url;
+		url.addMouseListener ( new MouseListener () {
+			public void mouseEntered ( MouseEvent e1 ) {
+				myUrl.setCursor ( handCursor );
+			}
+
+			public void mouseExited ( MouseEvent e1 ) {
+				myUrl.setCursor ( defaultCursor );
+			}
+
+			public void mouseClicked ( MouseEvent e1 ) {
+			}
+
+			public void mousePressed ( MouseEvent e1 ) {
+			}
+
+			public void mouseReleased ( MouseEvent e1 ) {
+				String urlStr = myUrl.getText ();
+				if ( urlStr != null && urlStr.trim ().startsWith ( "http" ) ) {
+					try {
+						BrowserLauncher bl = new BrowserLauncher ();
+						bl.openURLinBrowser ( urlStr );
+					} catch ( Exception e ) {
+						System.err.println ( "Error starting web browser: "
+						    + e.getMessage () );
+						e.printStackTrace ();
+					}
+				}
+			}
+		} );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
@@ -99,6 +151,7 @@ public class EventViewPanel extends JPanel {
 		this.date.setText ( "" );
 		this.subject.setText ( "" );
 		this.location.setText ( "" );
+		this.url.setText ( "" );
 		this.calendar.setText ( "" );
 		this.categories.setText ( "" );
 		this.text.setText ( "" );
@@ -121,6 +174,11 @@ public class EventViewPanel extends JPanel {
 			this.location.setText ( event.getLocation ().getValue () );
 		else
 			this.location.setText ( "" );
+
+		if ( event.getUrl () != null )
+			this.url.setText ( event.getUrl ().getValue () );
+		else
+			this.url.setText ( "" );
 
 		if ( calendar != null ) {
 			this.calendar.setText ( calendar.name );
