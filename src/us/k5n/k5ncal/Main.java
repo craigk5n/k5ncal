@@ -114,6 +114,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public static final String CALENDARS_FILE = "calendars.dat";
 	static final String APP_ICON = "images/k5nCal-128x128.png";
 	static final String APP_URL = "http://www.k5n.us/k5ncal.php";
+	static final String DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=195315";
 	static final String REPORT_BUG_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952950";
 	static final String LICENSE_FILE = "License.html";
 	static ClassLoader cl = null;
@@ -414,6 +415,21 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				try {
 					BrowserLauncher bl = new BrowserLauncher ();
 					bl.openURLinBrowser ( APP_URL );
+				} catch ( Exception e1 ) {
+					System.err.println ( "Error starting web browser: "
+					    + e1.getMessage () );
+					e1.printStackTrace ();
+				}
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "Donate to Support k5nCal..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					BrowserLauncher bl = new BrowserLauncher ();
+					bl.openURLinBrowser ( DONATE_URL );
 				} catch ( Exception e1 ) {
 					System.err.println ( "Error starting web browser: "
 					    + e1.getMessage () );
@@ -1001,10 +1017,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		final JDialog addRemote = new JDialog ( this );
 		final JTextField nameField = new JTextField ( 50 );
 		final JTextField urlField = new JTextField ( 50 );
+		// TODO: Don't exceed 15 days due to a bug. I used an "int" type
+		// for ms (Calendar.updateIntervalMS). And, 30 days exceeds the max
+		// int (so we end up with a negative value). But, because this class
+		// is serialized and saved/read, I don't want to change it.
 		final String[] choices = { "12 Hours", "1 Day", "3 Days", "7 Days",
-		    "14 Days", "30 Days", "90 Days", "1 Year" };
-		final int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14, 24 * 30,
-		    24 * 90, 24 * 365 };
+		    "14 Days" /* "30 Days", "90 Days", "1 Year" */};
+		final int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14
+		/* 24 * 30, 24 * 90, 24 * 365 */};
 		int defChoice = 5;
 		final JComboBox updateField = new JComboBox ( choices );
 		final ColorButton colorField = new ColorButton ();
@@ -1153,7 +1173,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		updatePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		updatePanel.add ( new JLabel ( "Update Interval: " ) );
-		updateField.setSelectedIndex ( defChoice );
+		if ( defChoice < choices.length )
+			updateField.setSelectedIndex ( defChoice );
 		updatePanel.add ( updateField );
 		main.add ( updatePanel );
 
