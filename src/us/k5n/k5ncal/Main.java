@@ -475,9 +475,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( !foundLocal ) {
 					showError ( "You must create a local\ncalendar to add a\nnew event." );
 				} else {
+					// See if they have selected a local calendar from the calendar list
+					Calendar selectedCalendar = null;
+					int selCalInd = calendarJList.getSelectedIndex ();
+					if ( selCalInd >= 0 ) {
+						selectedCalendar = dataRepository.getCalendars ().elementAt (
+						    selCalInd );
+						if ( selectedCalendar.url != null )
+							selectedCalendar = null; // don't allow adding to remote cals
+					}
 					Date now = Date.getCurrentDateTime ( "DTSTART" );
 					now.setMinute ( 0 );
-					new EditWindow ( parent, dataRepository, now, null );
+					new EditWindow ( parent, dataRepository, now, selectedCalendar );
 				}
 			}
 		} );
@@ -1017,14 +1026,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		final JDialog addRemote = new JDialog ( this );
 		final JTextField nameField = new JTextField ( 50 );
 		final JTextField urlField = new JTextField ( 50 );
-		// TODO: Don't exceed 15 days due to a bug. I used an "int" type
-		// for ms (Calendar.updateIntervalMS). And, 30 days exceeds the max
-		// int (so we end up with a negative value). But, because this class
-		// is serialized and saved/read, I don't want to change it.
 		final String[] choices = { "12 Hours", "1 Day", "3 Days", "7 Days",
-		    "14 Days" /* "30 Days", "90 Days", "1 Year" */};
-		final int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14
-		/* 24 * 30, 24 * 90, 24 * 365 */};
+		    "14 Days", "30 Days", "90 Days", "1 Year", "Never" };
+		final int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14, 24 * 30,
+		    24 * 90, 24 * 365, 0 };
 		int defChoice = 5;
 		final JComboBox updateField = new JComboBox ( choices );
 		final ColorButton colorField = new ColorButton ();
@@ -1032,7 +1037,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		if ( c != null ) {
 			for ( int i = 0; i < choiceValues.length; i++ ) {
-				if ( c.updateIntervalMS == choiceValues[i] * 1000 * 3600 )
+				if ( c.updateIntervalSecs == choiceValues[i] * 3600 )
 					defChoice = i;
 			}
 			nameField.setText ( c.name );
@@ -1099,7 +1104,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					cal.border = cal.fg = getForegroundColorForBackground ( color );
 					cal.lastUpdated = java.util.Calendar.getInstance ()
 					    .getTimeInMillis ();
-					cal.updateIntervalMS = updateInterval * 3600 * 1000;
+					cal.updateIntervalSecs = updateInterval * 3600;
 					HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
 					InputStream is = urlC.getInputStream ();
 					File file = new File ( getDataDirectory (), cal.filename );

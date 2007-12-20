@@ -38,7 +38,7 @@ public class Calendar implements Serializable {
 	String filename;
 	long lastUpdated; // Time of last update (in ms since 1970) */
 	URL url;
-	int updateIntervalMS; // ms between updates
+	int updateIntervalSecs; // seconds between updates
 	boolean selected = true;
 	Color fg = Color.WHITE;
 	Color bg = Color.BLUE;
@@ -52,7 +52,7 @@ public class Calendar implements Serializable {
 		// Generate a unique
 		this.filename = generateFileName ( dir );
 		this.url = null;
-		updateIntervalMS = 0;
+		updateIntervalSecs = 0;
 	}
 
 	public Calendar(File dir, String name, URL url, int updateIntervalHours) {
@@ -61,11 +61,11 @@ public class Calendar implements Serializable {
 		this.lastUpdated = 0;
 		// Generate a unique
 		this.filename = generateFileName ( dir );
-		this.updateIntervalMS = updateIntervalHours * 1000 * 3600;
+		this.updateIntervalSecs = updateIntervalHours * 3600;
 		// kludge: should have made this a long since 30 days exceeds
 		// the max int for ms.
-		if ( this.updateIntervalMS < 0 )
-			this.updateIntervalMS = 1000 * 3600 * 14; // 14 days default
+		if ( this.updateIntervalSecs < 0 )
+			this.updateIntervalSecs = 3600 * 14; // 14 days default
 	}
 
 	public String toString () {
@@ -84,7 +84,7 @@ public class Calendar implements Serializable {
 			return true;
 		java.util.Calendar c = java.util.Calendar.getInstance ();
 		java.util.Calendar c2 = java.util.Calendar.getInstance ();
-		c2.setTimeInMillis ( this.lastUpdated + this.updateIntervalMS );
+		c2.setTimeInMillis ( this.lastUpdated + this.updateIntervalSecs * 1000 );
 		return ( c.after ( c2 ) );
 	}
 

@@ -27,11 +27,15 @@ package us.k5n.k5ncal;
  * @version $Id: RemoteCalendarUpdater.java,v 1.1 2007/12/19 01:58:13 cknudsen
  *          Exp $
  */
+// NOTE: In versions of k5nCal 0.9.5 and earlier, the Calendar class used
+// msecs for the updateInterval. For large times (30 days or so), this would
+// exceed the max int value, so it had to be changed from ms to seconds.
 public class RemoteCalendarUpdater extends Thread {
 	Repository repo;
 	CalendarRefresher refresher;
 	/** How long should we sleep between checking again? */
 	public static int SLEEP_DURATION = 5000;
+	public static final int FOURTEEN_DAYS = 3600 * 24 * 14;
 
 	/**
 	 * Create a RemoteCalendarUpdater object. The caller should call
@@ -67,23 +71,35 @@ public class RemoteCalendarUpdater extends Thread {
 	}
 
 	public void updateCalendarIfNeeded ( Calendar c ) {
+		if ( c.updateIntervalSecs == 0 ) // update never?
+			return;
+
 		java.util.Calendar time = java.util.Calendar.getInstance ();
 		time.setTimeInMillis ( c.lastUpdated );
 
-		// Kludge: oops... 30 days in ms is larger than MAXINT (so it appears as
-		// a negative).
-		if ( c.updateIntervalMS <= 0 )
-			c.updateIntervalMS = 1000 * 3600 * 14; // change to 14 days
-		//System.out.println ( "Calendar: " + c.name );
+		// Make sure that updateIntervalSecs is between 0 and 366 days
+		if ( c.updateIntervalSecs < 0 )
+			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
+		else if ( c.updateIntervalSecs >= 3600 * 24 * 365 )
+			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
+		else if ( c.updateIntervalSecs > 0 && c.updateIntervalSecs < 3600 ) {
+			// If it's less than an hour, the user likely saved this calendar using
+			// k5nCal 0.9.5 or earlier where there was a bug. We were using ms instead
+			// of seconds, so the update interval will appear to 1000x less after
+			// the fix. So, instead of a 12-hour interval, it would appear as a
+			// about 4 seconds.
+			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
+		}
+		// System.out.println ( "Calendar: " + c.name );
 		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
-		long updateTimeMS = c.lastUpdated + c.updateIntervalMS;
-		//System.out.println ( " update interval: "
-		//    + ( c.updateIntervalMS / ( 3600 * 1000 ) ) + " hours" );
+		long updateTimeMS = c.lastUpdated + ( c.updateIntervalSecs * 1000 );
+		// System.out.println ( " update interval: "
+		// + ( c.updateIntervalSecs / ( 3600 ) ) + " hours" );
 
-		time.setTimeInMillis ( c.lastUpdated );
+		// time.setTimeInMillis ( c.lastUpdated );
 		// System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time
 		// ) );
-		time.setTimeInMillis ( updateTimeMS );
+		// time.setTimeInMillis ( updateTimeMS );
 		// System.out.println ( " next update: " + Utils.CalendarToYYYYMMDD ( time )
 		// );
 

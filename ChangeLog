@@ -11,7 +11,9 @@ Version 0.9.6dev (?? Dec 2007) - New features
   that 200 OK will display an error to the user.
 - Added filter by category using new AccordionPane
 - Modified calendar checkboxes: replaced the series of JCheckBox objects
-  with a customized JList object that adds a checkbox.
+  with a customized JList object that adds a checkbox.  You can now select
+  a local calendar from the list on the left and new events will default to
+  the selected local calendar.
 - Added k5nAccordionPane-1.0.1.jar
 - Added app icon to About dialog; added java version info to about dialog.
 - Use "Quit" instead of "Exit" for Mac
