@@ -19,11 +19,12 @@
 package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.URL;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -31,10 +32,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import edu.stanford.ejalbert.BrowserLauncher;
-
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
+import edu.stanford.ejalbert.BrowserLauncher;
 
 public class EventViewPanel extends JPanel {
 	private JLabel date;
@@ -45,9 +45,15 @@ public class EventViewPanel extends JPanel {
 	private JLabel categories;
 	private JTextArea text;
 	private static Cursor handCursor = null, defaultCursor = null;
+	private static Font font = null;
 
 	public EventViewPanel() {
 		super ();
+
+		if ( font == null ) {
+			font = getFont ();
+			font = new Font ( font.getFamily (), Font.PLAIN, font.getSize () - 2 );
+		}
 
 		if ( defaultCursor == null ) {
 			defaultCursor = this.getCursor ();
@@ -61,29 +67,31 @@ public class EventViewPanel extends JPanel {
 
 		JPanel subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "Date: " ), BorderLayout.WEST );
-		date = new JLabel ();
+		subpanel.add ( makeLabel ( "Date: " ), BorderLayout.WEST );
+		date = makeLabel ( "" );
+		date.setFont ( font );
 		subpanel.add ( date, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "Subject: " ), BorderLayout.WEST );
-		subject = new JLabel ();
+		subpanel.add ( makeLabel ( "Subject: " ), BorderLayout.WEST );
+		subject = makeLabel ( "" );
 		subpanel.add ( subject, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "Location: " ), BorderLayout.WEST );
-		location = new JLabel ();
+		subpanel.add ( makeLabel ( "Location: " ), BorderLayout.WEST );
+		location = makeLabel ( "" );
 		subpanel.add ( location, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "URL: " ), BorderLayout.WEST );
-		url = new JLabel ();
+		subpanel.add ( makeLabel ( "URL: " ), BorderLayout.WEST );
+		url = makeLabel ( "" );
+		url.setForeground ( Color.blue );
 		JPanel subSubPanel = new JPanel ();
 		subSubPanel.setLayout ( new BorderLayout () );
 		subSubPanel.add ( url, BorderLayout.WEST );
@@ -122,21 +130,22 @@ public class EventViewPanel extends JPanel {
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "Calendar: " ), BorderLayout.WEST );
-		calendar = new JLabel ();
+		subpanel.add ( makeLabel ( "Calendar: " ), BorderLayout.WEST );
+		calendar = makeLabel ( "" );
 		subpanel.add ( calendar, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( new JLabel ( "Categories: " ), BorderLayout.WEST );
-		categories = new JLabel ();
+		subpanel.add ( makeLabel ( "Categories: " ), BorderLayout.WEST );
+		categories = makeLabel ( "" );
 		subpanel.add ( categories, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		add ( topPanel, BorderLayout.NORTH );
 
 		text = new JTextArea ();
+		text.setFont ( font );
 		text.setLineWrap ( true );
 		text.setWrapStyleWord ( true );
 		text.setEditable ( false );
@@ -145,6 +154,12 @@ public class EventViewPanel extends JPanel {
 		    .setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 
 		add ( scrollPane, BorderLayout.CENTER );
+	}
+
+	JLabel makeLabel ( String s ) {
+		JLabel l = new JLabel ( s );
+		l.setFont ( font );
+		return l;
 	}
 
 	public void clear () {
