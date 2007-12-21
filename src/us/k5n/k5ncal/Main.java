@@ -60,7 +60,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
@@ -1024,6 +1023,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	protected void editRemoteCalendar ( final Calendar c ) {
 		final JDialog addRemote = new JDialog ( this );
+		addRemote.setLocationRelativeTo ( null );
 		final JTextField nameField = new JTextField ( 50 );
 		final JTextField urlField = new JTextField ( 50 );
 		final String[] choices = { "12 Hours", "1 Day", "3 Days", "7 Days",
@@ -1202,6 +1202,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	protected void editLocalCalendar ( final Calendar c ) {
 		final JDialog addLocal = new JDialog ( this );
+		addLocal.setLocationRelativeTo ( null );
 		final JTextField nameField = new JTextField ( 30 );
 		final ColorButton colorField = new ColorButton ();
 		int[] props = { 1, 2 };

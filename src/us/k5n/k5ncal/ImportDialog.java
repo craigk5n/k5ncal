@@ -108,14 +108,15 @@ public class ImportDialog extends JDialog {
 		this.dataRepository = dataRepository;
 
 		createUI ( parent );
+		this.setLocationRelativeTo ( null );
 		this.setVisible ( true );
 	}
 
 	protected void createUI ( JFrame parent ) {
-		final JTextField fileField = new JTextField ( 50 );
-		final JTextField nameField = new JTextField ( 50 );
+		final JTextField fileField = new JTextField ( 40 );
+		final JTextField nameField = new JTextField ( 40 );
 		final ColorButton colorField = new ColorButton ();
-		int[] props = { 2, 3 };
+		int[] props = { 1, 3 };
 
 		nameField.setText ( "iCalendar Import" );
 
