@@ -580,7 +580,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    Vector<String> ret = new Vector<String> ();
 				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
 				    ret.addElement ( MENU_CALENDAR_EDIT );
-				    if ( c.getType () == Calendar.LOCAL_CALENDAR )
+				    if ( c.getType () != Calendar.LOCAL_CALENDAR )
 					    ret.addElement ( MENU_CALENDAR_REFRESH );
 				    ret.addElement ( MENU_CALENDAR_DELETE );
 				    return ret;
@@ -591,7 +591,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    if ( MENU_CALENDAR_EDIT.equals ( actionCommand ) ) {
 					    editCalendar ( c );
 				    } else if ( MENU_CALENDAR_REFRESH.equals ( actionCommand ) ) {
-					    if ( c.getType () != Calendar.LOCAL_CALENDAR ) {
+					    if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 						    showError ( "You can only refresh\nremote/subscribed calendars" );
 					    } else {
 						    refreshCalendar ( c );
