@@ -315,6 +315,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		prompt = new JLabel ( "Repeat: " );
 		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
 		repeatPanel.add ( prompt );
+		JPanel repeatSubPanel = new JPanel ( new BorderLayout () );
 		Vector<IntegerChoice> repeatOptions = new Vector<IntegerChoice> ();
 		repeatOptions.addElement ( new IntegerChoice ( "None", REPEAT_NONE ) );
 		repeatOptions.addElement ( new IntegerChoice ( "Every day", REPEAT_DAILY ) );
@@ -383,7 +384,8 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 			        + "will result in data loss.\n\nIssue: " + error, "Error",
 			    JOptionPane.ERROR_MESSAGE );
 		}
-		repeatPanel.add ( repeatType );
+		repeatSubPanel.add ( repeatType, BorderLayout.WEST );
+		repeatPanel.add ( repeatSubPanel );
 		upperPanel.add ( repeatPanel );
 
 		JPanel locPanel = new JPanel ();
@@ -436,7 +438,9 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 				status.setSelectedIndex ( 0 );
 				break;
 		}
-		statusPanel.add ( status );
+		JPanel statusSubPanel = new JPanel ( new BorderLayout () );
+		statusSubPanel.add ( status, BorderLayout.WEST );
+		statusPanel.add ( statusSubPanel );
 		upperPanel.add ( statusPanel );
 
 		JPanel calPanel = new JPanel ();
@@ -459,7 +463,9 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 			calendar.setSelectedIndex ( 0 );
 		else
 			calendar.setSelectedItem ( selectedCalendar );
-		calPanel.add ( calendar );
+		JPanel calSubPanel = new JPanel ( new BorderLayout () );
+		calSubPanel.add ( calendar, BorderLayout.WEST );
+		calPanel.add ( calSubPanel );
 		upperPanel.add ( calPanel );
 
 		JPanel catPanel = new JPanel ();
@@ -754,6 +760,7 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		Calendar c = (Calendar) value;
 		setFont ( list.getFont () );
 		setText ( c.name );
+		this.setHorizontalAlignment ( SwingConstants.LEFT );
 		ImageIcon icon = icons.get ( c.bg );
 		if ( icon == null ) {
 			icon = buildIcon ( c.bg, c.fg );
