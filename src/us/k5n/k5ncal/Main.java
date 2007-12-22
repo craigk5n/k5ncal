@@ -1338,7 +1338,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		fileChooser.setApproveButtonText ( "Save as ICS File" );
 		fileChooser
 		    .setApproveButtonToolTipText ( "Export entries to iCalendar file" );
-		int ret = fileChooser.showOpenDialog ( this );
+		int ret = fileChooser.showSaveDialog ( this );
 		if ( ret == JFileChooser.APPROVE_OPTION ) {
 			outFile = fileChooser.getSelectedFile ();
 		} else {

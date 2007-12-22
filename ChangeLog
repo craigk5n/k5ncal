@@ -2,6 +2,7 @@ ChangeLog
 $Id$
 
 Version 0.9.6dev (?? Dec 2007) - New features
+- Fixed bug: could not export to a new file
 - Added SwingWorker class so that calendar refresh of subscribed calendars
   now happens in the background.
 - Remote calendars will be automatically updated based on their specified
