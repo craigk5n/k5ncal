@@ -20,9 +20,11 @@ package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -30,10 +32,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -41,11 +46,13 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.text.MaskFormatter;
 
@@ -447,6 +454,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		}
 		// TODO: show error if no local calendars found
 		calendar = new JComboBox ( localCalendars );
+		calendar.setRenderer ( new ComboBoxRenderer () );
 		if ( selectedCalendar == null )
 			calendar.setSelectedIndex ( 0 );
 		else
@@ -713,5 +721,65 @@ class MyDateChooser extends JDateChooser {
 	public Dimension getPreferredSize () {
 		Dimension d = super.getPreferredSize ();
 		return new Dimension ( d.width + 10, d.height );
+	}
+}
+
+class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+	private static HashMap<Color, ImageIcon> icons = null;
+
+	public ComboBoxRenderer() {
+		setOpaque ( true );
+		setHorizontalAlignment ( CENTER );
+		setVerticalAlignment ( CENTER );
+	}
+
+	/*
+	 * This method finds the image and text corresponding to the selected value
+	 * and returns the label, set up to display the text and image.
+	 */
+	public Component getListCellRendererComponent ( JList list, Object value,
+	    int index, boolean isSelected, boolean cellHasFocus ) {
+		if ( icons == null )
+			icons = new HashMap<Color, ImageIcon> ();
+
+		if ( isSelected ) {
+			setBackground ( list.getSelectionBackground () );
+			setForeground ( list.getSelectionForeground () );
+		} else {
+			setBackground ( list.getBackground () );
+			setForeground ( list.getForeground () );
+		}
+
+		// Set the icon and text. If icon was null, say so.
+		Calendar c = (Calendar) value;
+		setFont ( list.getFont () );
+		setText ( c.name );
+		ImageIcon icon = icons.get ( c.bg );
+		if ( icon == null ) {
+			icon = buildIcon ( c.bg, c.fg );
+			icons.put ( c.bg, icon );
+		}
+		setIcon ( icon );
+
+		return this;
+	}
+
+	private ImageIcon buildIcon ( Color fill, Color border ) {
+		int WIDTH = 16;
+		int HEIGHT = 16;
+
+		BufferedImage bufimage = new BufferedImage ( WIDTH, HEIGHT,
+		    BufferedImage.TYPE_INT_ARGB );
+		Graphics g = bufimage.getGraphics ();
+		g.setColor ( fill );
+		g.fillRect ( 0, 0, WIDTH - 1, HEIGHT - 1 );
+		// Draw border
+		g.setColor ( border );
+		g.drawLine ( 0, 0, WIDTH - 1, 0 );
+		g.drawLine ( WIDTH - 1, 0, WIDTH - 1, HEIGHT - 1 );
+		g.drawLine ( WIDTH - 1, HEIGHT - 1, 0, HEIGHT - 1 );
+		g.drawLine ( 0, HEIGHT - 1, 0, 0 );
+		g.dispose ();
+		return new ImageIcon ( bufimage );
 	}
 }
