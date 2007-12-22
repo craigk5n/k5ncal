@@ -927,7 +927,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	void fatalError ( String message ) {
 		System.err.println ( "Fatal error: " + message );
 		JOptionPane.showMessageDialog ( parent, message, "Fatal Error",
-		    JOptionPane.ERROR );
+		    JOptionPane.ERROR_MESSAGE );
 		System.exit ( 1 );
 	}
 
