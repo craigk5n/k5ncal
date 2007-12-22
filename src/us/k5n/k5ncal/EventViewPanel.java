@@ -196,7 +196,7 @@ public class EventViewPanel extends JPanel {
 			this.url.setText ( "" );
 
 		if ( calendar != null ) {
-			this.calendar.setText ( calendar.name );
+			this.calendar.setText ( calendar.getName () );
 		} else
 			this.calendar.setText ( "" );
 

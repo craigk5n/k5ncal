@@ -69,7 +69,7 @@ public class Repository implements CalendarDataRepository {
 		// Load all calendars
 		for ( int i = 0; calendars != null && i < calendars.size (); i++ ) {
 			Calendar c = calendars.elementAt ( i );
-			File file = new File ( dir, c.filename );
+			File file = new File ( dir, c.getFilename () );
 			DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
 			if ( f != null ) {
 				this.dataFileCalendarHash.put ( c, f );
@@ -91,7 +91,7 @@ public class Repository implements CalendarDataRepository {
 				found = true;
 			}
 		}
-		File file = new File ( dir, c.filename );
+		File file = new File ( dir, c.getFilename () );
 		DataFile f = new DataFile ( file.getAbsolutePath (), c, strictParsing );
 		if ( f != null ) {
 			this.addDataFile ( f, c );
@@ -145,7 +145,7 @@ public class Repository implements CalendarDataRepository {
 		for ( int i = 0; i < this.dataFiles.size () && !found; i++ ) {
 			DataFile df = this.dataFiles.elementAt ( i );
 			if ( df.calendar.equals ( c ) ) {
-				File f = new File ( dir, df.calendar.filename );
+				File f = new File ( dir, df.calendar.getFilename () );
 				removeDataFile ( df );
 				found = true;
 				f.delete ();
@@ -246,7 +246,7 @@ public class Repository implements CalendarDataRepository {
 		Vector<Event> ret = new Vector<Event> ();
 		for ( int i = 0; i < dataFiles.size (); i++ ) {
 			DataFile df = dataFiles.elementAt ( i );
-			if ( df.calendar.selected ) {
+			if ( df.calendar.isSelected () ) {
 				for ( int j = 0; j < df.getEventCount (); j++ ) {
 					Event event = df.eventEntryAt ( j );
 					ret.addElement ( event );
@@ -292,13 +292,12 @@ public class Repository implements CalendarDataRepository {
 		HashMap<String, String> catH = new HashMap<String, String> ();
 		for ( int i = 0; i < dataFiles.size (); i++ ) {
 			DataFile df = (DataFile) dataFiles.elementAt ( i );
-			System.out
-			    .println ( "DataFile#"
-			        + i
-			        + ": "
-			        + df.toString ()
-			        + ( this.getCalendars ().elementAt ( i ).selected ? "(selected)"
-			            : "" ) );
+			System.out.println ( "DataFile#"
+			    + i
+			    + ": "
+			    + df.toString ()
+			    + ( this.getCalendars ().elementAt ( i ).isSelected () ? "(selected)"
+			        : "" ) );
 			// System.out.println ( " df.getEventCount () =" + df.getEventCount ()
 			// );
 			for ( int j = 0; j < df.getEventCount (); j++ ) {
@@ -324,7 +323,7 @@ public class Repository implements CalendarDataRepository {
 					} else {
 						matchesCategoryFilter = true;
 					}
-					if ( df.calendar.selected && matchesCategoryFilter ) {
+					if ( df.calendar.isSelected () && matchesCategoryFilter ) {
 						SingleEvent se = null;
 						if ( event.isValid () && event.getStartDate () != null ) {
 							Date startDate = event.getStartDate ();
@@ -343,9 +342,9 @@ public class Repository implements CalendarDataRepository {
 							}
 							se.setEvent ( event );
 							se.setCalendar ( df.calendar );
-							se.bg = df.calendar.bg;
-							se.border = df.calendar.border;
-							se.fg = df.calendar.fg;
+							se.bg = df.calendar.getBackgroundColor ();
+							se.border = df.calendar.getBorderColor ();
+							se.fg = df.calendar.getForegroundColor ();
 							String YMD = Utils.DateToYYYYMMDD ( startDate );
 							Vector dateVector = null;
 							if ( cachedEvents.containsKey ( YMD ) ) {
@@ -369,9 +368,9 @@ public class Repository implements CalendarDataRepository {
 								}
 								se.setEvent ( event );
 								se.setCalendar ( df.calendar );
-								se.bg = df.calendar.bg;
-								se.border = df.calendar.border;
-								se.fg = df.calendar.fg;
+								se.bg = df.calendar.getBackgroundColor ();
+								se.border = df.calendar.getBorderColor ();
+								se.fg = df.calendar.getForegroundColor ();
 								YMD = Utils.DateToYYYYMMDD ( d2 );
 								dateVector = null;
 								if ( cachedEvents.containsKey ( YMD ) ) {
@@ -509,9 +508,9 @@ public class Repository implements CalendarDataRepository {
 	public boolean hasCalendarWithURL ( String url ) {
 		for ( int i = 0; i < this.calendars.size (); i++ ) {
 			Calendar c = this.calendars.elementAt ( i );
-			if ( c.url == null )
+			if ( c.getUrl () == null )
 				continue;
-			String urlS = c.url.toString ();
+			String urlS = c.getUrl ().toString ();
 			if ( url.equals ( urlS ) ) {
 				return true;
 			}

@@ -59,7 +59,7 @@ public class RemoteCalendarUpdater extends Thread {
 		while ( true ) {
 			for ( int i = 0; i < repo.getCalendars ().size (); i++ ) {
 				Calendar c = repo.getCalendars ().elementAt ( i );
-				if ( c.url != null ) {
+				if ( c.getType () != Calendar.LOCAL_CALENDAR ) {
 					updateCalendarIfNeeded ( c );
 				}
 			}
@@ -74,44 +74,45 @@ public class RemoteCalendarUpdater extends Thread {
 
 	private void printDebugInfo ( Calendar c ) {
 		java.util.Calendar time = java.util.Calendar.getInstance ();
-		time.setTimeInMillis ( c.lastUpdated );
-		System.out.println ( "Calendar: " + c.name );
+		time.setTimeInMillis ( c.getLastUpdated () );
+		System.out.println ( "Calendar: " + c.getName () );
 		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
-		long updateTimeMS = c.lastUpdated
-		    + ( (long) c.updateIntervalSecs * (long) 1000 );
+		long updateTimeMS = c.getLastUpdated ()
+		    + ( (long) c.getUpdateIntervalSecs () * (long) 1000 );
 		System.out.println ( " update interval: "
-		    + ( c.updateIntervalSecs / ( 3600 ) ) + " hours" );
+		    + ( c.getUpdateIntervalSecs () / ( 3600 ) ) + " hours" );
 
-		time.setTimeInMillis ( c.lastUpdated );
+		time.setTimeInMillis ( c.getLastUpdated () );
 		System.out.println ( " last updated: " + Utils.CalendarToYYYYMMDD ( time ) );
 		time.setTimeInMillis ( updateTimeMS );
 		System.out.println ( " next update: " + Utils.CalendarToYYYYMMDD ( time ) );
 	}
 
 	public void updateCalendarIfNeeded ( Calendar c ) {
-		if ( c.updateIntervalSecs == 0 ) // update never?
+		if ( c.getUpdateIntervalSecs () == 0 ) // update never?
 			return;
 
 		// printDebugInfo ( c );
 		java.util.Calendar time = java.util.Calendar.getInstance ();
-		time.setTimeInMillis ( c.lastUpdated );
+		time.setTimeInMillis ( c.getLastUpdated () );
 
 		// Make sure that updateIntervalSecs is between 0 and 366 days
-		if ( c.updateIntervalSecs < 0 )
-			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
-		else if ( c.updateIntervalSecs >= 3600 * 24 * 365 )
-			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
-		else if ( c.updateIntervalSecs > 0 && c.updateIntervalSecs < 3600 ) {
+		if ( c.getUpdateIntervalSecs () < 0 )
+			c.setUpdateIntervalSecs ( FOURTEEN_DAYS ); // change to 14 days
+		else if ( c.getUpdateIntervalSecs () >= 3600 * 24 * 365 )
+			c.setUpdateIntervalSecs ( FOURTEEN_DAYS ); // change to 14 days
+		else if ( c.getUpdateIntervalSecs () > 0
+		    && c.getUpdateIntervalSecs () < 3600 ) {
 			// If it's less than an hour, the user likely saved this calendar using
 			// k5nCal 0.9.5 or earlier where there was a bug. We were using ms instead
 			// of seconds, so the update interval will appear to 1000x less after
 			// the fix. So, instead of a 12-hour interval, it would appear as a
 			// about 4 seconds.
-			c.updateIntervalSecs = FOURTEEN_DAYS; // change to 14 days
+			c.setUpdateIntervalSecs ( FOURTEEN_DAYS ); // change to 14 days
 		}
 		long currentTimeMS = java.util.Calendar.getInstance ().getTimeInMillis ();
-		long updateTimeMS = c.lastUpdated
-		    + ( (long) c.updateIntervalSecs * (long) 1000 );
+		long updateTimeMS = c.getLastUpdated ()
+		    + ( (long) c.getUpdateIntervalSecs () * (long) 1000 );
 
 		if ( currentTimeMS >= updateTimeMS ) {
 			// We need to update this calendar!

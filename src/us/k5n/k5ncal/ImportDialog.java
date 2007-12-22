@@ -166,11 +166,12 @@ public class ImportDialog extends JDialog {
 					parser.parse ( reader );
 					// TODO: display/handle parse errors
 					Calendar cal = new Calendar ( dataDirectory, name );
-					cal.bg = color;
-					cal.border = cal.fg = getForegroundColorForBackground ( color );
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
-					File file = new File ( dataDirectory, cal.filename );
+					cal.setBackgroundColor ( color );
+					cal.setBorderColor ( getForegroundColorForBackground ( color ) );
+					cal.setBackgroundColor ( cal.getBorderColor () );
+					cal.setLastUpdated ( java.util.Calendar.getInstance ()
+					    .getTimeInMillis () );
+					File file = new File ( dataDirectory, cal.getFilename () );
 					FileWriter writer = new FileWriter ( file );
 					writer.write ( parser.toICalendar () );
 					writer.close ();

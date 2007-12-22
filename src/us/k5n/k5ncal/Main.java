@@ -39,15 +39,12 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
@@ -460,7 +457,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				boolean foundLocal = false;
 				for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 					Calendar c = dataRepository.getCalendars ().elementAt ( i );
-					if ( c.url == null )
+					if ( c.getType () == Calendar.LOCAL_CALENDAR )
 						foundLocal = true;
 				}
 				if ( !foundLocal ) {
@@ -472,7 +469,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					if ( selCalInd >= 0 ) {
 						selectedCalendar = dataRepository.getCalendars ().elementAt (
 						    selCalInd );
-						if ( selectedCalendar.url != null )
+						if ( selectedCalendar.getType () != Calendar.LOCAL_CALENDAR )
 							selectedCalendar = null; // don't allow adding to remote cals
 					}
 					Date now = Date.getCurrentDateTime ( "DTSTART" );
@@ -546,7 +543,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		selected = ( eventInstance != null );
 		if ( selected && eventInstance instanceof SingleEvent ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			isLocal = se.calendar.url == null;
+			isLocal = ( se.calendar.getType () == Calendar.LOCAL_CALENDAR );
 		}
 		editButton.setEnabled ( selected && isLocal );
 		deleteButton.setEnabled ( selected && isLocal );
@@ -568,12 +565,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.calendarJList
 		    .addListItemChangeListener ( new ListItemChangeListener () {
 			    public void itemSelected ( int ind ) {
-				    dataRepository.getCalendars ().elementAt ( ind ).selected = true;
+				    dataRepository.getCalendars ().elementAt ( ind )
+				        .setSelected ( true );
 				    handleCalendarFilterSelection ();
 			    }
 
 			    public void itemUnselected ( int ind ) {
-				    dataRepository.getCalendars ().elementAt ( ind ).selected = true;
+				    dataRepository.getCalendars ().elementAt ( ind )
+				        .setSelected ( true );
 				    handleCalendarFilterSelection ();
 			    }
 
@@ -581,7 +580,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    Vector<String> ret = new Vector<String> ();
 				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
 				    ret.addElement ( MENU_CALENDAR_EDIT );
-				    if ( c.url != null )
+				    if ( c.getType () == Calendar.LOCAL_CALENDAR )
 					    ret.addElement ( MENU_CALENDAR_REFRESH );
 				    ret.addElement ( MENU_CALENDAR_DELETE );
 				    return ret;
@@ -592,7 +591,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    if ( MENU_CALENDAR_EDIT.equals ( actionCommand ) ) {
 					    editCalendar ( c );
 				    } else if ( MENU_CALENDAR_REFRESH.equals ( actionCommand ) ) {
-					    if ( c.url == null ) {
+					    if ( c.getType () != Calendar.LOCAL_CALENDAR ) {
 						    showError ( "You can only refresh\nremote/subscribed calendars" );
 					    } else {
 						    refreshCalendar ( c );
@@ -615,7 +614,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 			Calendar c = dataRepository.getCalendars ().elementAt ( i );
 			ListItem item = this.calendarJList.getListItemAt ( i );
-			item.setState ( c.selected ? ListItem.STATE_YES : ListItem.STATE_OFF );
+			item
+			    .setState ( c.isSelected () ? ListItem.STATE_YES : ListItem.STATE_OFF );
 		}
 
 		topPanel
@@ -628,8 +628,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	void handleCalendarFilterSelection () {
 		// Repaint the calendar view, which will reload the data
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
-			dataRepository.getCalendars ().elementAt ( i ).selected = ( this.calendarJList
-			    .getListItemAt ( i ).getState () == ListItem.STATE_YES );
+			dataRepository
+			    .getCalendars ()
+			    .elementAt ( i )
+			    .setSelected (
+			        this.calendarJList.getListItemAt ( i ).getState () == ListItem.STATE_YES );
 		}
 		this.calendarPanel.clearSelection ();
 		this.dataRepository.rebuild ();
@@ -637,7 +640,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void editCalendar ( Calendar c ) {
-		if ( c.url == null ) {
+		if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 			editLocalCalendar ( c );
 		} else
 			editRemoteCalendar ( c );
@@ -655,7 +658,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void refreshCalendar ( final Calendar cal ) {
 		// Before we get started, update the status bar to indicate we are loading
 		// the calendar.
-		showStatusMessage ( "Refreshing calendar '" + cal.name + "' ..." );
+		showStatusMessage ( "Refreshing calendar '" + cal.getName () + "' ..." );
 
 		SwingWorker refreshWorker = new SwingWorker () {
 			private String error = null;
@@ -666,10 +669,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				try {
 					// For now, we only support HTTP since 99.99% of all users will use it
 					// instead of something like FTP.
-					HttpURLConnection urlC = (HttpURLConnection) cal.url
+					HttpURLConnection urlC = (HttpURLConnection) cal.getUrl ()
 					    .openConnection ();
 					InputStream is = urlC.getInputStream ();
-					File tmpFile = new File ( getDataDirectory (), cal.filename + ".new" );
+					File tmpFile = new File ( getDataDirectory (), cal.getFilename ()
+					    + ".new" );
 					OutputStream os = new FileOutputStream ( tmpFile );
 					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
 					    is ) );
@@ -695,14 +699,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						    + urlC.getResponseMessage ();
 					} else if ( tmpFile.exists () && tmpFile.length () > 0 ) {
 						// Make sure the contents look like iCalendar data
-						File file = new File ( getDataDirectory (), cal.filename );
+						File file = new File ( getDataDirectory (), cal.getFilename () );
 						file.delete ();
 						if ( !tmpFile.renameTo ( file ) ) {
 							this.error = "Unable to rename temporary file:\nOld: "
 							    + tmpFile.getAbsolutePath () + "\nNew: "
 							    + file.getAbsolutePath ();
 						} else {
-							this.statusMsg = "Calendar '" + cal.name + "' refreshed";
+							this.statusMsg = "Calendar '" + cal.getName () + "' refreshed";
 						}
 					} else {
 						this.error = "Unknown error refreshing calendar";
@@ -724,8 +728,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					showStatusMessage ( statusMsg );
 				if ( error == null ) {
 					// If no error, then save calendar update
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
+					cal.setLastUpdatedAsNow ();
 					saveCalendars ( dataDir );
 					dataRepository.updateCalendar ( getDataDirectory (), cal );
 				}
@@ -762,9 +765,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		for ( int i = 0; i < dataRepository.getCalendars ().size (); i++ ) {
 			Calendar cal = (Calendar) dataRepository.getCalendars ().elementAt ( i );
 			ListItem item = this.calendarJList.getListItemAt ( i );
-			item.setBackground ( cal.bg );
-			item.setForeground ( cal.fg );
-			item.setState ( cal.selected ? ListItem.STATE_YES : ListItem.STATE_OFF );
+			item.setBackground ( cal.getBackgroundColor () );
+			item.setForeground ( cal.getForegroundColor () );
+			item.setState ( cal.isSelected () ? ListItem.STATE_YES
+			    : ListItem.STATE_OFF );
 		}
 		this.calendarJList.validate ();
 	}
@@ -1029,12 +1033,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		if ( c != null ) {
 			for ( int i = 0; i < choiceValues.length; i++ ) {
-				if ( c.updateIntervalSecs == choiceValues[i] * 3600 )
+				if ( c.getUpdateIntervalSecs () == choiceValues[i] * 3600 )
 					defChoice = i;
 			}
-			nameField.setText ( c.name );
+			nameField.setText ( c.getName () );
 			// Don't allow changing of URL. Must delete and add new
-			urlField.setText ( c.url.toString () );
+			urlField.setText ( c.getUrl ().toString () );
 			urlField.setEditable ( false );
 		}
 
@@ -1092,14 +1096,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					} else {
 						cal = c;
 					}
-					cal.bg = color;
-					cal.border = cal.fg = getForegroundColorForBackground ( color );
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
-					cal.updateIntervalSecs = updateInterval * 3600;
+					cal.setBackgroundColor ( color );
+					cal.setBorderColor ( getForegroundColorForBackground ( color ) );
+					cal.setForegroundColor ( getForegroundColorForBackground ( color ) );
+					cal.setLastUpdatedAsNow ();
+					cal.setUpdateIntervalSecs ( updateInterval * 3600 );
 					HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
 					InputStream is = urlC.getInputStream ();
-					File file = new File ( getDataDirectory (), cal.filename );
+					File file = new File ( getDataDirectory (), cal.getFilename () );
 					OutputStream os = new FileOutputStream ( file );
 					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
 					    is ) );
@@ -1181,7 +1185,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		colorPanel.add ( new JLabel ( "Background Color: " ) );
 		JPanel colorSub = new JPanel ();
 		colorSub.setLayout ( new BorderLayout () );
-		colorField.setBackground ( c == null ? Color.blue : c.bg );
+		colorField
+		    .setBackground ( c == null ? Color.blue : c.getBackgroundColor () );
 		colorSub.add ( colorField, BorderLayout.WEST );
 		colorPanel.add ( colorSub );
 		main.add ( colorPanel );
@@ -1200,7 +1205,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		int[] props = { 1, 2 };
 
 		if ( c != null ) {
-			nameField.setText ( c.name );
+			nameField.setText ( c.getName () );
 		}
 
 		addLocal.setTitle ( c != null ? "Edit Local Calendar"
@@ -1234,11 +1239,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					} else {
 						cal = c;
 					}
-					cal.bg = color;
-					cal.border = cal.fg = getForegroundColorForBackground ( color );
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
-					File file = new File ( getDataDirectory (), cal.filename );
+					cal.setBackgroundColor ( color );
+					cal.setBorderColor ( getForegroundColorForBackground ( color ) );
+					cal.setForegroundColor ( getForegroundColorForBackground ( color ) );
+					cal.setLastUpdatedAsNow ();
+					File file = new File ( getDataDirectory (), cal.getFilename () );
 					if ( c == null ) {
 						// Create empty iCalendar file
 						FileWriter writer = new FileWriter ( file );
@@ -1287,7 +1292,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		colorPanel.add ( new JLabel ( "Background Color: " ) );
 		JPanel colorSub = new JPanel ();
 		colorSub.setLayout ( new BorderLayout () );
-		colorField.setBackground ( c == null ? Color.blue : c.bg );
+		colorField
+		    .setBackground ( c == null ? Color.blue : c.getBackgroundColor () );
 		colorSub.add ( colorField, BorderLayout.WEST );
 		colorPanel.add ( colorSub );
 		main.add ( colorPanel );
@@ -1485,7 +1491,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
 		if ( eventInstance != null ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			if ( se.calendar.url != null ) {
+			if ( se.calendar.getType () != Calendar.LOCAL_CALENDAR ) {
 				showError ( "You cannot edit events\non remote/subscribed calendars." );
 			} else {
 				new EditWindow ( parent, dataRepository, se.event, se.calendar );
@@ -1674,9 +1680,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		final URL url2 = url;
 		showStatusMessage ( "Downloading calendar '" + name + "'" );
 		final Calendar cal = new Calendar ( getDataDirectory (), name, url, 30 );
-		cal.bg = Color.blue;
-		cal.border = cal.fg = getForegroundColorForBackground ( Color.blue );
-		cal.lastUpdated = java.util.Calendar.getInstance ().getTimeInMillis ();
+		cal.setBackgroundColor ( Color.blue );
+		cal.setForegroundColor ( getForegroundColorForBackground ( Color.blue ) );
+		cal.setBorderColor ( getForegroundColorForBackground ( Color.blue ) );
+		cal.setLastUpdatedAsNow ();
 
 		SwingWorker addWorker = new SwingWorker () {
 			private String error = null;
@@ -1686,7 +1693,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				try {
 					HttpURLConnection urlC = (HttpURLConnection) url2.openConnection ();
 					InputStream is = urlC.getInputStream ();
-					File file = new File ( getDataDirectory (), cal.filename );
+					File file = new File ( getDataDirectory (), cal.getFilename () );
 					OutputStream os = new FileOutputStream ( file );
 					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
 					    is ) );
@@ -1728,8 +1735,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					showStatusMessage ( statusMsg );
 				if ( error == null ) {
 					// If no error, then save calendar update
-					cal.lastUpdated = java.util.Calendar.getInstance ()
-					    .getTimeInMillis ();
+					cal.setLastUpdatedAsNow ();
 					saveCalendars ( dataDir );
 					dataRepository.updateCalendar ( getDataDirectory (), cal );
 				}

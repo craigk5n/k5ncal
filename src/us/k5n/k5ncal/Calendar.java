@@ -50,21 +50,27 @@ import org.xml.sax.SAXException;
  * 
  */
 public class Calendar implements Serializable {
-	private static final long serialVersionUID = 1000L;
-	String name;
-	String filename;
-	long lastUpdated; // Time of last update (in ms since 1970) */
-	URL url;
-	int updateIntervalSecs; // seconds between updates
-	boolean selected = true;
-	Color fg = Color.WHITE;
-	Color bg = Color.BLUE;
-	Color border = Color.BLACK;
+	private static final long serialVersionUID = 1001L;
+	public static final int UNKNOWN_CALENDAR = -1;
+	public static final int LOCAL_CALENDAR = 1;
+	public static final int REMOTE_ICAL_CALENDAR = 2;
+	private String name = null;
+	private String filename = null;
+	/** LOCAL_CALENDAR, REMOTE_ICAL_CALENDAR */
+	private int type = UNKNOWN_CALENDAR;
+	private long lastUpdated = 0; // Time of last update (in ms since 1970) */
+	private URL url = null;
+	private int updateIntervalSecs = 0; // seconds between updates
+	private boolean selected = true;
+	private Color fg = Color.WHITE;
+	private Color bg = Color.BLUE;
+	private Color border = Color.BLACK;
 	private static Random random = new Random ( ( new java.util.Date () )
 	    .getTime () );
 
 	public Calendar(File dir, String name) {
 		this.name = name;
+		this.type = LOCAL_CALENDAR;
 		this.lastUpdated = 0;
 		// Generate a unique
 		this.filename = generateFileName ( dir );
@@ -74,6 +80,7 @@ public class Calendar implements Serializable {
 
 	public Calendar(File dir, String name, URL url, int updateIntervalHours) {
 		this.name = name;
+		this.type = REMOTE_ICAL_CALENDAR;
 		this.url = url;
 		this.lastUpdated = 0;
 		// Generate a unique
@@ -88,6 +95,14 @@ public class Calendar implements Serializable {
 	public Calendar(Node topNode) {
 		NodeList list = topNode.getChildNodes ();
 		int len = list.getLength ();
+
+		this.type = -1;
+
+		String calType = Utils.xmlNodeGetAttribute ( topNode, "type" );
+		if ( calType != null && calType.equalsIgnoreCase ( "local" ) )
+			this.type = LOCAL_CALENDAR;
+		else if ( calType != null && calType.equalsIgnoreCase ( "remote-ical" ) )
+			this.type = REMOTE_ICAL_CALENDAR;
 
 		for ( int i = 0; i < len; i++ ) {
 			Node n = list.item ( i );
@@ -124,6 +139,15 @@ public class Calendar implements Serializable {
 					    + "> tag (ignoring) in <product>" );
 				}
 			}
+		}
+
+		if ( this.type == -1 ) {
+			System.err.println ( "Error: no type attribute for calendar '"
+			    + this.name + "'" );
+			if ( this.url == null )
+				this.type = LOCAL_CALENDAR;
+			else
+				this.type = REMOTE_ICAL_CALENDAR;
 		}
 
 		if ( filename == null ) {
@@ -173,8 +197,13 @@ public class Calendar implements Serializable {
 	 */
 	public String toXML () {
 		StringBuffer sb = new StringBuffer ();
-		
-		sb.append ( "  <calendar>\n" );
+
+		sb.append ( "  <calendar type=\"" );
+		if ( this.type == LOCAL_CALENDAR )
+			sb.append ( "local" );
+		else if ( this.type == REMOTE_ICAL_CALENDAR )
+			sb.append ( "remote-ical" );
+		sb.append ( "\">\n" );
 		sb.append ( "    <name>" );
 		sb.append ( Utils.escape ( this.name ) );
 		sb.append ( "</name>\n" );
@@ -223,8 +252,8 @@ public class Calendar implements Serializable {
 		return sb.toString ();
 	}
 
-	public static void writeCalendars ( File file,
-	    Vector<Calendar> calendars ) throws IOException {
+	public static void writeCalendars ( File file, Vector<Calendar> calendars )
+	    throws IOException {
 		OutputStream os = new FileOutputStream ( file );
 		os.write ( "<calendars>\n".getBytes () );
 		for ( int i = 0; i < calendars.size (); i++ ) {
@@ -269,4 +298,89 @@ public class Calendar implements Serializable {
 
 		return ret;
 	}
+
+	public String getName () {
+		return name;
+	}
+
+	public void setName ( String name ) {
+		this.name = name;
+	}
+
+	public String getFilename () {
+		return filename;
+	}
+
+	public void setFilename ( String filename ) {
+		this.filename = filename;
+	}
+
+	public int getType () {
+		return type;
+	}
+
+	public void setType ( int type ) {
+		this.type = type;
+	}
+
+	public long getLastUpdated () {
+		return lastUpdated;
+	}
+
+	public void setLastUpdated ( long lastUpdated ) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	public void setLastUpdatedAsNow () {
+		this.lastUpdated = java.util.Calendar.getInstance ().getTimeInMillis ();
+	}
+
+	public URL getUrl () {
+		return url;
+	}
+
+	public void setUrl ( URL url ) {
+		this.url = url;
+	}
+
+	public int getUpdateIntervalSecs () {
+		return updateIntervalSecs;
+	}
+
+	public void setUpdateIntervalSecs ( int updateIntervalSecs ) {
+		this.updateIntervalSecs = updateIntervalSecs;
+	}
+
+	public boolean isSelected () {
+		return selected;
+	}
+
+	public void setSelected ( boolean selected ) {
+		this.selected = selected;
+	}
+
+	public Color getForegroundColor () {
+		return fg;
+	}
+
+	public void setForegroundColor ( Color fg ) {
+		this.fg = fg;
+	}
+
+	public Color getBackgroundColor () {
+		return bg;
+	}
+
+	public void setBackgroundColor ( Color bg ) {
+		this.bg = bg;
+	}
+
+	public Color getBorderColor () {
+		return border;
+	}
+
+	public void setBorderColor ( Color border ) {
+		this.border = border;
+	}
+
 }

@@ -452,7 +452,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 		Vector<Calendar> localCalendars = new Vector<Calendar> ();
 		for ( int i = 0; i < this.repo.calendars.size (); i++ ) {
 			Calendar c = this.repo.calendars.elementAt ( i );
-			if ( c.url == null ) {
+			if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 				localCalendars.addElement ( c );
 			}
 		}
@@ -759,12 +759,12 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 
 		Calendar c = (Calendar) value;
 		setFont ( list.getFont () );
-		setText ( c.name );
+		setText ( c.getName () );
 		this.setHorizontalAlignment ( SwingConstants.LEFT );
-		ImageIcon icon = icons.get ( c.bg );
+		ImageIcon icon = icons.get ( c.getBackgroundColor () );
 		if ( icon == null ) {
-			icon = buildIcon ( c.bg, c.fg );
-			icons.put ( c.bg, icon );
+			icon = buildIcon ( c.getBackgroundColor (), c.getForegroundColor () );
+			icons.put ( c.getBackgroundColor (), icon );
 		}
 		setIcon ( icon );
 
