@@ -107,7 +107,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
     CalendarPanelSelectionListener, CalendarRefresher {
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
 	public String version = null;;
-	public static final String CALENDARS_FILE = "calendars.dat";
 	public static final String CALENDARS_XML_FILE = "calendars.xml";
 	static final String APP_ICON = "images/k5nCal-128x128.png";
 	static final String APP_URL = "http://www.k5n.us/k5ncal.php";
