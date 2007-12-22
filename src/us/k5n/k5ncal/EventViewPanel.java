@@ -90,43 +90,12 @@ public class EventViewPanel extends JPanel {
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
 		subpanel.add ( makeLabel ( "URL: " ), BorderLayout.WEST );
-		url = makeLabel ( "" );
-		url.setForeground ( Color.blue );
-		JPanel subSubPanel = new JPanel ();
-		subSubPanel.setLayout ( new BorderLayout () );
+		url = new JLabelWithHyperlink ( "" );
+		url.setFont ( font );
+		JPanel subSubPanel = new JPanel ( new BorderLayout () );
 		subSubPanel.add ( url, BorderLayout.WEST );
 		subpanel.add ( subSubPanel, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
-		final JLabel myUrl = url;
-		url.addMouseListener ( new MouseListener () {
-			public void mouseEntered ( MouseEvent e1 ) {
-				myUrl.setCursor ( handCursor );
-			}
-
-			public void mouseExited ( MouseEvent e1 ) {
-				myUrl.setCursor ( defaultCursor );
-			}
-
-			public void mouseClicked ( MouseEvent e1 ) {
-			}
-
-			public void mousePressed ( MouseEvent e1 ) {
-			}
-
-			public void mouseReleased ( MouseEvent e1 ) {
-				String urlStr = myUrl.getText ();
-				if ( urlStr != null && urlStr.trim ().startsWith ( "http" ) ) {
-					try {
-						BrowserLauncher bl = new BrowserLauncher ();
-						bl.openURLinBrowser ( urlStr );
-					} catch ( Exception e ) {
-						System.err.println ( "Error starting web browser: "
-						    + e.getMessage () );
-						e.printStackTrace ();
-					}
-				}
-			}
-		} );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
