@@ -111,6 +111,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public static final String DEFAULT_DIR_NAME = "k5nCal";
 	public String version = null;;
 	public static final String CALENDARS_FILE = "calendars.dat";
+	public static final String CALENDARS_XML_FILE = "calendars.xml";
 	static final String APP_ICON = "images/k5nCal-128x128.png";
 	static final String APP_URL = "http://www.k5n.us/k5ncal.php";
 	static final String DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=195315";
@@ -226,7 +227,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public Vector<Calendar> loadCalendars ( File dir ) {
 		Vector<Calendar> ret = new Vector<Calendar> ();
-		File f = new File ( dir, CALENDARS_FILE );
+		File f = new File ( dir, CALENDARS_XML_FILE );
 		if ( !f.exists () ) {
 			String name = (String) System.getProperty ( "user.name" );
 			if ( name == null )
@@ -237,17 +238,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			ret.addElement ( def );
 		} else {
 			try {
-				FileInputStream f_in = new FileInputStream ( f );
-				ObjectInputStream obj_in = new ObjectInputStream ( f_in );
-				Object obj = obj_in.readObject ();
-				if ( obj instanceof Vector ) {
-					ret = (Vector) obj;
-				}
-			} catch ( IOException e1 ) {
-				fatalError ( "Error reading calendar data:\n" + e1.getMessage () );
-				e1.printStackTrace ();
+				ret = Calendar.readCalendars ( f );
 			} catch ( Exception e1 ) {
-				fatalError ( "Error reading calendar data:\n" + e1.getMessage () );
+				this.fatalError ( "Error reading calendar file\n" + f + "\n\nError:\n"
+				    + e1.getMessage () );
 				e1.printStackTrace ();
 			}
 		}
@@ -255,11 +249,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void saveCalendars ( File dir ) {
-		File f = new File ( dir, CALENDARS_FILE );
+		File f = new File ( dir, CALENDARS_XML_FILE );
 		try {
-			FileOutputStream f_out = new FileOutputStream ( f );
-			ObjectOutputStream obj_out = new ObjectOutputStream ( f_out );
-			obj_out.writeObject ( dataRepository.getCalendars () );
+			Calendar.writeCalendars ( f, dataRepository.getCalendars () );
 		} catch ( IOException e1 ) {
 			this.showError ( "Error writing calendars:\n" + e1.getMessage () );
 			e1.printStackTrace ();

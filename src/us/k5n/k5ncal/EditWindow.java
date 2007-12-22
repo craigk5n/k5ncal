@@ -730,6 +730,11 @@ class MyDateChooser extends JDateChooser {
 	}
 }
 
+/*
+ * Override the default ListCellRenderer for the Calendar JComboBox so that we
+ * can include a small box icon to the left of the Calendar name that displays
+ * the Calendar color.
+ */
 class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 	private static HashMap<Color, ImageIcon> icons = null;
 
@@ -739,10 +744,6 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		setVerticalAlignment ( CENTER );
 	}
 
-	/*
-	 * This method finds the image and text corresponding to the selected value
-	 * and returns the label, set up to display the text and image.
-	 */
 	public Component getListCellRendererComponent ( JList list, Object value,
 	    int index, boolean isSelected, boolean cellHasFocus ) {
 		if ( icons == null )
@@ -756,7 +757,6 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 			setForeground ( list.getForeground () );
 		}
 
-		// Set the icon and text. If icon was null, say so.
 		Calendar c = (Calendar) value;
 		setFont ( list.getFont () );
 		setText ( c.name );
@@ -771,6 +771,15 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		return this;
 	}
 
+	/**
+	 * Build an icon that shows the Calendar's colors.
+	 * 
+	 * @param fill
+	 *          The main color (Calendar.bg)
+	 * @param border
+	 *          The border color (Calendar.fg)
+	 * @return The new ImageIcon for the specified colors
+	 */
 	private ImageIcon buildIcon ( Color fill, Color border ) {
 		int WIDTH = 16;
 		int HEIGHT = 16;

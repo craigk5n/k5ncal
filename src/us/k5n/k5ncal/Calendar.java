@@ -20,10 +20,27 @@
 package us.k5n.k5ncal;
 
 import java.awt.Color;
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Random;
+import java.util.Vector;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * The Calendar class represents a single user calendar, either local or remote.
@@ -68,6 +85,52 @@ public class Calendar implements Serializable {
 			this.updateIntervalSecs = 3600 * 14; // 14 days default
 	}
 
+	public Calendar(Node topNode) {
+		NodeList list = topNode.getChildNodes ();
+		int len = list.getLength ();
+
+		for ( int i = 0; i < len; i++ ) {
+			Node n = list.item ( i );
+			if ( n.getNodeType () == Node.ELEMENT_NODE ) {
+				String nodeName = n.getNodeName ();
+				if ( "name".equals ( nodeName ) ) {
+					this.name = Utils.xmlNodeGetValue ( n );
+				} else if ( "filename".equals ( nodeName ) ) {
+					this.filename = Utils.xmlNodeGetValue ( n );
+				} else if ( "lastUpdated".equals ( nodeName ) ) {
+					this.lastUpdated = Long.parseLong ( Utils.xmlNodeGetValue ( n ) );
+				} else if ( "url".equals ( nodeName ) ) {
+					try {
+						this.url = new URL ( Utils.xmlNodeGetValue ( n ) );
+					} catch ( MalformedURLException e1 ) {
+						System.err.println ( "Invalid URL in calendar data: "
+						    + Utils.xmlNodeGetValue ( n ) );
+					}
+				} else if ( "updateIntervalSecs".equals ( nodeName ) ) {
+					this.updateIntervalSecs = Integer.parseInt ( Utils
+					    .xmlNodeGetValue ( n ) );
+				} else if ( "selected".equals ( nodeName ) ) {
+					String s = Utils.xmlNodeGetValue ( n );
+					this.selected = s.toUpperCase ().startsWith ( "T" )
+					    || s.toUpperCase ().startsWith ( "Y" );
+				} else if ( "foregroundColor".equals ( nodeName ) ) {
+					this.fg = Utils.parseColor ( Utils.xmlNodeGetValue ( n ) );
+				} else if ( "backgroundColor".equals ( nodeName ) ) {
+					this.bg = Utils.parseColor ( Utils.xmlNodeGetValue ( n ) );
+				} else if ( "borderColor".equals ( nodeName ) ) {
+					this.border = Utils.parseColor ( Utils.xmlNodeGetValue ( n ) );
+				} else {
+					System.err.println ( "Not sure what to do with <" + nodeName
+					    + "> tag (ignoring) in <product>" );
+				}
+			}
+		}
+
+		if ( filename == null ) {
+			System.err.println ( "Error: no filename in <calendar> entry" );
+		}
+	}
+
 	public String toString () {
 		return name;
 	}
@@ -100,5 +163,110 @@ public class Calendar implements Serializable {
 			if ( ! ( new File ( dir, name ) ).exists () )
 				return name;
 		}
+	}
+
+	/**
+	 * Generate the XML representation of this Calendar object so that we may
+	 * store it in an XML file.
+	 * 
+	 * @return
+	 */
+	public String toXML () {
+		StringBuffer sb = new StringBuffer ();
+		
+		sb.append ( "  <calendar>\n" );
+		sb.append ( "    <name>" );
+		sb.append ( Utils.escape ( this.name ) );
+		sb.append ( "</name>\n" );
+
+		sb.append ( "    <filename>" );
+		sb.append ( Utils.escape ( this.filename ) );
+		sb.append ( "</filename>\n" );
+
+		sb.append ( "    <lastUpdated>" );
+		sb.append ( this.lastUpdated );
+		sb.append ( "</lastUpdated>\n" );
+
+		if ( this.url != null ) {
+			sb.append ( "    <url>" );
+			sb.append ( Utils.escape ( this.url.toString () ) );
+			sb.append ( "</url>\n" );
+		}
+
+		sb.append ( "    <updateIntervalSecs>" );
+		sb.append ( this.updateIntervalSecs );
+		sb.append ( "</updateIntervalSecs>\n" );
+
+		sb.append ( "    <selected>" );
+		sb.append ( this.selected ? "true" : "false" );
+		sb.append ( "</selected>\n" );
+
+		sb.append ( "    <foregroundColor>#" );
+		sb.append ( Utils.intToHex ( this.fg.getRed () ) );
+		sb.append ( Utils.intToHex ( this.fg.getGreen () ) );
+		sb.append ( Utils.intToHex ( this.fg.getBlue () ) );
+		sb.append ( "</foregroundColor>\n" );
+
+		sb.append ( "    <backgroundColor>#" );
+		sb.append ( Utils.intToHex ( this.bg.getRed () ) );
+		sb.append ( Utils.intToHex ( this.bg.getGreen () ) );
+		sb.append ( Utils.intToHex ( this.bg.getBlue () ) );
+		sb.append ( "</backgroundColor>\n" );
+
+		sb.append ( "    <borderColor>#" );
+		sb.append ( Utils.intToHex ( this.border.getRed () ) );
+		sb.append ( Utils.intToHex ( this.border.getGreen () ) );
+		sb.append ( Utils.intToHex ( this.border.getBlue () ) );
+		sb.append ( "</borderColor>\n" );
+
+		sb.append ( "  </calendar>\n" );
+		return sb.toString ();
+	}
+
+	public static void writeCalendars ( File file,
+	    Vector<Calendar> calendars ) throws IOException {
+		OutputStream os = new FileOutputStream ( file );
+		os.write ( "<calendars>\n".getBytes () );
+		for ( int i = 0; i < calendars.size (); i++ ) {
+			Calendar c = calendars.elementAt ( i );
+			os.write ( c.toXML ().getBytes () );
+		}
+		os.write ( "</calendars>\n".getBytes () );
+		os.close ();
+	}
+
+	public static Vector<Calendar> readCalendars ( File file )
+	    throws IOException, ParserConfigurationException, SAXException {
+		Vector<Calendar> ret = new Vector<Calendar> ();
+		InputStream is = new FileInputStream ( file );
+		DataInputStream ds = new DataInputStream ( is );
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance ();
+		DocumentBuilder builder = factory.newDocumentBuilder ();
+		Document document = builder.parse ( ds );
+		is.close ();
+
+		NodeList list = document.getElementsByTagName ( "calendars" );
+		int len = list.getLength ();
+		if ( list.getLength () < 1 ) {
+			System.err.println ( "Error: no <calendars> tag found in " + file );
+			System.exit ( 1 );
+		}
+		Node topNode = list.item ( 0 );
+		list = topNode.getChildNodes ();
+		len = list.getLength ();
+
+		for ( int i = 0; i < len; i++ ) {
+			Node n = list.item ( i );
+
+			if ( n.getNodeType () == Node.ELEMENT_NODE ) {
+				String nodeName = n.getNodeName ();
+				if ( "calendar".equals ( nodeName ) ) {
+					Calendar c = new Calendar ( n );
+					ret.addElement ( c );
+				}
+			}
+		}
+
+		return ret;
 	}
 }
