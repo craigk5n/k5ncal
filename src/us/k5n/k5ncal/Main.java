@@ -442,6 +442,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 		helpMenu.add ( item );
 
+		helpMenu.addSeparator ();
+
+		item = new JMenuItem ( "3rd Party Components..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				new ThirdPartyDialog ( parent );
+			}
+		} );
+		helpMenu.add ( item );
+
 		bar.add ( helpMenu );
 
 		return bar;
