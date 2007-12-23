@@ -1,6 +1,11 @@
 package us.k5n.k5ncal;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+
+import javax.swing.ImageIcon;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
@@ -14,6 +19,7 @@ import org.w3c.dom.NodeList;
  * @author Craig Knudsen, craig@k5n.us
  */
 public class Utils {
+	private static HashMap<Color, ImageIcon> icons = null;
 
 	/**
 	 * * For tags such as <name>xxx</name>, get the "xxx" for the Node.
@@ -202,6 +208,51 @@ public class Utils {
 			    .println ( "Invalid color specification for: " + colorStr + "'" );
 		}
 		return new Color ( r, g, b );
+	}
+
+	public static Color getForegroundColorForBackground ( Color bg ) {
+		Color ret = Color.white;
+		if ( bg.getRed () > 128 && bg.getGreen () > 128 && bg.getRed () > 128 )
+			ret = Color.black;
+		return ret;
+	}
+
+	/**
+	 * Build an icon that shows the Calendar's colors.
+	 * 
+	 * @param fill
+	 *          The main color (Calendar.bg)
+	 * @param border
+	 *          The border color (Calendar.fg)
+	 * @return The new ImageIcon for the specified colors
+	 */
+	public static ImageIcon buildColoredIcon ( Color fill, Color border ) {
+		int WIDTH = 16;
+		int HEIGHT = 16;
+
+		if ( Utils.icons == null )
+			Utils.icons = new HashMap<Color, ImageIcon> ();
+
+		ImageIcon ret = Utils.icons.get ( fill );
+		if ( ret != null )
+			return ret;
+
+		BufferedImage bufimage = new BufferedImage ( WIDTH, HEIGHT,
+		    BufferedImage.TYPE_INT_ARGB );
+		Graphics g = bufimage.getGraphics ();
+		g.setColor ( fill );
+		g.fillRect ( 0, 0, WIDTH - 1, HEIGHT - 1 );
+		// Draw border
+		g.setColor ( border );
+		g.drawLine ( 0, 0, WIDTH - 1, 0 );
+		g.drawLine ( WIDTH - 1, 0, WIDTH - 1, HEIGHT - 1 );
+		g.drawLine ( WIDTH - 1, HEIGHT - 1, 0, HEIGHT - 1 );
+		g.drawLine ( 0, HEIGHT - 1, 0, 0 );
+		g.dispose ();
+
+		ret = new ImageIcon ( bufimage );
+		Utils.icons.put ( fill, ret );
+		return ret;
 	}
 
 }

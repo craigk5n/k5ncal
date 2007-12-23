@@ -34,7 +34,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Vector;
 
 import javax.swing.BorderFactory;
@@ -736,7 +735,6 @@ class MyDateChooser extends JDateChooser {
  * the Calendar color.
  */
 class ComboBoxRenderer extends JLabel implements ListCellRenderer {
-	private static HashMap<Color, ImageIcon> icons = null;
 
 	public ComboBoxRenderer() {
 		setOpaque ( true );
@@ -746,8 +744,6 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 
 	public Component getListCellRendererComponent ( JList list, Object value,
 	    int index, boolean isSelected, boolean cellHasFocus ) {
-		if ( icons == null )
-			icons = new HashMap<Color, ImageIcon> ();
 
 		if ( isSelected ) {
 			setBackground ( list.getSelectionBackground () );
@@ -761,12 +757,8 @@ class ComboBoxRenderer extends JLabel implements ListCellRenderer {
 		setFont ( list.getFont () );
 		setText ( c.getName () );
 		this.setHorizontalAlignment ( SwingConstants.LEFT );
-		ImageIcon icon = icons.get ( c.getBackgroundColor () );
-		if ( icon == null ) {
-			icon = buildIcon ( c.getBackgroundColor (), c.getForegroundColor () );
-			icons.put ( c.getBackgroundColor (), icon );
-		}
-		setIcon ( icon );
+		setIcon ( Utils.buildColoredIcon ( c.getBackgroundColor (), c
+		    .getForegroundColor () ) );
 
 		return this;
 	}

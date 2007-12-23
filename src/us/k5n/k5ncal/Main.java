@@ -22,11 +22,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -57,8 +55,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -338,7 +334,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
-				editRemoteCalendar ( null );
+				new EditRemoteCalendarWindow ( parent, dataRepository, null,
+				    getDataDirectory () );
 			}
 		} );
 		calMenu.add ( item );
@@ -651,8 +648,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void editCalendar ( Calendar c ) {
 		if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 			editLocalCalendar ( c );
-		} else
-			editRemoteCalendar ( c );
+		} else {
+			new EditRemoteCalendarWindow ( parent, dataRepository, c,
+			    getDataDirectory () );
+		}
 	}
 
 	/**
@@ -1026,186 +1025,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		return ret;
 	}
 
-	protected void editRemoteCalendar ( final Calendar c ) {
-		final JDialog addRemote = new JDialog ( this );
-		addRemote.setLocationRelativeTo ( null );
-		final JTextField nameField = new JTextField ( 50 );
-		final JTextField urlField = new JTextField ( 50 );
-		final String[] choices = { "12 Hours", "1 Day", "3 Days", "7 Days",
-		    "14 Days", "30 Days", "90 Days", "1 Year", "Never" };
-		final int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14, 24 * 30,
-		    24 * 90, 24 * 365, 0 };
-		int defChoice = 5;
-		final JComboBox updateField = new JComboBox ( choices );
-		final ColorButton colorField = new ColorButton ();
-		int[] props = { 1, 3 };
-
-		if ( c != null ) {
-			for ( int i = 0; i < choiceValues.length; i++ ) {
-				if ( c.getUpdateIntervalSecs () == choiceValues[i] * 3600 )
-					defChoice = i;
-			}
-			nameField.setText ( c.getName () );
-			// Don't allow changing of URL. Must delete and add new
-			urlField.setText ( c.getUrl ().toString () );
-			urlField.setEditable ( false );
-		}
-
-		addRemote.setTitle ( c != null ? "Edit Remote Calendar"
-		    : "Add Remote Calendar" );
-		addRemote.setModal ( true );
-		Container content = addRemote.getContentPane ();
-		content.setLayout ( new BorderLayout () );
-		JPanel buttonPanel = new JPanel ();
-		buttonPanel.setLayout ( new FlowLayout () );
-		JButton cancel = new JButton ( "Cancel" );
-		cancel.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				addRemote.dispose ();
-			}
-		} );
-		buttonPanel.add ( cancel );
-		JButton ok = new JButton ( c == null ? "Add" : "Save" );
-		ok.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				try {
-					String name = nameField.getText ();
-					if ( name == null || name.trim ().length () == 0 ) {
-						showError ( "You must provide a name" );
-						return;
-					}
-					String urlStr = urlField.getText ();
-					if ( urlStr == null || urlStr.trim ().length () == 0 ) {
-						showError ( "You must provide a URL" );
-						return;
-					}
-					// convert "webcal://" to "http://";
-					if ( urlStr.startsWith ( "webcal:" ) )
-						urlStr = urlStr.replaceFirst ( "webcal:", "http:" );
-					// Only allow HTTP
-					if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
-						showError ( "Invalid URL.\n\nOnly the HTTP protocol\nis supported." );
-						return;
-					}
-					URL url = null;
-					try {
-						url = new URL ( urlStr );
-					} catch ( Exception e1 ) {
-						showError ( "Invalid URL:\n" + e1.getMessage () );
-						return;
-					}
-					int updSel = updateField.getSelectedIndex ();
-					int updateInterval = choiceValues[updSel];
-					Color color = colorField.getSelectedColor ();
-					// download
-					showStatusMessage ( "Downloading calendar..." );
-					Calendar cal = null;
-					if ( c == null ) {
-						cal = new Calendar ( getDataDirectory (), name, url, updateInterval );
-					} else {
-						cal = c;
-					}
-					cal.setBackgroundColor ( color );
-					cal.setBorderColor ( getForegroundColorForBackground ( color ) );
-					cal.setForegroundColor ( getForegroundColorForBackground ( color ) );
-					cal.setLastUpdatedAsNow ();
-					cal.setUpdateIntervalSecs ( updateInterval * 3600 );
-					HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
-					InputStream is = urlC.getInputStream ();
-					File file = new File ( getDataDirectory (), cal.getFilename () );
-					OutputStream os = new FileOutputStream ( file );
-					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
-					    is ) );
-					byte[] buf = new byte[4 * 1024]; // 4K buffer
-					int bytesRead;
-					int totalRead = 0;
-					while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
-						os.write ( buf, 0, bytesRead );
-						totalRead += bytesRead;
-					}
-					os.close ();
-					dis.close ();
-					urlC.disconnect ();
-					// Handle the HTTP status code
-					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-						// Handle this one individually since it will be the most common.
-						showError ( "Invalid calendar URL (not found).\n\nServer response: "
-						    + urlC.getResponseMessage () );
-						return;
-					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-						showError ( "Invalid calendar URL.\n\nServer response: "
-						    + urlC.getResponseMessage () );
-						return;
-					}
-					// Delete old calendar
-					if ( c == null ) {
-						showStatusMessage ( "New remote calendar \"" + name + "\" added ("
-						    + totalRead + " bytes)" );
-						dataRepository.addCalendar ( getDataDirectory (), cal, false );
-						// This will call us back with calendarAdded (below)
-					} else {
-						// updating calendar...
-						dataRepository.updateCalendar ( getDataDirectory (), cal );
-						showStatusMessage ( "Updated local calendar \"" + name
-						    + "\" updated" );
-					}
-				} catch ( FileNotFoundException e1 ) {
-					showError ( "Invalid URL (not found)" );
-					return;
-				} catch ( Exception e2 ) {
-					showError ( "Error downloading calendar:\n" + e2.getMessage () );
-					e2.printStackTrace ();
-					return;
-				}
-				addRemote.dispose ();
-			}
-		} );
-		buttonPanel.add ( ok );
-		content.add ( buttonPanel, BorderLayout.SOUTH );
-
-		JPanel main = new JPanel ();
-		main
-		    .setBorder ( BorderFactory.createTitledBorder ( "New Remote Calendar" ) );
-		main.setLayout ( new GridLayout ( 4, 1 ) );
-		JPanel namePanel = new JPanel ();
-		namePanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		namePanel.add ( new JLabel ( "Name: " ) );
-		namePanel.add ( nameField );
-		main.add ( namePanel );
-		JPanel urlPanel = new JPanel ();
-		urlPanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		urlPanel.add ( new JLabel ( "URL: " ) );
-		urlPanel.add ( urlField );
-		main.add ( urlPanel );
-		JPanel updatePanel = new JPanel ();
-		updatePanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		updatePanel.add ( new JLabel ( "Update Interval: " ) );
-		if ( defChoice < choices.length )
-			updateField.setSelectedIndex ( defChoice );
-		updatePanel.add ( updateField );
-		main.add ( updatePanel );
-
-		JPanel colorPanel = new JPanel ();
-		colorPanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		colorPanel.add ( new JLabel ( "Background Color: " ) );
-		JPanel colorSub = new JPanel ();
-		colorSub.setLayout ( new BorderLayout () );
-		colorField
-		    .setBackground ( c == null ? Color.blue : c.getBackgroundColor () );
-		colorSub.add ( colorField, BorderLayout.WEST );
-		colorPanel.add ( colorSub );
-		main.add ( colorPanel );
-
-		content.add ( main, BorderLayout.CENTER );
-
-		addRemote.pack ();
-		addRemote.setVisible ( true );
-	}
-
 	protected void editLocalCalendar ( final Calendar c ) {
 		final JDialog addLocal = new JDialog ( this );
 		addLocal.setLocationRelativeTo ( null );
@@ -1301,8 +1120,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		colorPanel.add ( new JLabel ( "Background Color: " ) );
 		JPanel colorSub = new JPanel ();
 		colorSub.setLayout ( new BorderLayout () );
-		colorField
-		    .setBackground ( c == null ? Color.blue : c.getBackgroundColor () );
+		colorField.setSelectedColor ( c == null ? Color.blue : c
+		    .getBackgroundColor () );
 		colorSub.add ( colorField, BorderLayout.WEST );
 		colorPanel.add ( colorSub );
 		main.add ( colorPanel );
@@ -1774,39 +1593,4 @@ class ICSFileChooserFilter extends javax.swing.filechooser.FileFilter {
 	public String getDescription () {
 		return "*.ics (iCalendar Files)";
 	}
-}
-
-class ColorButton extends JButton {
-	public ColorButton() {
-		super ();
-		final ColorButton b = this;
-		this.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				Color newColor = JColorChooser.showDialog ( b, "Choose Color", b
-				    .getBackground () );
-				if ( newColor != null ) {
-					b.setBackground ( newColor );
-				}
-			}
-		} );
-	}
-
-	public void setSelectedColor ( Color c ) {
-		this.setBackground ( c );
-	}
-
-	public Color getSelectedColor () {
-		return this.getBackground ();
-	}
-
-	public void paint ( Graphics g ) {
-		super.paint ( g );
-		g.setColor ( super.getBackground () );
-		g.fill3DRect ( 4, 4, getWidth () - 8, getHeight () - 8, true );
-	}
-
-	public Dimension preferredSize () {
-		return new Dimension ( 30, 30 );
-	}
-
 }
