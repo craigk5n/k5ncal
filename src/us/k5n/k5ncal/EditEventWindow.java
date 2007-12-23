@@ -74,7 +74,7 @@ import com.toedter.calendar.JDateChooser;
  * @author Craig Knudsen, craig@k5n.us
  * @version $Id$
  */
-public class EditWindow extends JDialog implements Constants, ComponentListener {
+public class EditEventWindow extends JDialog implements Constants, ComponentListener {
 	Repository repo;
 	Event event;
 	Calendar selectedCalendar;
@@ -124,7 +124,7 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 	 * @param date
 	 * @param selectedCalendar
 	 */
-	public EditWindow(JFrame parent, Repository repo, Date date,
+	public EditEventWindow(JFrame parent, Repository repo, Date date,
 	    Calendar selectedCalendar) {
 		this ( parent, repo, null, date, selectedCalendar );
 	}
@@ -137,12 +137,12 @@ public class EditWindow extends JDialog implements Constants, ComponentListener 
 	 * @param event
 	 * @param selectedCalendar
 	 */
-	public EditWindow(JFrame parent, Repository repo, Event event,
+	public EditEventWindow(JFrame parent, Repository repo, Event event,
 	    Calendar selectedCalendar) {
 		this ( parent, repo, event, null, selectedCalendar );
 	}
 
-	private EditWindow(JFrame parent, Repository repo, Event event, Date date,
+	private EditEventWindow(JFrame parent, Repository repo, Event event, Date date,
 	    Calendar selectedCalendar) {
 		super ( parent );
 		prefs = AppPreferences.getInstance ();

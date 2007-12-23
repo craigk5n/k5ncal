@@ -480,7 +480,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					}
 					Date now = Date.getCurrentDateTime ( "DTSTART" );
 					now.setMinute ( 0 );
-					new EditWindow ( parent, dataRepository, now, selectedCalendar );
+					new EditEventWindow ( parent, dataRepository, now, selectedCalendar );
 				}
 			}
 		} );
@@ -499,7 +499,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					if ( se.event.getRrule () != null ) {
 						showError ( "Editing events with recurrance\nnot yet supported." );
 					} else {
-						new EditWindow ( parent, dataRepository, se.event, se.calendar );
+						new EditEventWindow ( parent, dataRepository, se.event, se.calendar );
 					}
 				}
 			}
@@ -1322,7 +1322,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			if ( se.calendar.getType () != Calendar.LOCAL_CALENDAR ) {
 				showError ( "You cannot edit events\non remote/subscribed calendars." );
 			} else {
-				new EditWindow ( parent, dataRepository, se.event, se.calendar );
+				new EditEventWindow ( parent, dataRepository, se.event, se.calendar );
 			}
 		}
 	}
@@ -1330,7 +1330,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void dateDoubleClicked ( int year, int month, int dayOfMonth ) {
 		try {
 			Date d = new Date ( "DTSTART", year, month, dayOfMonth );
-			new EditWindow ( parent, dataRepository, d, null );
+			new EditEventWindow ( parent, dataRepository, d, null );
 		} catch ( BogusDataException e1 ) {
 			e1.printStackTrace ();
 		}
