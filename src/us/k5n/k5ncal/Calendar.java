@@ -61,12 +61,17 @@ public class Calendar implements Serializable {
 	private long lastUpdated = 0; // Time of last update (in ms since 1970) */
 	private URL url = null;
 	private int updateIntervalSecs = 0; // seconds between updates
+	private int authType = AUTH_NONE;
+	private String authUsername = null;
+	private String authPassword = null;
 	private boolean selected = true;
 	private Color fg = Color.WHITE;
 	private Color bg = Color.BLUE;
 	private Color border = Color.BLACK;
 	private static Random random = new Random ( ( new java.util.Date () )
 	    .getTime () );
+	public static final int AUTH_NONE = 0;
+	public static final int AUTH_BASIC = 1;
 
 	public Calendar(File dir, String name) {
 		this.name = name;
@@ -124,6 +129,19 @@ public class Calendar implements Serializable {
 				} else if ( "updateIntervalSecs".equals ( nodeName ) ) {
 					this.updateIntervalSecs = Integer.parseInt ( Utils
 					    .xmlNodeGetValue ( n ) );
+				} else if ( "authType".equals ( nodeName ) ) {
+					String typeStr = Utils.xmlNodeGetValue ( n );
+					if ( typeStr.equalsIgnoreCase ( "basic" ) )
+						this.authType = AUTH_BASIC;
+					else if ( typeStr.equalsIgnoreCase ( "none" ) )
+						this.authType = AUTH_NONE;
+					else
+						System.err.println ( "Invalid auth type '" + typeStr
+						    + "' found in calendar '" + this.name + "'." );
+				} else if ( "authUsername".equals ( nodeName ) ) {
+					this.authUsername = Utils.xmlNodeGetValue ( n );
+				} else if ( "authPassword".equals ( nodeName ) ) {
+					this.authPassword = Utils.xmlNodeGetValue ( n );
 				} else if ( "selected".equals ( nodeName ) ) {
 					String s = Utils.xmlNodeGetValue ( n );
 					this.selected = s.toUpperCase ().startsWith ( "T" )
@@ -229,6 +247,18 @@ public class Calendar implements Serializable {
 		sb.append ( "    <selected>" );
 		sb.append ( this.selected ? "true" : "false" );
 		sb.append ( "</selected>\n" );
+
+		if ( this.authType != AUTH_NONE ) {
+			sb.append ( "    <authType>basic</authType>\n" );
+			sb.append ( "    <authUsername>" );
+			sb.append ( this.authUsername == null ? "" : Utils
+			    .escape ( this.authUsername ) );
+			sb.append ( "</authUsername>\n" );
+			sb.append ( "    <authPassword>" );
+			sb.append ( this.authPassword == null ? "" : Utils
+			    .escape ( this.authPassword ) );
+			sb.append ( "</authPassword>\n" );
+		}
 
 		sb.append ( "    <foregroundColor>#" );
 		sb.append ( Utils.intToHex ( this.fg.getRed () ) );
@@ -381,6 +411,30 @@ public class Calendar implements Serializable {
 
 	public void setBorderColor ( Color border ) {
 		this.border = border;
+	}
+
+	public int getAuthType () {
+		return authType;
+	}
+
+	public void setAuthType ( int authType ) {
+		this.authType = authType;
+	}
+
+	public String getAuthUsername () {
+		return authUsername;
+	}
+
+	public void setAuthUsername ( String authUsername ) {
+		this.authUsername = authUsername;
+	}
+
+	public String getAuthPassword () {
+		return authPassword;
+	}
+
+	public void setAuthPassword ( String authPassword ) {
+		this.authPassword = authPassword;
 	}
 
 }

@@ -2,6 +2,8 @@ ChangeLog
 $Id$
 
 Version 0.9.6dev (?? Dec 2007) - New features
+- Added support for Basic HTTP authentication when downloading remote iCalendar
+  files.
 - Added dialog window to show info on 3rd party components bundled with k5nCal.
 - Fixed bug: could not export to a new file
 - Modified edit window to show calendar color in JComboBox

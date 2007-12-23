@@ -30,6 +30,7 @@ public class ColorButton extends JButton {
 	}
 
 	public void setSelectedColor ( Color c ) {
+		this.selColor = c;
 		ImageIcon icon = Utils.buildColoredIcon ( c, Utils
 		    .getForegroundColorForBackground ( c ) );
 		this.setIcon ( icon );

@@ -15,13 +15,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Authenticator;
 import java.net.HttpURLConnection;
+import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -36,16 +39,19 @@ public class EditRemoteCalendarWindow extends JDialog {
 	File dataDir;
 	JTextField nameField;
 	JTextField urlField;
-	JCheckBox authRequired;
-	JTextField loginField;
-	JTextField passwordField;
-	String[] choices = { "12 Hours", "1 Day", "3 Days", "7 Days", "14 Days",
-	    "30 Days", "90 Days", "1 Year", "Never" };
-	int[] choiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14, 24 * 30, 24 * 90,
-	    24 * 365, 0 };
+	ColorButton colorField;
+	String[] updateIntervalChoices = { "12 Hours", "1 Day", "3 Days", "7 Days",
+	    "14 Days", "30 Days", "90 Days", "1 Year", "Never" };
+	int[] updateIntervalChoiceValues = { 12, 24, 24 * 3, 24 * 7, 24 * 14,
+	    24 * 30, 24 * 90, 24 * 365, 0 };
 	int defChoice = 5;
 	JComboBox updateField;
-	ColorButton colorField;;
+	JComboBox authField;
+	String[] authChoices = { "None", "Basic" };
+	int[] authChoiceValues = { Calendar.AUTH_NONE, Calendar.AUTH_BASIC };
+	JTextField usernameField;
+	JTextField passwordField;
+	Vector<JComponent> visibleAuthEnabled;
 
 	public EditRemoteCalendarWindow(JFrame parent,
 	    final Repository dataRepository, final Calendar c, final File dataDir) {
@@ -55,25 +61,36 @@ public class EditRemoteCalendarWindow extends JDialog {
 		this.dataDir = dataDir;
 		this.parent = parent;
 		this.setLocationByPlatform ( true );
+		this.visibleAuthEnabled = new Vector<JComponent> ();
 
 		nameField = new JTextField ( 40 );
 		urlField = new JTextField ( 40 );
-		authRequired = new JCheckBox ( "Requires Authentication" );
-		loginField = new JTextField ( 25 );
-		passwordField = new JTextField ( 25 );
-		updateField = new JComboBox ( choices );
 		colorField = new ColorButton ();
+		authField = new JComboBox ( authChoices );
+		usernameField = new JTextField ( 25 );
+		passwordField = new JTextField ( 25 );
+		updateField = new JComboBox ( updateIntervalChoices );
 		int[] props = { 1, 3 };
 
 		if ( c != null ) {
-			for ( int i = 0; i < choiceValues.length; i++ ) {
-				if ( c.getUpdateIntervalSecs () == choiceValues[i] * 3600 )
+			for ( int i = 0; i < updateIntervalChoiceValues.length; i++ ) {
+				if ( c.getUpdateIntervalSecs () == updateIntervalChoiceValues[i] * 3600 )
 					defChoice = i;
 			}
 			nameField.setText ( c.getName () );
 			// Don't allow changing of URL. Must delete and add new
 			urlField.setText ( c.getUrl ().toString () );
 			urlField.setEditable ( false );
+			switch ( c.getAuthType () ) {
+				case Calendar.AUTH_NONE:
+					authField.setSelectedIndex ( 0 );
+					break;
+				case Calendar.AUTH_BASIC:
+					authField.setSelectedIndex ( 1 );
+					usernameField.setText ( c.getAuthUsername () );
+					passwordField.setText ( c.getAuthPassword () );
+					break;
+			}
 		}
 
 		this.setTitle ( c != null ? "Edit Remote Calendar" : "Add Remote Calendar" );
@@ -101,13 +118,20 @@ public class EditRemoteCalendarWindow extends JDialog {
 		JPanel main = new JPanel ();
 		main
 		    .setBorder ( BorderFactory.createTitledBorder ( "New Remote Calendar" ) );
-		main.setLayout ( new GridLayout ( 4, 1 ) );
+		main.setLayout ( new GridLayout ( 7, 1 ) );
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		namePanel.add ( new JLabel ( "Name: " ) );
 		namePanel.add ( nameField );
 		main.add ( namePanel );
+
+		JPanel urlPanel = new JPanel ();
+		urlPanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		urlPanel.add ( new JLabel ( "URL: " ) );
+		urlPanel.add ( urlField );
+		main.add ( urlPanel );
 
 		JPanel colorPanel = new JPanel ();
 		colorPanel.setLayout ( new ProportionalLayout ( props,
@@ -121,18 +145,11 @@ public class EditRemoteCalendarWindow extends JDialog {
 		colorPanel.add ( colorSub );
 		main.add ( colorPanel );
 
-		JPanel urlPanel = new JPanel ();
-		urlPanel.setLayout ( new ProportionalLayout ( props,
-		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		urlPanel.add ( new JLabel ( "URL: " ) );
-		urlPanel.add ( urlField );
-		main.add ( urlPanel );
-
 		JPanel updatePanel = new JPanel ();
 		updatePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		updatePanel.add ( new JLabel ( "Update Interval: " ) );
-		if ( defChoice < choices.length )
+		if ( defChoice < updateIntervalChoices.length )
 			updateField.setSelectedIndex ( defChoice );
 		JPanel updateSubPanel = new JPanel ( new BorderLayout () );
 		updateSubPanel.add ( updateField, BorderLayout.WEST );
@@ -141,16 +158,54 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel authPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		authPanel.add ( new JLabel ( "Requires Auth: " ) );
-		authPanel.add ( authRequired );
+		authPanel.add ( new JLabel ( "Authentication: " ) );
+		JPanel authSubPanel = new JPanel ( new BorderLayout () );
+		authSubPanel.add ( authField, BorderLayout.WEST );
+		authPanel.add ( authSubPanel );
+		main.add ( authPanel );
+
+		JPanel usernamePanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		usernamePanel.add ( new JLabel ( "Username: " ) );
+		JPanel usernameSubPanel = new JPanel ( new BorderLayout () );
+		usernameSubPanel.add ( usernameField, BorderLayout.WEST );
+		usernamePanel.add ( usernameSubPanel );
+		main.add ( usernamePanel );
+		this.visibleAuthEnabled.addElement ( usernamePanel );
+
+		JPanel passwordPanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		passwordPanel.add ( new JLabel ( "Password: " ) );
+		JPanel passwordSubPanel = new JPanel ( new BorderLayout () );
+		passwordSubPanel.add ( passwordField, BorderLayout.WEST );
+		passwordPanel.add ( passwordSubPanel );
+		main.add ( passwordPanel );
+		this.visibleAuthEnabled.addElement ( passwordPanel );
+
+		authField.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent e1 ) {
+				authChangeHandler ();
+			}
+		} );
 
 		content.add ( main, BorderLayout.CENTER );
+
+		this.authChangeHandler ();
 
 		this.pack ();
 		this.setVisible ( true );
 	}
 
-	private void okHandler () {
+	void authChangeHandler () {
+		int authType = this.authChoiceValues[this.authField.getSelectedIndex ()];
+		boolean authVisible = ( authType != Calendar.AUTH_NONE );
+		for ( int i = 0; i < this.visibleAuthEnabled.size (); i++ ) {
+			JComponent c = this.visibleAuthEnabled.elementAt ( i );
+			c.setVisible ( authVisible );
+		}
+	}
+
+	void okHandler () {
 		try {
 			String name = nameField.getText ();
 			if ( name == null || name.trim ().length () == 0 ) {
@@ -178,7 +233,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 				return;
 			}
 			int updSel = updateField.getSelectedIndex ();
-			int updateInterval = choiceValues[updSel];
+			int updateInterval = updateIntervalChoiceValues[updSel];
 			Color color = colorField.getSelectedColor ();
 			Calendar cal = null;
 			if ( c == null ) {
@@ -191,6 +246,26 @@ public class EditRemoteCalendarWindow extends JDialog {
 			cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
 			cal.setLastUpdatedAsNow ();
 			cal.setUpdateIntervalSecs ( updateInterval * 3600 );
+			int authType = authChoiceValues[authField.getSelectedIndex ()];
+			cal.setAuthType ( authType );
+			final String username = usernameField.getText ();
+			final String password = passwordField.getText ();
+			if ( authType == Calendar.AUTH_BASIC ) {
+				cal.setAuthUsername ( username );
+				cal.setAuthPassword ( password );
+				Authenticator.setDefault ( new Authenticator () {
+					protected PasswordAuthentication getPasswordAuthentication () {
+						return new PasswordAuthentication ( username, password
+						    .toCharArray () );
+					}
+				} );
+			} else {
+				Authenticator.setDefault ( new Authenticator () {
+					protected PasswordAuthentication getPasswordAuthentication () {
+						return null;
+					}
+				} );
+			}
 			HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
 			int totalRead = 0;
 			try {
@@ -217,6 +292,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
 					showError ( "Authorization required.\nPlease provide a username\n"
 					    + "and password." );
+					authField.setSelectedIndex ( 1 );
 					return;
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 					showError ( "Invalid calendar URL.\n\nServer response: "
@@ -232,6 +308,8 @@ public class EditRemoteCalendarWindow extends JDialog {
 				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
 					showError ( "Authorization required.\nPlease provide a username\n"
 					    + "and password." );
+					e1.printStackTrace ();
+					authField.setSelectedIndex ( 1 );
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 					showError ( "Invalid calendar URL.\n\nServer response: "
 					    + urlC.getResponseMessage () );
