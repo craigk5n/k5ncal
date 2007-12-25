@@ -108,6 +108,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String APP_URL = "http://www.k5n.us/k5ncal.php";
 	static final String DONATE_URL = "https://sourceforge.net/donate/index.php?group_id=195315";
 	static final String REPORT_BUG_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952950";
+	static final String REQUEST_FEATURE_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952953";
+	static final String SUPPORT_REQUEST_URL = "https://sourceforge.net/tracker/?group_id=195315&atid=952951";
 	static final String LICENSE_FILE = "License.html";
 	static ClassLoader cl = null;
 	JFrame parent;
@@ -429,6 +431,36 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				try {
 					BrowserLauncher bl = new BrowserLauncher ();
 					bl.openURLinBrowser ( REPORT_BUG_URL );
+				} catch ( Exception e1 ) {
+					System.err.println ( "Error starting web browser: "
+					    + e1.getMessage () );
+					e1.printStackTrace ();
+				}
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "Get Support..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					BrowserLauncher bl = new BrowserLauncher ();
+					bl.openURLinBrowser ( SUPPORT_REQUEST_URL );
+				} catch ( Exception e1 ) {
+					System.err.println ( "Error starting web browser: "
+					    + e1.getMessage () );
+					e1.printStackTrace ();
+				}
+			}
+		} );
+		helpMenu.add ( item );
+
+		item = new JMenuItem ( "Request Feature..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				try {
+					BrowserLauncher bl = new BrowserLauncher ();
+					bl.openURLinBrowser ( REQUEST_FEATURE_URL );
 				} catch ( Exception e1 ) {
 					System.err.println ( "Error starting web browser: "
 					    + e1.getMessage () );
