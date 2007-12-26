@@ -16,7 +16,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package us.k5n.k5ncal;
+package us.k5n.k5ncal.data;
 
 import java.io.File;
 import java.io.IOException;

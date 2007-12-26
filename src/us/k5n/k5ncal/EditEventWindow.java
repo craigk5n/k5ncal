@@ -65,8 +65,11 @@ import us.k5n.ical.Rrule;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
 import us.k5n.ical.URL;
+import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.Repository;
 
 import com.toedter.calendar.JDateChooser;
+
 
 /**
  * Create a Event entry edit window.
@@ -74,7 +77,8 @@ import com.toedter.calendar.JDateChooser;
  * @author Craig Knudsen, craig@k5n.us
  * @version $Id$
  */
-public class EditEventWindow extends JDialog implements Constants, ComponentListener {
+public class EditEventWindow extends JDialog implements Constants,
+    ComponentListener {
 	Repository repo;
 	Event event;
 	Calendar selectedCalendar;
@@ -142,8 +146,8 @@ public class EditEventWindow extends JDialog implements Constants, ComponentList
 		this ( parent, repo, event, null, selectedCalendar );
 	}
 
-	private EditEventWindow(JFrame parent, Repository repo, Event event, Date date,
-	    Calendar selectedCalendar) {
+	private EditEventWindow(JFrame parent, Repository repo, Event event,
+	    Date date, Calendar selectedCalendar) {
 		super ( parent );
 		prefs = AppPreferences.getInstance ();
 		super.setSize ( prefs.getEditWindowWidth (), prefs.getEditWindowHeight () );
@@ -449,8 +453,8 @@ public class EditEventWindow extends JDialog implements Constants, ComponentList
 		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
 		calPanel.add ( prompt );
 		Vector<Calendar> localCalendars = new Vector<Calendar> ();
-		for ( int i = 0; i < this.repo.calendars.size (); i++ ) {
-			Calendar c = this.repo.calendars.elementAt ( i );
+		for ( int i = 0; i < this.repo.getCalendars ().size (); i++ ) {
+			Calendar c = this.repo.getCalendars ().elementAt ( i );
 			if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 				localCalendars.addElement ( c );
 			}

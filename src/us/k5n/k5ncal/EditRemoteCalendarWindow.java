@@ -7,17 +7,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Authenticator;
-import java.net.HttpURLConnection;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Vector;
 
@@ -31,6 +21,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.HttpClient;
+import us.k5n.k5ncal.data.HttpClientStatus;
+import us.k5n.k5ncal.data.Repository;
+
 
 public class EditRemoteCalendarWindow extends JDialog {
 	JFrame parent;
@@ -206,136 +202,95 @@ public class EditRemoteCalendarWindow extends JDialog {
 	}
 
 	void okHandler () {
+		String name = nameField.getText ();
+		if ( name == null || name.trim ().length () == 0 ) {
+			showError ( "You must provide a name" );
+			return;
+		}
+		String urlStr = urlField.getText ();
+		if ( urlStr == null || urlStr.trim ().length () == 0 ) {
+			showError ( "You must provide a URL" );
+			return;
+		}
+		// convert "webcal://" to "http://";
+		if ( urlStr.startsWith ( "webcal:" ) )
+			urlStr = urlStr.replaceFirst ( "webcal:", "http:" );
+		// Only allow HTTP
+		if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
+			showError ( "Invalid URL.\n\nOnly the HTTP protocol\nis supported." );
+			return;
+		}
+		URL url = null;
 		try {
-			String name = nameField.getText ();
-			if ( name == null || name.trim ().length () == 0 ) {
-				showError ( "You must provide a name" );
-				return;
-			}
-			String urlStr = urlField.getText ();
-			if ( urlStr == null || urlStr.trim ().length () == 0 ) {
-				showError ( "You must provide a URL" );
-				return;
-			}
-			// convert "webcal://" to "http://";
-			if ( urlStr.startsWith ( "webcal:" ) )
-				urlStr = urlStr.replaceFirst ( "webcal:", "http:" );
-			// Only allow HTTP
-			if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
-				showError ( "Invalid URL.\n\nOnly the HTTP protocol\nis supported." );
-				return;
-			}
-			URL url = null;
-			try {
-				url = new URL ( urlStr );
-			} catch ( Exception e1 ) {
-				showError ( "Invalid URL:\n" + e1.getMessage () );
-				return;
-			}
-			int updSel = updateField.getSelectedIndex ();
-			int updateInterval = updateIntervalChoiceValues[updSel];
-			Color color = colorField.getSelectedColor ();
-			Calendar cal = null;
-			if ( c == null ) {
-				cal = new Calendar ( dataDir, name, url, updateInterval );
-			} else {
-				cal = c;
-			}
-			cal.setBackgroundColor ( color );
-			cal.setBorderColor ( Utils.getForegroundColorForBackground ( color ) );
-			cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
-			cal.setLastUpdatedAsNow ();
-			cal.setUpdateIntervalSecs ( updateInterval * 3600 );
-			int authType = authChoiceValues[authField.getSelectedIndex ()];
-			cal.setAuthType ( authType );
-			final String username = usernameField.getText ();
-			final String password = passwordField.getText ();
-			if ( authType == Calendar.AUTH_BASIC ) {
-				cal.setAuthUsername ( username );
-				cal.setAuthPassword ( password );
-				Authenticator.setDefault ( new Authenticator () {
-					protected PasswordAuthentication getPasswordAuthentication () {
-						return new PasswordAuthentication ( username, password
-						    .toCharArray () );
-					}
-				} );
-			} else {
-				Authenticator.setDefault ( new Authenticator () {
-					protected PasswordAuthentication getPasswordAuthentication () {
-						return null;
-					}
-				} );
-			}
-			HttpURLConnection urlC = (HttpURLConnection) url.openConnection ();
-			int totalRead = 0;
-			try {
-				InputStream is = urlC.getInputStream ();
-				File file = new File ( dataDir, cal.getFilename () );
-				OutputStream os = new FileOutputStream ( file );
-				DataInputStream dis = new DataInputStream ( new BufferedInputStream (
-				    is ) );
-				byte[] buf = new byte[4 * 1024]; // 4K buffer
-				int bytesRead;
-				while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
-					os.write ( buf, 0, bytesRead );
-					totalRead += bytesRead;
-				}
-				os.close ();
-				dis.close ();
-				urlC.disconnect ();
-				// Handle the HTTP status code
-				if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-					// Handle this one individually since it will be the most common.
-					showError ( "Invalid calendar URL (not found).\n\nServer response: "
-					    + urlC.getResponseMessage () );
-					return;
-				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
-					showError ( "Authorization required.\nPlease provide a username\n"
-					    + "and password." );
-					authField.setSelectedIndex ( 1 );
-					return;
-				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-					showError ( "Invalid calendar URL.\n\nServer response: "
-					    + urlC.getResponseMessage () );
-					return;
-				}
-			} catch ( IOException e1 ) {
-				// Handle the HTTP status code
-				if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-					// Handle this one individually since it will be the most common.
-					showError ( "Invalid calendar URL (not found).\n\nServer response: "
-					    + urlC.getResponseMessage () );
-				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
-					showError ( "Authorization required.\nPlease provide a username\n"
-					    + "and password." );
-					e1.printStackTrace ();
-					authField.setSelectedIndex ( 1 );
-				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-					showError ( "Invalid calendar URL.\n\nServer response: "
-					    + urlC.getResponseMessage () );
-				} else {
-					showError ( "Error downloading calendar:\n" + e1.getMessage () );
-					e1.printStackTrace ();
-				}
-				return;
-			}
-			// Delete old calendar
-			if ( c == null ) {
-				// TODO: update status msg on main window
-				dataRepository.addCalendar ( dataDir, cal, false );
-				// This will call us back with calendarAdded (below)
-			} else {
-				// TODO: update status msg on main window
-				// updating calendar...
-				dataRepository.updateCalendar ( dataDir, cal );
-			}
-		} catch ( FileNotFoundException e1 ) {
-			showError ( "Invalid URL (not found)" );
+			url = new URL ( urlStr );
+		} catch ( Exception e1 ) {
+			showError ( "Invalid URL:\n" + e1.getMessage () );
 			return;
-		} catch ( Exception e2 ) {
-			showError ( "Error downloading calendar:\n" + e2.getMessage () );
-			e2.printStackTrace ();
+		}
+		int updSel = updateField.getSelectedIndex ();
+		int updateInterval = updateIntervalChoiceValues[updSel];
+		Color color = colorField.getSelectedColor ();
+		Calendar cal = null;
+		if ( c == null ) {
+			cal = new Calendar ( dataDir, name, url, updateInterval );
+		} else {
+			cal = c;
+		}
+		cal.setBackgroundColor ( color );
+		cal.setBorderColor ( Utils.getForegroundColorForBackground ( color ) );
+		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
+		cal.setLastUpdatedAsNow ();
+		cal.setUpdateIntervalSecs ( updateInterval * 3600 );
+		int authType = authChoiceValues[authField.getSelectedIndex ()];
+		cal.setAuthType ( authType );
+		String username = null;
+		String password = null;
+		if ( authType == Calendar.AUTH_BASIC ) {
+			username = usernameField.getText ();
+			password = passwordField.getText ();
+		}
+		File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
+		HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
+		    username, password, outputFile );
+		switch ( result.getStatus () ) {
+			case HttpClientStatus.HTTP_DOWNLOAD_SUCCESS:
+				break;
+			case HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED:
+				showError ( "Authorization required.\nPlease provide a username\n"
+				    + "and password." );
+				authField.setSelectedIndex ( 1 );
+				return;
+			case HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND:
+				showError ( "Invalid calendar URL (not found).\n\nServer response: "
+				    + result.getMessage () );
+				return;
+			default:
+			case HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR:
+				showError ( "Error downloading calendar.\n\nServer response: "
+				    + result.getMessage () );
+				return;
+		}
+		// TODO: validate the contents of the file
+
+		// Delete old file and move/rename newly downloaded file to the correct
+		// name.
+		File file = new File ( dataDir, cal.getFilename () );
+		if ( file.exists () )
+			file.delete ();
+		if ( !outputFile.renameTo ( file ) ) {
+			// Rename/move failed
+			showError ( "Unable to rename calendar file" );
 			return;
+		}
+
+		if ( c == null ) {
+			// TODO: update status msg on main window
+			dataRepository.addCalendar ( dataDir, cal, false );
+			// This will call us back with calendarAdded (below)
+		} else {
+			// TODO: update status msg on main window
+			// updating calendar...
+			dataRepository.updateCalendar ( dataDir, cal );
 		}
 		dispose ();
 	}

@@ -19,6 +19,8 @@
 
 package us.k5n.k5ncal;
 
+import us.k5n.k5ncal.data.Calendar;
+
 /**
  * Defines the interface of an object that will relaod a remote calendar (read
  * in from HTTP and save it locally)

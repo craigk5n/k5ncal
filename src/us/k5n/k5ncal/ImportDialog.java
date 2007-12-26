@@ -40,9 +40,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
+
 import us.k5n.ical.CSVParser;
 import us.k5n.ical.CalendarParser;
 import us.k5n.ical.ICalendarParser;
+import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.Repository;
 
 /**
  * The import dialog window: Creates a JDialog window that will import the

@@ -33,19 +33,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,6 +76,12 @@ import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.ICalendarParser;
+import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.HttpClient;
+import us.k5n.k5ncal.data.HttpClientStatus;
+import us.k5n.k5ncal.data.Repository;
+import us.k5n.k5ncal.data.RepositoryChangeListener;
+import us.k5n.k5ncal.data.SingleEvent;
 import us.k5n.ui.AccordionPane;
 import us.k5n.ui.calendar.CalendarPanel;
 import us.k5n.ui.calendar.CalendarPanelSelectionListener;
@@ -528,10 +528,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( eventInstance != null ) {
 					// TODO: support editing events with recurrance.
 					SingleEvent se = (SingleEvent) eventInstance;
-					if ( se.event.getRrule () != null ) {
+					if ( se.getEvent ().getRrule () != null ) {
 						showError ( "Editing events with recurrance\nnot yet supported." );
 					} else {
-						new EditEventWindow ( parent, dataRepository, se.event, se.calendar );
+						new EditEventWindow ( parent, dataRepository, se.getEvent (), se
+						    .getCalendar () );
 					}
 				}
 			}
@@ -547,7 +548,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( eventInstance != null ) {
 					// TODO: support deleting events with recurrance.
 					SingleEvent se = (SingleEvent) eventInstance;
-					if ( se.event.getRrule () != null ) {
+					if ( se.getEvent ().getRrule () != null ) {
 						showError ( "Deleting events with recurrance\nnot yet supported." );
 					} else {
 						if ( JOptionPane.showConfirmDialog ( parent,
@@ -555,7 +556,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						        + se.getTitle (), "Confirm Delete",
 						    JOptionPane.YES_NO_OPTION ) == 0 ) {
 							try {
-								dataRepository.deleteEvent ( se.calendar, se.event );
+								dataRepository.deleteEvent ( se.getCalendar (), se.getEvent () );
 							} catch ( IOException e1 ) {
 								showError ( "Error deleting." );
 								e1.printStackTrace ();
@@ -581,7 +582,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		selected = ( eventInstance != null );
 		if ( selected && eventInstance instanceof SingleEvent ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			isLocal = ( se.calendar.getType () == Calendar.LOCAL_CALENDAR );
+			isLocal = ( se.getCalendar ().getType () == Calendar.LOCAL_CALENDAR );
 		}
 		editButton.setEnabled ( selected && isLocal );
 		deleteButton.setEnabled ( selected && isLocal );
@@ -705,57 +706,39 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			private String statusMsg = null;
 
 			public Object construct () {
-				// Execute time-consuming task
-				try {
-					// For now, we only support HTTP since 99.99% of all users will use it
-					// instead of something like FTP.
-					HttpURLConnection urlC = (HttpURLConnection) cal.getUrl ()
-					    .openConnection ();
-					InputStream is = urlC.getInputStream ();
-					File tmpFile = new File ( getDataDirectory (), cal.getFilename ()
-					    + ".new" );
-					OutputStream os = new FileOutputStream ( tmpFile );
-					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
-					    is ) );
-					byte[] buf = new byte[4 * 1024]; // 4K buffer
-					int bytesRead;
-					int totalRead = 0;
-					while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
-						os.write ( buf, 0, bytesRead );
-						totalRead += bytesRead;
-					}
-					os.close ();
-					dis.close ();
-					// not required to disconnect, but nice since we won't be connecting
-					// to the same server before we get a timeout anyway.
-					urlC.disconnect ();
-					// Handle the HTTP status code
-					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-						// Handle this one individually since it will be the most common.
-						this.error = "Invalid calendar URL (not found).\n\nServer response: "
-						    + urlC.getResponseMessage ();
-					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-						this.error = "Invalid calendar URL.\n\nServer response: "
-						    + urlC.getResponseMessage ();
-					} else if ( tmpFile.exists () && tmpFile.length () > 0 ) {
-						// Make sure the contents look like iCalendar data
-						File file = new File ( getDataDirectory (), cal.getFilename () );
-						file.delete ();
-						if ( !tmpFile.renameTo ( file ) ) {
-							this.error = "Unable to rename temporary file:\nOld: "
-							    + tmpFile.getAbsolutePath () + "\nNew: "
-							    + file.getAbsolutePath ();
-						} else {
-							this.statusMsg = "Calendar '" + cal.getName () + "' refreshed";
-						}
-					} else {
-						this.error = "Unknown error refreshing calendar";
-					}
-				} catch ( FileNotFoundException e1 ) {
-					this.error = "Invalid URL (not found)";
-				} catch ( IOException e1 ) {
-					e1.printStackTrace ();
-					this.error = "Error refreshing calendar:\n\n" + e1.getMessage ();
+				// Execute time-consuming task...
+				// For now, we only support HTTP since 99.99% of all users will use it
+				// instead of something like FTP.
+				File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
+				String username = null, password = null;
+				if ( cal.getAuthType () == Calendar.AUTH_BASIC ) {
+					username = cal.getAuthUsername ();
+					password = cal.getAuthPassword ();
+				}
+				HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
+				    username, password, outputFile );
+				// We're not supposed to make UI calls from this thread. So, when
+				// we get an error, save it in the error variable for use in the
+				// finished method.
+				// TODO: implement a way to show these errors to the user.
+				switch ( result.getStatus () ) {
+					case HttpClientStatus.HTTP_DOWNLOAD_SUCCESS:
+						statusMsg = "Calendar '" + cal.getName ()
+						    + "' successfully refreshed.";
+						break;
+					case HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED:
+						error = "Authorization required.\nPlease provide a username\n"
+						    + "and password.";
+						return null;
+					case HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND:
+						error = "Invalid calendar URL (not found).\n\nServer response: "
+						    + result.getMessage ();
+						return null;
+					default:
+					case HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR:
+						error = "Error downloading calendar.\n\nServer response: "
+						    + result.getMessage ();
+						return null;
 				}
 				return null;
 			}
@@ -1321,7 +1304,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			eventDate.setDateOnly ( true );
 		}
 		updateToolbar ();
-		this.eventViewPanel.update ( eventDate, se.event, se.calendar );
+		this.eventViewPanel.update ( eventDate, se.getEvent (), se.getCalendar () );
 	}
 
 	public void calendarAdded ( Calendar c ) {
@@ -1351,10 +1334,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
 		if ( eventInstance != null ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			if ( se.calendar.getType () != Calendar.LOCAL_CALENDAR ) {
+			if ( se.getCalendar ().getType () != Calendar.LOCAL_CALENDAR ) {
 				showError ( "You cannot edit events\non remote/subscribed calendars." );
 			} else {
-				new EditEventWindow ( parent, dataRepository, se.event, se.calendar );
+				new EditEventWindow ( parent, dataRepository, se.getEvent (), se
+				    .getCalendar () );
 			}
 		}
 	}
@@ -1537,50 +1521,38 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			showError ( "Invalid URL:\n" + e1.getMessage () );
 			return;
 		}
-		final URL url2 = url;
 		showStatusMessage ( "Downloading calendar '" + name + "'" );
 		final Calendar cal = new Calendar ( getDataDirectory (), name, url, 30 );
 		cal.setBackgroundColor ( Color.blue );
 		cal.setForegroundColor ( getForegroundColorForBackground ( Color.blue ) );
 		cal.setBorderColor ( getForegroundColorForBackground ( Color.blue ) );
 		cal.setLastUpdatedAsNow ();
+		cal.setUrl ( url );
 
 		SwingWorker addWorker = new SwingWorker () {
 			private String error = null;
 			private String statusMsg = null;
 
 			public Object construct () {
-				try {
-					HttpURLConnection urlC = (HttpURLConnection) url2.openConnection ();
-					InputStream is = urlC.getInputStream ();
-					File file = new File ( getDataDirectory (), cal.getFilename () );
-					OutputStream os = new FileOutputStream ( file );
-					DataInputStream dis = new DataInputStream ( new BufferedInputStream (
-					    is ) );
-					byte[] buf = new byte[4 * 1024]; // 4K buffer
-					int bytesRead;
-					int totalRead = 0;
-					while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
-						os.write ( buf, 0, bytesRead );
-						totalRead += bytesRead;
-					}
-					os.close ();
-					dis.close ();
-					urlC.disconnect ();
-					// Handle the HTTP status code
-					if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-						// Handle this one individually since it will be the most common.
-						error = "Invalid calendar URL (not found).\n\nServer response: "
-						    + urlC.getResponseMessage ();
-					} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-						error = "Invalid calendar URL.\n\nServer response: "
-						    + urlC.getResponseMessage ();
-					}
-				} catch ( FileNotFoundException e1 ) {
-					error = "Invalid URL (not found)";
-				} catch ( Exception e2 ) {
-					error = "Error from server: " + e2.getMessage ();
-					e2.printStackTrace ();
+				File file = new File ( getDataDirectory (), cal.getFilename () );
+				HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
+				    null, null, file );
+				switch ( result.getStatus () ) {
+					case HttpClientStatus.HTTP_DOWNLOAD_SUCCESS:
+						break;
+					case HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED:
+						showError ( "Authorization required.\nPlease provide a username\n"
+						    + "and password." );
+						return null;
+					case HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND:
+						showError ( "Invalid calendar URL (not found).\n\nServer response: "
+						    + result.getMessage () );
+						return null;
+					default:
+					case HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR:
+						showError ( "Error downloading calendar.\n\nServer response: "
+						    + result.getMessage () );
+						return null;
 				}
 				return null;
 			}

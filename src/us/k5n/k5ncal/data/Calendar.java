@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package us.k5n.k5ncal;
+package us.k5n.k5ncal.data;
 
 import java.awt.Color;
 import java.io.DataInputStream;
@@ -41,6 +41,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import us.k5n.k5ncal.Utils;
 
 /**
  * The Calendar class represents a single user calendar, either local or remote.

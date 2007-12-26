@@ -32,8 +32,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
+import us.k5n.k5ncal.data.Calendar;
 import edu.stanford.ejalbert.BrowserLauncher;
 
 public class EventViewPanel extends JPanel {

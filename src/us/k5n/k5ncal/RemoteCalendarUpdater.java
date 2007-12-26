@@ -19,6 +19,8 @@
 package us.k5n.k5ncal;
 
 import us.k5n.ical.Utils;
+import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.Repository;
 
 /**
  * A helper thread class to periodically check to see if we should update a
