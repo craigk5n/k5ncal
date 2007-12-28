@@ -40,7 +40,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 
-
 import us.k5n.ical.CSVParser;
 import us.k5n.ical.CalendarParser;
 import us.k5n.ical.ICalendarParser;

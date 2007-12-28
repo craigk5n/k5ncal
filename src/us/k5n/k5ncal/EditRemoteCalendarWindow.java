@@ -27,7 +27,6 @@ import us.k5n.k5ncal.data.HttpClient;
 import us.k5n.k5ncal.data.HttpClientStatus;
 import us.k5n.k5ncal.data.Repository;
 
-
 public class EditRemoteCalendarWindow extends JDialog {
 	JFrame parent;
 	Repository dataRepository;
