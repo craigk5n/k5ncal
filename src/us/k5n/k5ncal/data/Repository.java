@@ -28,6 +28,7 @@ import us.k5n.ical.Categories;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.Utils;
+import us.k5n.k5ncal.AppPreferences;
 import us.k5n.ui.calendar.CalendarDataRepository;
 
 /**
@@ -287,6 +288,9 @@ public class Repository implements CalendarDataRepository {
 	private void rebuildPrivateData () {
 		if ( !needsRebuilding )
 			return;
+		AppPreferences prefs = AppPreferences.getInstance ();
+		boolean showCancelled = prefs.getEventDisplayCancelled ();
+		boolean showTentative = prefs.getEventDisplayTentative ();
 		this.categories = new Vector<String> ();
 		this.cachedEvents = new HashMap<String, Vector> ();
 		HashMap<String, String> catH = new HashMap<String, String> ();
@@ -323,7 +327,16 @@ public class Repository implements CalendarDataRepository {
 					} else {
 						matchesCategoryFilter = true;
 					}
-					if ( df.calendar.isSelected () && matchesCategoryFilter ) {
+					boolean display = true;
+					switch ( event.getStatus () ) {
+						case Event.STATUS_CANCELLED:
+							display = showCancelled;
+							break;
+						case Event.STATUS_TENTATIVE:
+							display = showTentative;
+							break;
+					}
+					if ( df.calendar.isSelected () && matchesCategoryFilter && display ) {
 						SingleEvent se = null;
 						if ( event.isValid () && event.getStartDate () != null ) {
 							Date startDate = event.getStartDate ();
@@ -496,6 +509,16 @@ public class Repository implements CalendarDataRepository {
 			}
 		}
 		return deleted;
+	}
+
+	public void notifyDisplayPreferencesChange () {
+		this.needsRebuilding = true;
+		for ( int i = 0; this.changeListeners != null
+		    && i < this.changeListeners.size (); i++ ) {
+			RepositoryChangeListener l = (RepositoryChangeListener) this.changeListeners
+			    .elementAt ( i );
+			l.displaySettingsChanged ();
+		}
 	}
 
 	/**

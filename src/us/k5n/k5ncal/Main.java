@@ -125,6 +125,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	JList categoryJList;
 	String searchText = null;
 	private static File lastExportDirectory = null;
+	PreferencesWindow preferencesWindow = null;
 	AppPreferences prefs;
 	File dataDir = null;
 	static final String MENU_CALENDAR_EDIT = "Edit";
@@ -262,6 +263,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		JMenuBar bar = new JMenuBar ();
 
 		JMenu fileMenu = new JMenu ( "File" );
+
+		item = new JMenuItem ( "Preferences..." );
+		item.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				if ( preferencesWindow == null ) {
+					preferencesWindow = new PreferencesWindow ( parent, dataRepository );
+				} else {
+					preferencesWindow.setVisible ( true );
+				}
+			}
+		} );
+		fileMenu.add ( item );
 
 		JMenu importMenu = new JMenu ( "Import" );
 		// exportMenu.setMnemonic ( 'X' );
@@ -1327,6 +1340,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		updateCalendarJList ();
 		updateCategoryJList ();
 		saveCalendars ( getDataDirectory () );
+		this.dataRepository.rebuild ();
+		this.calendarPanel.repaint ();
+	}
+
+	public void displaySettingsChanged () {
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 	}

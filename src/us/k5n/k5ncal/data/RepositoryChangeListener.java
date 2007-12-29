@@ -41,4 +41,6 @@ public interface RepositoryChangeListener {
 
 	public abstract void calendarDeleted ( Calendar c );
 
+	public abstract void displaySettingsChanged ();
+
 }

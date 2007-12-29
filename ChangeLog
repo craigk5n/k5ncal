@@ -2,6 +2,8 @@ ChangeLog
 $Id$
 
 Version 0.9.6dev (?? Dec 2007) - New features
+- Added preferences window: can configure whether to display cancelled and
+  tentative events.
 - Added support for Basic HTTP authentication when downloading remote iCalendar
   files.
 - Code refactoring: added new data sub-package

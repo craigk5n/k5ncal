@@ -43,6 +43,14 @@ public class AppPreferences {
 	static final String EDIT_WINDOW_X = "EditWindow.x";
 	static final String EDIT_WINDOW_Y = "EditWindow.y";
 
+	static final String PREF_WINDOW_WIDTH = "PrefWindow.width";
+	static final String PREF_WINDOW_HEIGHT = "PrefWindow.height";
+	static final String PREF_WINDOW_X = "PrefWindow.x";
+	static final String PREF_WINDOW_Y = "PrefWindow.y";
+
+	static final String EVENT_DISPLAY_CANCELLED = "Event.displayCancelled";
+	static final String EVENT_DISPLAY_TENTATIVE = "Event.displayTentative";
+
 	private static AppPreferences instance = null;
 
 	public AppPreferences() {
@@ -256,4 +264,95 @@ public class AppPreferences {
 		prefs.putInt ( EDIT_WINDOW_Y, editWindowY );
 	}
 
+	/**
+	 * Get pref window width
+	 * 
+	 * @return
+	 */
+	public int getPrefWindowWidth () {
+		return prefs.getInt ( PREF_WINDOW_WIDTH, 600 );
+	}
+
+	/**
+	 * Set pref window width
+	 * 
+	 * @param prefWindowWidth
+	 *          width of pref window (in pixels)
+	 */
+	public void setPrefWindowWidth ( int prefWindowWidth ) {
+		prefs.putInt ( PREF_WINDOW_WIDTH, prefWindowWidth );
+	}
+
+	/**
+	 * Get pref window height
+	 * 
+	 * @return
+	 */
+	public int getPrefWindowHeight () {
+		return prefs.getInt ( PREF_WINDOW_HEIGHT, 400 );
+	}
+
+	/**
+	 * Set pref window width
+	 * 
+	 * @param prefWindowWidth
+	 *          width of pref window (in pixels)
+	 */
+	public void setPrefWindowHeight ( int prefWindowHeight ) {
+		prefs.putInt ( PREF_WINDOW_HEIGHT, prefWindowHeight );
+	}
+
+	/**
+	 * Get the pref window X position
+	 * 
+	 * @return
+	 */
+	public int getPrefWindowX () {
+		return prefs.getInt ( PREF_WINDOW_X, 15 );
+	}
+
+	/**
+	 * Set the pref window X position
+	 * 
+	 * @param prefWindowX
+	 *          The X position of the main window
+	 */
+	public void setPrefWindowX ( int prefWindowX ) {
+		prefs.putInt ( PREF_WINDOW_X, prefWindowX );
+	}
+
+	/**
+	 * Get the pref window y position
+	 * 
+	 * @return
+	 */
+	public int getPrefWindowY () {
+		return prefs.getInt ( PREF_WINDOW_Y, 15 );
+	}
+
+	/**
+	 * Set the pref window Y position
+	 * 
+	 * @param prefWindowY
+	 *          The Y position of the main window
+	 */
+	public void setPrefWindowY ( int prefWindowY ) {
+		prefs.putInt ( PREF_WINDOW_Y, prefWindowY );
+	}
+
+	public boolean getEventDisplayCancelled () {
+		return prefs.getBoolean ( EVENT_DISPLAY_CANCELLED, false );
+	}
+
+	public void setEventDisplayCancelled ( boolean isSet ) {
+		prefs.putBoolean ( EVENT_DISPLAY_CANCELLED, isSet );
+	}
+
+	public boolean getEventDisplayTentative () {
+		return prefs.getBoolean ( EVENT_DISPLAY_TENTATIVE, false );
+	}
+
+	public void setEventDisplayTentative ( boolean isSet ) {
+		prefs.putBoolean ( EVENT_DISPLAY_TENTATIVE, isSet );
+	}
 }
