@@ -48,8 +48,9 @@ public class AppPreferences {
 	static final String PREF_WINDOW_X = "PrefWindow.x";
 	static final String PREF_WINDOW_Y = "PrefWindow.y";
 
-	static final String EVENT_DISPLAY_CANCELLED = "Event.displayCancelled";
-	static final String EVENT_DISPLAY_TENTATIVE = "Event.displayTentative";
+	static final String DISPLAY_CANCELLED_EVENTS = "Display.cancelledEvents";
+	static final String DISPLAY_TENTATIVE_EVENTS = "Display.tentativeEvents";
+	static final String DISPLAY_HOUR_IN_MONTH_VIEW = "Display.hourInMonthView";
 
 	private static AppPreferences instance = null;
 
@@ -340,19 +341,27 @@ public class AppPreferences {
 		prefs.putInt ( PREF_WINDOW_Y, prefWindowY );
 	}
 
-	public boolean getEventDisplayCancelled () {
-		return prefs.getBoolean ( EVENT_DISPLAY_CANCELLED, false );
+	public boolean getDisplayCancelledEvents () {
+		return prefs.getBoolean ( DISPLAY_CANCELLED_EVENTS, false );
 	}
 
-	public void setEventDisplayCancelled ( boolean isSet ) {
-		prefs.putBoolean ( EVENT_DISPLAY_CANCELLED, isSet );
+	public void setDisplayCancelledEvents ( boolean isSet ) {
+		prefs.putBoolean ( DISPLAY_CANCELLED_EVENTS, isSet );
 	}
 
-	public boolean getEventDisplayTentative () {
-		return prefs.getBoolean ( EVENT_DISPLAY_TENTATIVE, false );
+	public boolean getDisplayTentativeEvents () {
+		return prefs.getBoolean ( DISPLAY_TENTATIVE_EVENTS, false );
 	}
 
-	public void setEventDisplayTentative ( boolean isSet ) {
-		prefs.putBoolean ( EVENT_DISPLAY_TENTATIVE, isSet );
+	public void setDisplayTentativeEvents ( boolean isSet ) {
+		prefs.putBoolean ( DISPLAY_TENTATIVE_EVENTS, isSet );
+	}
+
+	public boolean getDisplayHourInMonthView () {
+		return prefs.getBoolean ( DISPLAY_HOUR_IN_MONTH_VIEW, false );
+	}
+
+	public void setDisplayHourInMonthView ( boolean isSet ) {
+		prefs.putBoolean ( DISPLAY_HOUR_IN_MONTH_VIEW, isSet );
 	}
 }

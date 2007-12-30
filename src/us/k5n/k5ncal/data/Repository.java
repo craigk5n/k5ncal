@@ -289,8 +289,8 @@ public class Repository implements CalendarDataRepository {
 		if ( !needsRebuilding )
 			return;
 		AppPreferences prefs = AppPreferences.getInstance ();
-		boolean showCancelled = prefs.getEventDisplayCancelled ();
-		boolean showTentative = prefs.getEventDisplayTentative ();
+		boolean showCancelled = prefs.getDisplayCancelledEvents ();
+		boolean showTentative = prefs.getDisplayTentativeEvents ();
 		this.categories = new Vector<String> ();
 		this.cachedEvents = new HashMap<String, Vector> ();
 		HashMap<String, String> catH = new HashMap<String, String> ();

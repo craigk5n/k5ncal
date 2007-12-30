@@ -52,6 +52,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 	AppPreferences prefs;
 	JComboBox displayCancelled;
 	JComboBox displayTentative;
+	JComboBox displayHourInMonthView;
 
 	class IntegerChoice {
 		String label;
@@ -114,47 +115,64 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JTabbedPane tabbedPane = new JTabbedPane ();
 
-		JPanel eventPanel = new JPanel ( new GridLayout ( 2, 1 ) );
+		JPanel displayPanel = new JPanel ( new GridLayout ( 3, 1 ) );
 
 		JPanel cancelledPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		cancelledPanel.add ( new JLabel ( "Display cancelled: " ) );
+		cancelledPanel.add ( new JLabel ( "Display cancelled events: " ) );
 		Vector choices = new Vector ();
 		choices.addElement ( new IntegerChoice ( "No", 0 ) );
 		choices.addElement ( new IntegerChoice ( "Yes", 1 ) );
 		this.displayCancelled = new JComboBox ( choices );
-		cancelledPanel.add ( this.displayCancelled );
-		eventPanel.add ( cancelledPanel );
+		JPanel aPanel = new JPanel ( new BorderLayout () );
+		aPanel.add ( this.displayCancelled, BorderLayout.WEST );
+		cancelledPanel.add ( aPanel );
+		displayPanel.add ( cancelledPanel );
 
 		JPanel tentativePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		tentativePanel.add ( new JLabel ( "Display tentative: " ) );
+		tentativePanel.add ( new JLabel ( "Display tentative events: " ) );
 		this.displayTentative = new JComboBox ( choices );
-		tentativePanel.add ( this.displayTentative );
-		eventPanel.add ( tentativePanel );
+		aPanel = new JPanel ( new BorderLayout () );
+		aPanel.add ( this.displayTentative, BorderLayout.WEST );
+		tentativePanel.add ( aPanel );
+		displayPanel.add ( tentativePanel );
+
+		JPanel showHourInMonthPanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		showHourInMonthPanel.add ( new JLabel ( "Show hour in month view: " ) );
+		this.displayHourInMonthView = new JComboBox ( choices );
+		aPanel = new JPanel ( new BorderLayout () );
+		aPanel.add ( this.displayHourInMonthView, BorderLayout.WEST );
+		showHourInMonthPanel.add ( aPanel );
+		displayPanel.add ( showHourInMonthPanel );
 
 		JPanel eventParentPanel = new JPanel ( new BorderLayout () );
-		eventParentPanel.add ( eventPanel, BorderLayout.NORTH );
+		eventParentPanel.add ( displayPanel, BorderLayout.NORTH );
 		JScrollPane sp = new JScrollPane ( eventParentPanel );
 
-		tabbedPane.addTab ( "Events", sp );
+		tabbedPane.addTab ( "Display", sp );
 
 		getContentPane ().add ( tabbedPane, BorderLayout.CENTER );
 	}
 
 	void updateUIFromPreferences () {
 		this.displayCancelled
-		    .setSelectedIndex ( prefs.getEventDisplayCancelled () ? 1 : 0 );
+		    .setSelectedIndex ( prefs.getDisplayCancelledEvents () ? 1 : 0 );
 		this.displayTentative
-		    .setSelectedIndex ( prefs.getEventDisplayTentative () ? 1 : 0 );
+		    .setSelectedIndex ( prefs.getDisplayTentativeEvents () ? 1 : 0 );
+		this.displayHourInMonthView.setSelectedIndex ( prefs
+		    .getDisplayHourInMonthView () ? 1 : 0 );
 
 	}
 
 	void save () {
 		prefs
-		    .setEventDisplayCancelled ( this.displayCancelled.getSelectedIndex () > 0 );
+		    .setDisplayCancelledEvents ( this.displayCancelled.getSelectedIndex () > 0 );
 		prefs
-		    .setEventDisplayTentative ( this.displayTentative.getSelectedIndex () > 0 );
+		    .setDisplayTentativeEvents ( this.displayTentative.getSelectedIndex () > 0 );
+		prefs.setDisplayHourInMonthView ( this.displayHourInMonthView
+		    .getSelectedIndex () > 0 );
 		repo.notifyDisplayPreferencesChange ();
 		this.dispose ();
 	}

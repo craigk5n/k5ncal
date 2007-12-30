@@ -199,6 +199,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		calendarPanel = new MyCalendarPanel ( dataRepository );
 		calendarPanel.addSelectionListener ( this );
+		calendarPanel.setShowTime ( prefs.getDisplayHourInMonthView () );
 		rightPanel.add ( calendarPanel, BorderLayout.CENTER );
 
 		horizontalSplit = new JSplitPane ( JSplitPane.HORIZONTAL_SPLIT,
@@ -1345,6 +1346,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void displaySettingsChanged () {
+		this.calendarPanel.setShowTime ( prefs.getDisplayHourInMonthView () );
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 	}
