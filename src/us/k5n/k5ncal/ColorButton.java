@@ -38,7 +38,7 @@ public class ColorButton extends JButton {
 				selColor = newColor;
 				if ( newColor != null ) {
 					ImageIcon icon = Utils.buildColoredIcon ( newColor, Utils
-					    .getForegroundColorForBackground ( newColor ) );
+					    .getBorderColorForBackground ( newColor ) );
 					ColorButton.this.setIcon ( icon );
 				}
 			}
@@ -48,7 +48,7 @@ public class ColorButton extends JButton {
 	public void setSelectedColor ( Color c ) {
 		this.selColor = c;
 		ImageIcon icon = Utils.buildColoredIcon ( c, Utils
-		    .getForegroundColorForBackground ( c ) );
+		    .getBorderColorForBackground ( c ) );
 		this.setIcon ( icon );
 	}
 
@@ -161,7 +161,7 @@ class MyPreviewPanel extends JComponent {
 		int w = 200;
 		int startY = 0;
 		Color backgroundColor = curColor;
-		Color borderColor = Utils.getForegroundColorForBackground ( curColor );
+		Color borderColor = Utils.getBorderColorForBackground ( curColor );
 		Color foregroundColor = Utils.getForegroundColorForBackground ( curColor );
 
 		FontMetrics fm = g.getFontMetrics ();

@@ -236,7 +236,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 			cal = c;
 		}
 		cal.setBackgroundColor ( color );
-		cal.setBorderColor ( Utils.getForegroundColorForBackground ( color ) );
+		cal.setBorderColor ( Utils.getBorderColorForBackground ( color ) );
 		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
 		cal.setLastUpdatedAsNow ();
 		cal.setUpdateIntervalSecs ( updateInterval * 3600 );
