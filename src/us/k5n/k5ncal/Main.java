@@ -1319,6 +1319,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 		updateToolbar ();
 		this.eventViewPanel.update ( eventDate, se.getEvent (), se.getCalendar () );
+		// Select the calendar on the left that the selected event belongs to.
+		if ( se.getCalendar () != null ) {
+			int ind = -1;
+			for ( int i = 0; i < this.dataRepository.getCalendars ().size ()
+			    && ind < 0; i++ ) {
+				Calendar c = this.dataRepository.getCalendars ().elementAt ( i );
+				if ( c.equals ( se.getCalendar () ) )
+					ind = i;
+			}
+			if ( ind >= 0 )
+				this.calendarJList.setSelectedIndex ( ind );
+		}
 	}
 
 	public void calendarAdded ( Calendar c ) {
