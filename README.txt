@@ -1,8 +1,8 @@
                            k5nCal
 ****************************************************************************
 
-Version:      0.9.5
-URL:          http://k5ncal.sourceforge.net
+Version:      0.9.6
+URL:          http://k5ndesktopcal.sourceforge.net
 Author:       Craig Knudsen, craig [< at >] k5n.us
 License:      GNU GPL
 Requires:     Java 1.5 or later
@@ -17,15 +17,13 @@ calendars online.
 ---------------------------------------------------------------------------
                          STATUS
 ---------------------------------------------------------------------------
-This is an alpha quality release.  There are surely bugs, and there are
-many features not yet implemented.
+This is a beta quality release.  There are surely bugs, and there are
+some features not yet implemented.
 
 Features not yet implemented:
- - automatically update/refresh remote/subscribed calendars
- - add/edit/delete of events with recurrance
+ - advanced recurrence rules (every other week, specific weekdays, etc.)
  - modify in any way events from a subscribed calendar
  - views other than the 5-week month view
- - view event details (categories, status, etc.)
  - many others... see the app home page and click on "Plans" to
    see what else will eventually be added.
 
@@ -41,7 +39,7 @@ To build with ant:
 
 This build process will create the following jar file:
 
-	dist/k5nCal-0.9.4.jar
+	dist/k5nCal-0.9.6.jar
 
 ---------------------------------------------------------------------------
                          RUNNING THE APP
@@ -51,7 +49,7 @@ To run the k5nCal application, you can double-click on the file
 in your file browser (Windows Explorer, Mac OS X Finder, etc.), or you
 can start it from the command line:
 
-java -jar k5nCal-0.9.4.jar
+java -jar k5nCal-0.9.6.jar
 
 ---------------------------------------------------------------------------
                          LICENSE
@@ -71,7 +69,7 @@ For information about this license:
 	
 
 This package makes use of the following packages.  The class files from
-these packages are bundled into the k5nCal jar file, so you do not need
+these packages are bundled into the k5nCal jar file, so you do NOT need
 to download them separately.
 
 k5n Java Calendar Tools:
