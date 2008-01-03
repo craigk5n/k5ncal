@@ -155,6 +155,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		setDefaultCloseOperation ( JFrame.EXIT_ON_CLOSE );
 		Container contentPane = getContentPane ();
 
+		JLabel test = new JLabel ( "XXX" );
+		Font currentFont = test.getFont ();
+		Font newFont = new Font ( currentFont.getFamily (),
+		    currentFont.getStyle (), currentFont.getSize ()
+		        + prefs.getDisplayFontSize () );
+
 		// Load data
 		File dataDir = getDataDirectory ();
 		dataRepository = new Repository ( dataDir, loadCalendars ( dataDir ), false );
@@ -184,6 +190,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		ap.setTooltipTextAt ( 1, "Filter displayed events by category" );
 
 		eventViewPanel = new EventViewPanel ();
+		eventViewPanel.setAllFonts ( newFont );
 		eventViewPanel.setBorder ( BorderFactory
 		    .createTitledBorder ( "Event Details" ) );
 		leftVerticalSplit = new JSplitPane ( JSplitPane.VERTICAL_SPLIT, ap,
@@ -201,6 +208,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		calendarPanel.addSelectionListener ( this );
 		calendarPanel.setShowTime ( prefs.getDisplayHourInMonthView () );
 		rightPanel.add ( calendarPanel, BorderLayout.CENTER );
+		calendarPanel.setFont ( newFont );
 
 		horizontalSplit = new JSplitPane ( JSplitPane.HORIZONTAL_SPLIT,
 		    leftVerticalSplit, rightPanel );
@@ -1261,6 +1269,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void componentShown ( ComponentEvent ce ) {
+		System.out.println ( "componentShown: " + ce );
 	}
 
 	// Handle moving of main window
@@ -1371,8 +1380,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public void displaySettingsChanged () {
 		this.calendarPanel.setShowTime ( prefs.getDisplayHourInMonthView () );
+		Font oldFont = this.calendarPanel.getFont ();
+		Font defaultFont = this.getFont ();
+		Font newFont = new Font ( oldFont.getFamily (), oldFont.getStyle (),
+		    defaultFont.getSize () + prefs.getDisplayFontSize () );
+		this.calendarPanel.setFont ( newFont );
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
+		this.eventViewPanel.setAllFonts ( newFont );
 	}
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {

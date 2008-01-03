@@ -1,8 +1,8 @@
 ChangeLog
 $Id$
 
-Version 0.9.6dev (?? Dec 2007) - New features
-- Allow users to delete an event with RRULE
+Version 0.9.6 (03 Jan 2008) - New features & Bug fixes
+- Allow users to delete an event with RRULE (repeating events)
 - When user selects an event from the month view, the corresponding calendar
   will be selected from the list of calendars to the left.
 - Added preferences window: can configure whether to display cancelled and
@@ -10,13 +10,15 @@ Version 0.9.6dev (?? Dec 2007) - New features
 - Added support for Basic HTTP authentication when downloading remote iCalendar
   files.
 - Code refactoring: added new data sub-package
-- Added dialog window to show info on 3rd party components bundled with k5nCal.
-- Fixed bug: could not export to a new file
+- Fixed bug: could not export to a new file on Mac OS X
 - Modified edit window to show calendar color in JComboBox
 - Calendar meta data is now written to XML rather than a serialized object.
+  Warning: your previous calendars (k5nCal 0.9.5 and earlier) will NOT be
+  found with this version.  Import the "*.ics" files from your k5nCal directory
+  to add them back.  (Sorry for the inconvenience....)
 - Added SwingWorker class so that calendar refresh of subscribed calendars
   now happens in the background.
-- Remote calendars will be automatically updated based on their specified
+- Remote calendars will automatically be updated based on their specified
   update interval.
 - Fixed bug: update interval of remote calendars was not being saved properly
 - Check HTTP status code when downloading a remote calendar.  Anything other
@@ -30,6 +32,7 @@ Version 0.9.6dev (?? Dec 2007) - New features
 - Added URL field to event edit and view areas
 - Added app icon to About dialog; added java version info to about dialog.
 - Use "Quit" instead of "Exit" for Mac
+- Added dialog window to show info on 3rd party components bundled with k5nCal.
 - Added "View ChangeLog" to Help menu
 - Added "View License" to Help menu
 - Added "Go to k5n Home Page" to Help menu

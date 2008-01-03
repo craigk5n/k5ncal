@@ -53,6 +53,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 	JComboBox displayCancelled;
 	JComboBox displayTentative;
 	JComboBox displayHourInMonthView;
+	JComboBox displayFontSize;
 
 	class IntegerChoice {
 		String label;
@@ -115,12 +116,12 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JTabbedPane tabbedPane = new JTabbedPane ();
 
-		JPanel displayPanel = new JPanel ( new GridLayout ( 3, 1 ) );
+		JPanel displayPanel = new JPanel ( new GridLayout ( 4, 1 ) );
 
 		JPanel cancelledPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		cancelledPanel.add ( new JLabel ( "Display cancelled events: " ) );
-		Vector choices = new Vector ();
+		Vector<IntegerChoice> choices = new Vector<IntegerChoice> ();
 		choices.addElement ( new IntegerChoice ( "No", 0 ) );
 		choices.addElement ( new IntegerChoice ( "Yes", 1 ) );
 		this.displayCancelled = new JComboBox ( choices );
@@ -146,6 +147,21 @@ public class PreferencesWindow extends JDialog implements Constants,
 		aPanel.add ( this.displayHourInMonthView, BorderLayout.WEST );
 		showHourInMonthPanel.add ( aPanel );
 		displayPanel.add ( showHourInMonthPanel );
+		
+		JPanel fontSizePanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		fontSizePanel.add ( new JLabel ( "Font size: " ) );
+		choices = new Vector<IntegerChoice> ();
+		choices.addElement ( new IntegerChoice ( "Smallest", -4 ) );
+		choices.addElement ( new IntegerChoice ( "Small", -2 ) );
+		choices.addElement ( new IntegerChoice ( "Default", 0 ) );
+		choices.addElement ( new IntegerChoice ( "Large", 2 ) );
+		choices.addElement ( new IntegerChoice ( "Largest", 4 ) );
+		this.displayFontSize = new JComboBox ( choices );
+		aPanel = new JPanel ( new BorderLayout () );
+		aPanel.add ( this.displayFontSize, BorderLayout.WEST );
+		fontSizePanel.add ( aPanel );
+		displayPanel.add ( fontSizePanel );
 
 		JPanel eventParentPanel = new JPanel ( new BorderLayout () );
 		eventParentPanel.add ( displayPanel, BorderLayout.NORTH );
@@ -163,7 +179,24 @@ public class PreferencesWindow extends JDialog implements Constants,
 		    .setSelectedIndex ( prefs.getDisplayTentativeEvents () ? 1 : 0 );
 		this.displayHourInMonthView.setSelectedIndex ( prefs
 		    .getDisplayHourInMonthView () ? 1 : 0 );
-
+		switch ( prefs.getDisplayFontSize () ) {
+			case -4:
+				this.displayFontSize.setSelectedIndex ( 0 );
+				break;
+			case -2:
+				this.displayFontSize.setSelectedIndex ( 1 );
+				break;
+			case 2:
+				this.displayFontSize.setSelectedIndex ( 3 );
+				break;
+			case 4:
+				this.displayFontSize.setSelectedIndex ( 4 );
+				break;
+			case 0:
+			default:
+				this.displayFontSize.setSelectedIndex ( 2 );
+				break;
+		}
 	}
 
 	void save () {
@@ -173,6 +206,9 @@ public class PreferencesWindow extends JDialog implements Constants,
 		    .setDisplayTentativeEvents ( this.displayTentative.getSelectedIndex () > 0 );
 		prefs.setDisplayHourInMonthView ( this.displayHourInMonthView
 		    .getSelectedIndex () > 0 );
+		IntegerChoice ic = (IntegerChoice) this.displayFontSize.getSelectedItem ();
+		if ( ic != null )
+			prefs.setDisplayFontSize ( ic.value );
 		repo.notifyDisplayPreferencesChange ();
 		this.dispose ();
 	}

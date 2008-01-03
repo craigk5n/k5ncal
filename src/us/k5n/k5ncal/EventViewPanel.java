@@ -19,24 +19,21 @@
 package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.util.Vector;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.k5ncal.data.Calendar;
-import edu.stanford.ejalbert.BrowserLauncher;
 
 public class EventViewPanel extends JPanel {
 	private JLabel date;
@@ -47,19 +44,19 @@ public class EventViewPanel extends JPanel {
 	private JLabel categories;
 	private JTextArea text;
 	private static Cursor handCursor = null, defaultCursor = null;
-	private static Font font = null;
+	Vector<JComponent> textComponents;
 
 	public EventViewPanel() {
 		super ();
 
-		if ( font == null ) {
-			font = getFont ();
-			font = new Font ( font.getFamily (), Font.PLAIN, font.getSize () - 2 );
-		}
+		this.textComponents = new Vector<JComponent> ();
+		Font font = getFont ();
+		font = new Font ( font.getFamily (), Font.PLAIN, font.getSize () - 2 );
 
-		if ( defaultCursor == null ) {
+		if ( EventViewPanel.defaultCursor == null ) {
 			defaultCursor = this.getCursor ();
-			handCursor = Cursor.getPredefinedCursor ( Cursor.HAND_CURSOR );
+			EventViewPanel.handCursor = Cursor
+			    .getPredefinedCursor ( Cursor.HAND_CURSOR );
 		}
 		setLayout ( new BorderLayout () );
 
@@ -71,7 +68,7 @@ public class EventViewPanel extends JPanel {
 		subpanel.setLayout ( new BorderLayout () );
 		subpanel.add ( makeLabel ( "Date: " ), BorderLayout.WEST );
 		date = makeLabel ( "" );
-		date.setFont ( font );
+		this.textComponents.addElement ( date );
 		subpanel.add ( date, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
@@ -79,6 +76,7 @@ public class EventViewPanel extends JPanel {
 		subpanel.setLayout ( new BorderLayout () );
 		subpanel.add ( makeLabel ( "Subject: " ), BorderLayout.WEST );
 		subject = makeLabel ( "" );
+		this.textComponents.addElement ( subject );
 		subpanel.add ( subject, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
@@ -86,6 +84,7 @@ public class EventViewPanel extends JPanel {
 		subpanel.setLayout ( new BorderLayout () );
 		subpanel.add ( makeLabel ( "Location: " ), BorderLayout.WEST );
 		location = makeLabel ( "" );
+		this.textComponents.addElement ( location );
 		subpanel.add ( location, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
@@ -93,7 +92,7 @@ public class EventViewPanel extends JPanel {
 		subpanel.setLayout ( new BorderLayout () );
 		subpanel.add ( makeLabel ( "URL: " ), BorderLayout.WEST );
 		url = new JLabelWithHyperlink ( "" );
-		url.setFont ( font );
+		this.textComponents.addElement ( url );
 		JPanel subSubPanel = new JPanel ( new BorderLayout () );
 		subSubPanel.add ( url, BorderLayout.WEST );
 		subpanel.add ( subSubPanel, BorderLayout.CENTER );
@@ -116,20 +115,21 @@ public class EventViewPanel extends JPanel {
 		add ( topPanel, BorderLayout.NORTH );
 
 		text = new JTextArea ();
-		text.setFont ( font );
 		text.setLineWrap ( true );
 		text.setWrapStyleWord ( true );
 		text.setEditable ( false );
+		this.textComponents.addElement ( text );
 		JScrollPane scrollPane = new JScrollPane ( text );
-		scrollPane
-		    .setVerticalScrollBarPolicy ( JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
 
 		add ( scrollPane, BorderLayout.CENTER );
+
+		if ( font != null )
+			this.setAllFonts ( font );
 	}
 
 	JLabel makeLabel ( String s ) {
 		JLabel l = new JLabel ( s );
-		l.setFont ( font );
+		this.textComponents.addElement ( l );
 		return l;
 	}
 
@@ -141,6 +141,14 @@ public class EventViewPanel extends JPanel {
 		this.calendar.setText ( "" );
 		this.categories.setText ( "" );
 		this.text.setText ( "" );
+	}
+
+	public void setAllFonts ( Font font ) {
+		super.setFont ( font );
+		for ( int i = 0; i < this.textComponents.size (); i++ ) {
+			JComponent o = this.textComponents.elementAt ( i );
+			o.setFont ( font );
+		}
 	}
 
 	public void update ( Date eventDate, Event event, Calendar calendar ) {
