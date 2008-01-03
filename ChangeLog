@@ -2,6 +2,7 @@ ChangeLog
 $Id$
 
 Version 0.9.6dev (?? Dec 2007) - New features
+- Allow users to delete an event with RRULE
 - When user selects an event from the month view, the corresponding calendar
   will be selected from the list of calendars to the left.
 - Added preferences window: can configure whether to display cancelled and

@@ -560,13 +560,25 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				// Get selected item and open edit window
 				EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 				if ( eventInstance != null ) {
-					// TODO: support deleting events with recurrance.
 					SingleEvent se = (SingleEvent) eventInstance;
 					if ( se.getEvent ().getRrule () != null ) {
-						showError ( "Deleting events with recurrance\nnot yet supported." );
+						// TODO: support deleting single occurrence, which will add an
+						// exception to the RRULE in the event.
+						if ( JOptionPane.showConfirmDialog ( parent,
+						    "Are you sure you want\nto delete all occurreces of the\n"
+						        + "following repeating event?\n\n" + se.getTitle ()
+						        + "\n\nThis will delete ALL events\nin this series.",
+						    "Confirm Delete", JOptionPane.YES_NO_OPTION ) == 0 ) {
+							try {
+								dataRepository.deleteEvent ( se.getCalendar (), se.getEvent () );
+							} catch ( IOException e1 ) {
+								showError ( "Error deleting." );
+								e1.printStackTrace ();
+							}
+						}
 					} else {
 						if ( JOptionPane.showConfirmDialog ( parent,
-						    "Are you sure you want\nto delete the following entry?\n\n"
+						    "Are you sure you want\nto delete the following event?\n\n"
 						        + se.getTitle (), "Confirm Delete",
 						    JOptionPane.YES_NO_OPTION ) == 0 ) {
 							try {
