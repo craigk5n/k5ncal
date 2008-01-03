@@ -21,10 +21,13 @@ This is a beta quality release.  There are surely bugs, and there are
 some features not yet implemented.
 
 Features not yet implemented:
- - advanced recurrence rules (every other week, specific weekdays, etc.)
- - modify in any way events from a subscribed calendar
- - views other than the 5-week month view
- - many others... see the app home page and click on "Plans" to
+ - Advanced recurrence rules (every other week, specific weekdays, etc.)
+   You will be able to properly view events with advanced recurrence
+   rules if they are imported or part of a subscribed calendar, but you
+   cannot edit or create these type of events from k5nCal yet.
+ - Modify in any way events from a subscribed calendar
+ - Biews other than the 5-week month view
+ - Many others... see the app home page and click on "Plans" to
    see what else will eventually be added.
 
 ---------------------------------------------------------------------------
