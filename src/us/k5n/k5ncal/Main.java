@@ -1269,7 +1269,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	}
 
 	public void componentShown ( ComponentEvent ce ) {
-		System.out.println ( "componentShown: " + ce );
 	}
 
 	// Handle moving of main window
