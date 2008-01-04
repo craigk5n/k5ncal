@@ -1,6 +1,10 @@
 ChangeLog
 $Id$
 
+Version 0.9.7dec (?? ??? 2008) - Bug fixes
+- Bug fix: allow users to edit recurring events with "Edit" button (instead
+  of just double-clicking)
+
 Version 0.9.6 (03 Jan 2008) - New features & Bug fixes
 - Allow users to delete an event with RRULE (repeating events)
 - When user selects an event from the month view, the corresponding calendar

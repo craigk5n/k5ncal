@@ -548,10 +548,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				// Get selected item and open edit window
 				EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 				if ( eventInstance != null ) {
-					// TODO: support editing events with recurrance.
+					// NOTE: edit window does not yet support complicated recurrence
+					// rules.
 					SingleEvent se = (SingleEvent) eventInstance;
 					if ( se.getEvent ().getRrule () != null ) {
-						showError ( "Editing events with recurrance\nnot yet supported." );
+						new EditEventWindow ( parent, dataRepository, se.getEvent (), se
+						    .getCalendar () );
 					} else {
 						new EditEventWindow ( parent, dataRepository, se.getEvent (), se
 						    .getCalendar () );
@@ -677,7 +679,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					        JOptionPane.YES_NO_OPTION ) == 0 ) {
 						    deleteCalendar ( c );
 					    }
-					    ;
 				    } else {
 					    System.err.println ( "Unknown menu command: " + actionCommand );
 				    }
