@@ -76,6 +76,7 @@ import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.ICalendarParser;
+import us.k5n.ical.ParseError;
 import us.k5n.k5ncal.data.Calendar;
 import us.k5n.k5ncal.data.HttpClient;
 import us.k5n.k5ncal.data.HttpClientStatus;
@@ -132,6 +133,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MENU_CALENDAR_REFRESH = "Refresh Calendar";
 	static final String MENU_CALENDAR_DELETE = "Delete Calendar";
 	static final String MENU_CALENDAR_ADD_EVENT = "Add Event...";
+	static final String MENU_CALENDAR_VIEW_ERRORS = "View Errors/Warnings...";
 	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
 	static final String MAIN_WINDOW_WIDTH = "MainWindow.width";
 	static final String MAIN_WINDOW_X = "MainWindow.x";
@@ -662,6 +664,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    ret.addElement ( MENU_CALENDAR_DELETE );
 				    if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
 					    ret.addElement ( MENU_CALENDAR_ADD_EVENT );
+				    }
+				    if ( c.getType () == Calendar.REMOTE_ICAL_CALENDAR ) {
+					    // Does this calendar have errors?
+				    	// TODO: implement error viewer...
+					    //Vector<ParseError> errors = dataRepository.getErrorsAt ( ind );
+					    //if ( errors != null && errors.size () > 0 )
+						  //  ret.addElement ( MENU_CALENDAR_VIEW_ERRORS + " " + "("
+						  //      + errors.size () + ")" );
 				    }
 				    return ret;
 			    }
