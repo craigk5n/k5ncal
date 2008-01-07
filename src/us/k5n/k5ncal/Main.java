@@ -128,9 +128,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	PreferencesWindow preferencesWindow = null;
 	AppPreferences prefs;
 	File dataDir = null;
-	static final String MENU_CALENDAR_EDIT = "Edit";
-	static final String MENU_CALENDAR_REFRESH = "Refresh";
-	static final String MENU_CALENDAR_DELETE = "Delete";
+	static final String MENU_CALENDAR_EDIT = "Edit Calendar...";
+	static final String MENU_CALENDAR_REFRESH = "Refresh Calendar";
+	static final String MENU_CALENDAR_DELETE = "Delete Calendar";
+	static final String MENU_CALENDAR_ADD_EVENT = "Add Event...";
 	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
 	static final String MAIN_WINDOW_WIDTH = "MainWindow.width";
 	static final String MAIN_WINDOW_X = "MainWindow.x";
@@ -655,9 +656,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    Vector<String> ret = new Vector<String> ();
 				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
 				    ret.addElement ( MENU_CALENDAR_EDIT );
-				    if ( c.getType () != Calendar.LOCAL_CALENDAR )
+				    if ( c.getType () != Calendar.LOCAL_CALENDAR ) {
 					    ret.addElement ( MENU_CALENDAR_REFRESH );
+				    }
 				    ret.addElement ( MENU_CALENDAR_DELETE );
+				    if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
+					    ret.addElement ( MENU_CALENDAR_ADD_EVENT );
+				    }
 				    return ret;
 			    }
 
@@ -672,13 +677,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						    refreshCalendar ( c );
 					    }
 				    } else if ( MENU_CALENDAR_DELETE.equals ( actionCommand ) ) {
-					    System.out.println ( "Delete calendar: " + c );
 					    if ( JOptionPane.showConfirmDialog ( parent,
 					        "Are you sure you want to\nDelete the following calendar?\n\n"
 					            + c.toString (), "Confirm Delete",
 					        JOptionPane.YES_NO_OPTION ) == 0 ) {
 						    deleteCalendar ( c );
 					    }
+				    } else if ( MENU_CALENDAR_ADD_EVENT.equals ( actionCommand ) ) {
+					    Date now = Date.getCurrentDateTime ( "DTSTART" );
+					    now.setMinute ( 0 );
+					    new EditEventWindow ( parent, dataRepository, now, c );
 				    } else {
 					    System.err.println ( "Unknown menu command: " + actionCommand );
 				    }
