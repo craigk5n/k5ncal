@@ -188,5 +188,6 @@ public class EventViewPanel extends JPanel {
 			this.text.setText ( event.getDescription ().getValue () );
 		else
 			this.text.setText ( "" );
+		this.text.setCaretPosition ( 0 );
 	}
 }

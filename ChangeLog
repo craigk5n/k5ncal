@@ -4,6 +4,8 @@ $Id$
 Version 0.9.7dev (04 Jan 2008) - Bug fixes
 - Bug fix: allow users to edit recurring events with "Edit" button (instead
   of just double-clicking)
+- Bug fix: the event view area on lower left of main page was scrolling
+  to show end of description rather than start.
 
 Version 0.9.6 (03 Jan 2008) - New features & Bug fixes
 - Allow users to delete an event with RRULE (repeating events)
