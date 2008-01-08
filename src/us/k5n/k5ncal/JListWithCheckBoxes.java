@@ -45,8 +45,14 @@ public class JListWithCheckBoxes extends JList implements MouseListener {
 	JPopupMenu menu;
 	int menuItemIndex = -1;
 	boolean isPopupTrigger = false;
-	private String[] menuLabels = null;
+	private Vector<ListItemMenuItem> menuItems = null;
 
+	/**
+	 * Create a JList where each item in this list also has a checkbox on the left
+	 * that can be toggled on and off.
+	 * 
+	 * @param objects
+	 */
 	public JListWithCheckBoxes(Vector<Object> objects) {
 		super ();
 		this.setChoices ( objects );
@@ -56,20 +62,36 @@ public class JListWithCheckBoxes extends JList implements MouseListener {
 		this.setSelectionMode ( ListSelectionModel.SINGLE_SELECTION );
 	}
 
+	/**
+	 * Get the object from the list at the specified location.
+	 * 
+	 * @param i
+	 *          The location of the objecet
+	 * @return
+	 */
 	public Object getObjectAt ( int i ) {
 		return objects.elementAt ( i );
 	}
 
+	/**
+	 * Get the ListItem at the specified location.
+	 * 
+	 * @param i
+	 *          The location (0 = first)
+	 * @return
+	 */
 	public ListItem getListItemAt ( int i ) {
 		return (ListItem) super.getModel ().getElementAt ( i );
 	}
 
-	private void setRightClickMenu ( String[] labels ) {
+	private void setRightClickMenu ( Vector<ListItemMenuItem> menuItems ) {
 		// create right-click menu
-		this.menuLabels = labels;
+		this.menuItems = menuItems;
 		menu = new JPopupMenu ();
-		for ( int i = 0; i < labels.length; i++ ) {
-			JMenuItem item = new JMenuItem ( labels[i] );
+		for ( int i = 0; i < menuItems.size (); i++ ) {
+			ListItemMenuItem menuItem = menuItems.elementAt ( i );
+			JMenuItem item = new JMenuItem ( menuItem.toString () );
+			item.setEnabled ( menuItem.isEnabled () );
 			final int ind = i;
 			item.addActionListener ( new ActionListener () {
 				public void actionPerformed ( ActionEvent event ) {
@@ -84,11 +106,18 @@ public class JListWithCheckBoxes extends JList implements MouseListener {
 		if ( menuItemIndex >= 0 ) {
 			for ( int i = 0; i < this.listeners.size (); i++ ) {
 				ListItemChangeListener l = this.listeners.elementAt ( i );
-				l.menuChoice ( this.menuItemIndex, menuLabels[menuOptionNumber] );
+				l.menuChoice ( this.menuItemIndex, menuItems.elementAt (
+				    menuOptionNumber ).getAction () );
 			}
 		}
 	}
 
+	/**
+	 * Set the objects in the JList.
+	 * 
+	 * @param choices
+	 *          The new Vector
+	 */
 	public void setChoices ( Vector choices ) {
 		this.objects = choices;
 		this.listItems = new Vector<ListItem> ();
@@ -101,11 +130,21 @@ public class JListWithCheckBoxes extends JList implements MouseListener {
 		super.repaint ();
 	}
 
+	/**
+	 * Set the state of the checkbox at the specified location.
+	 * 
+	 * @param ind
+	 * @param state
+	 *          the new state (ListItem.STATE_OFF, ListItem.STATE_YES)
+	 */
 	public void setStateAt ( int ind, int state ) {
 		ListItem item = this.listItems.elementAt ( ind );
 		item.setState ( state );
 	}
 
+	/**
+	 * Handle the mousePressed event so that we can possibly show the popup menu.
+	 */
 	public void mousePressed ( MouseEvent e ) {
 		// We need to check isPopupTrigger here and in mouseReleased. It wil be
 		// true here for Mac (false for Windows). In mouseReleased, it will be
@@ -120,16 +159,12 @@ public class JListWithCheckBoxes extends JList implements MouseListener {
 			return;
 		}
 		this.menuItemIndex = selectedInd;
-		Vector<String> menuLabels = new Vector<String> ();
+		Vector<ListItemMenuItem> menuItems = new Vector<ListItemMenuItem> ();
 		for ( int i = 0; i < this.listeners.size (); i++ ) {
 			ListItemChangeListener l = this.listeners.elementAt ( i );
-			menuLabels.addAll ( l.getMenuChoicesForIndex ( this.menuItemIndex ) );
+			menuItems.addAll ( l.getMenuChoicesForIndex ( this.menuItemIndex ) );
 		}
-		String[] menuChoices = new String[menuLabels.size ()];
-		for ( int i = 0; i < menuLabels.size (); i++ ) {
-			menuChoices[i] = (String) menuLabels.elementAt ( i );
-		}
-		setRightClickMenu ( menuChoices );
+		setRightClickMenu ( menuItems );
 	}
 
 	/**

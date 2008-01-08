@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Vector;
 
 import us.k5n.ical.Constants;
 import us.k5n.ical.DataStore;
@@ -90,6 +91,10 @@ public class DataFile extends File implements Constants {
 	public void addEvent ( Event event ) {
 		event.setUserData ( this );
 		dataStore.storeEvent ( event );
+	}
+
+	public Vector<ParseError> getErrors () {
+		return this.parser.getAllErrors ();
 	}
 
 	private DataFile(ICalendarParser parser, String filename) {

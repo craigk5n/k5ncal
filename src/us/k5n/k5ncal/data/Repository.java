@@ -27,6 +27,7 @@ import us.k5n.ical.BogusDataException;
 import us.k5n.ical.Categories;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
+import us.k5n.ical.ParseError;
 import us.k5n.ical.Utils;
 import us.k5n.k5ncal.AppPreferences;
 import us.k5n.ui.calendar.CalendarDataRepository;
@@ -219,6 +220,10 @@ public class Repository implements CalendarDataRepository {
 			this.dataFileCalendarHash.put ( c, f );
 			this.needsRebuilding = true;
 		}
+	}
+
+	public Vector<ParseError> getErrorsAt ( int ind ) {
+		return this.dataFiles.elementAt ( ind ).getErrors ();
 	}
 
 	/**

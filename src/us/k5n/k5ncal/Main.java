@@ -654,24 +654,22 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    handleCalendarFilterSelection ();
 			    }
 
-			    public Vector<String> getMenuChoicesForIndex ( int ind ) {
-				    Vector<String> ret = new Vector<String> ();
+			    public Vector<ListItemMenuItem> getMenuChoicesForIndex ( int ind ) {
+				    Vector<ListItemMenuItem> ret = new Vector<ListItemMenuItem> ();
 				    Calendar c = dataRepository.getCalendars ().elementAt ( ind );
-				    ret.addElement ( MENU_CALENDAR_EDIT );
-				    if ( c.getType () != Calendar.LOCAL_CALENDAR ) {
-					    ret.addElement ( MENU_CALENDAR_REFRESH );
-				    }
-				    ret.addElement ( MENU_CALENDAR_DELETE );
-				    if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
-					    ret.addElement ( MENU_CALENDAR_ADD_EVENT );
-				    }
+				    ret.addElement ( new ListItemMenuItem ( MENU_CALENDAR_EDIT ) );
+				    ret.addElement ( new ListItemMenuItem ( MENU_CALENDAR_REFRESH, c
+				        .getType () != Calendar.LOCAL_CALENDAR ) );
+				    ret.addElement ( new ListItemMenuItem ( MENU_CALENDAR_DELETE ) );
+				    ret.addElement ( new ListItemMenuItem ( MENU_CALENDAR_ADD_EVENT, c
+				        .getType () == Calendar.LOCAL_CALENDAR ) );
 				    if ( c.getType () == Calendar.REMOTE_ICAL_CALENDAR ) {
 					    // Does this calendar have errors?
-				    	// TODO: implement error viewer...
-					    //Vector<ParseError> errors = dataRepository.getErrorsAt ( ind );
-					    //if ( errors != null && errors.size () > 0 )
-						  //  ret.addElement ( MENU_CALENDAR_VIEW_ERRORS + " " + "("
-						  //      + errors.size () + ")" );
+					    // TODO: implement error viewer...
+					    // Vector<ParseError> errors = dataRepository.getErrorsAt ( ind );
+					    // if ( errors != null && errors.size () > 0 )
+					    // ret.addElement ( MENU_CALENDAR_VIEW_ERRORS + " " + "("
+					    // + errors.size () + ")" );
 				    }
 				    return ret;
 			    }

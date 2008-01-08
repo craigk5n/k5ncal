@@ -19,5 +19,5 @@ public interface ListItemChangeListener {
 
 	public void menuChoice ( int ind, String actionCommand );
 
-	public Vector<String> getMenuChoicesForIndex ( int ind );
+	public Vector<ListItemMenuItem> getMenuChoicesForIndex ( int ind );
 }
