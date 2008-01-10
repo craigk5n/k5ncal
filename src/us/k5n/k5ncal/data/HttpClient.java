@@ -19,8 +19,11 @@
 package us.k5n.k5ncal.data;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,8 +32,6 @@ import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Define a simple class for handling HTTP downloads. We may move to the more
@@ -76,16 +77,15 @@ public class HttpClient {
 			urlC.disconnect ();
 			// Handle the HTTP status code
 			if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
-				return new HttpClientStatus ( HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND,
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
 				    "File not found on server" );
 			} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
 				return new HttpClientStatus (
-				    HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED,
-				    "Authorizaton required" );
+				    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED, "Authorizaton required" );
 			} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-				return new HttpClientStatus (
-				    HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR, "HTTP Error "
-				        + urlC.getResponseCode () + ": " + urlC.getResponseMessage () );
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
+				    "HTTP Error " + urlC.getResponseCode () + ": "
+				        + urlC.getResponseMessage () );
 			}
 		} catch ( IOException e1 ) {
 			// Checking the response code can generate another IOException
@@ -93,34 +93,129 @@ public class HttpClient {
 				// Handle the HTTP status code
 				if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
 					// Handle this one individually since it will be the most common.
-					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND,
+					return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
 					    "File not found on server" );
 				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED,
+					    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED,
 					    "Authorizaton required" );
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR, "HTTP Error "
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error "
 					        + urlC.getResponseCode () + ": " + urlC.getResponseMessage () );
 				} else {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR,
-					    "HTTP I/O Exception:", e1 );
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception:",
+					    e1 );
 				}
 			} catch ( IOException e2 ) {
 				// Print the stack trace on this one since it happened while we were
 				// handling another exception...
 				e2.printStackTrace ();
-				return new HttpClientStatus (
-				    HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR, "HTTP I/O Exception:",
-				    e1 );
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
+				    "HTTP I/O Exception:", e1 );
 			}
 		}
 
 		// Success
-		return new HttpClientStatus ( HttpClientStatus.HTTP_DOWNLOAD_SUCCESS,
+		return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_SUCCESS,
 		    outputFile );
+	}
+
+	public static HttpClientStatus putRemoteCalendar ( URL url,
+	    final String username, final String password, File inputFile ) {
+		if ( !inputFile.exists () || inputFile.length () <= 0 ) {
+			return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
+			    "No such file: " + inputFile );
+		}
+		if ( username != null && password != null ) {
+			Authenticator.setDefault ( new Authenticator () {
+				protected PasswordAuthentication getPasswordAuthentication () {
+					return new PasswordAuthentication ( username, password.toCharArray () );
+				}
+			} );
+		} else {
+			Authenticator.setDefault ( new Authenticator () {
+				protected PasswordAuthentication getPasswordAuthentication () {
+					return null;
+				}
+			} );
+		}
+		HttpURLConnection urlC = null;
+		int totalRead = 0;
+		try {
+			urlC = (HttpURLConnection) url.openConnection ();
+			urlC.setDoInput ( true );
+			urlC.setDoOutput ( true );
+			urlC.setUseCaches ( false );
+			urlC.setDefaultUseCaches ( false );
+			urlC.setAllowUserInteraction ( true );
+			urlC.setRequestMethod ( "PUT" );
+			urlC.setRequestProperty ( "Content-Length", "" + inputFile.length () );
+
+			InputStream is = urlC.getInputStream ();
+			OutputStream os = urlC.getOutputStream ();
+			FileInputStream fis = new FileInputStream ( inputFile );
+			DataInputStream dis = new DataInputStream (
+			    new BufferedInputStream ( fis ) );
+			DataOutputStream dos = new DataOutputStream ( new BufferedOutputStream (
+			    os ) );
+			byte[] buf = new byte[4 * 1024]; // 4K buffer
+			int bytesRead;
+			while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
+				dos.write ( buf, 0, bytesRead );
+				totalRead += bytesRead;
+			}
+			// TODO: should we read back the HTTP response data?
+			os.close ();
+			dos.close ();
+			is.close ();
+			dis.close ();
+			urlC.disconnect ();
+			// Handle the HTTP status code
+			if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
+				    "File not found on server" );
+			} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
+				return new HttpClientStatus (
+				    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED, "Authorizaton required" );
+			} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
+				    "HTTP Error " + urlC.getResponseCode () + ": "
+				        + urlC.getResponseMessage () );
+			}
+		} catch ( IOException e1 ) {
+			// Checking the response code can generate another IOException
+			try {
+				// Handle the HTTP status code
+				if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
+					// Handle this one individually since it will be the most common.
+					return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
+					    "File not found on server" );
+				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
+					return new HttpClientStatus (
+					    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED,
+					    "Authorizaton required" );
+				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
+					return new HttpClientStatus (
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error "
+					        + urlC.getResponseCode () + ": " + urlC.getResponseMessage () );
+				} else {
+					return new HttpClientStatus (
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception:",
+					    e1 );
+				}
+			} catch ( IOException e2 ) {
+				// Print the stack trace on this one since it happened while we were
+				// handling another exception...
+				e2.printStackTrace ();
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
+				    "HTTP I/O Exception:", e1 );
+			}
+		}
+
+		// Success
+		return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_SUCCESS,
+		    "File successfully uploaded" );
 	}
 }

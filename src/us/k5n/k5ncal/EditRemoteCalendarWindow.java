@@ -254,19 +254,19 @@ public class EditRemoteCalendarWindow extends JDialog {
 		HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
 		    username, password, outputFile );
 		switch ( result.getStatus () ) {
-			case HttpClientStatus.HTTP_DOWNLOAD_SUCCESS:
+			case HttpClientStatus.HTTP_STATUS_SUCCESS:
 				break;
-			case HttpClientStatus.HTTP_DOWNLOAD_AUTH_REQUIRED:
+			case HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED:
 				showError ( "Authorization required.\nPlease provide a username\n"
 				    + "and password." );
 				authField.setSelectedIndex ( 1 );
 				return;
-			case HttpClientStatus.HTTP_DOWNLOAD_NOT_FOUND:
+			case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
 				showError ( "Invalid calendar URL (not found).\n\nServer response: "
 				    + result.getMessage () );
 				return;
 			default:
-			case HttpClientStatus.HTTP_DOWNLOAD_OTHER_ERROR:
+			case HttpClientStatus.HTTP_STATUS_OTHER_ERROR:
 				showError ( "Error downloading calendar.\n\nServer response: "
 				    + result.getMessage () );
 				return;

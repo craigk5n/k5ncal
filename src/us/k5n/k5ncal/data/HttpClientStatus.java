@@ -28,10 +28,10 @@ import java.io.File;
  * @version $Id$
  */
 public class HttpClientStatus {
-	public static final int HTTP_DOWNLOAD_SUCCESS = 0;
-	public static final int HTTP_DOWNLOAD_AUTH_REQUIRED = 1;
-	public static final int HTTP_DOWNLOAD_NOT_FOUND = 2;
-	public static final int HTTP_DOWNLOAD_OTHER_ERROR = 3;
+	public static final int HTTP_STATUS_SUCCESS = 0;
+	public static final int HTTP_STATUS_AUTH_REQUIRED = 1;
+	public static final int HTTP_STATUS_NOT_FOUND = 2;
+	public static final int HTTP_STATUS_OTHER_ERROR = 3;
 	String message;
 	int status;
 	File resultFile;
