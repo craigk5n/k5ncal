@@ -2,6 +2,8 @@ ChangeLog
 $Id$
 
 Version 0.9.7dev (04 Jan 2008) - Bug fixes
+- Don't show password in Edit Remote Calendar window by using JPasswordField
+  instead.
 - From calendar list, there is now an "Add Event" menu option.
 - Bug fix: allow users to edit recurring events with "Edit" button (instead
   of just double-clicking)

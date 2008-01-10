@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import us.k5n.k5ncal.data.Calendar;
@@ -63,7 +64,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 		colorField = new ColorButton ();
 		authField = new JComboBox ( authChoices );
 		usernameField = new JTextField ( 25 );
-		passwordField = new JTextField ( 25 );
+		passwordField = new JPasswordField ( 25 );
 		updateField = new JComboBox ( updateIntervalChoices );
 		int[] props = { 1, 3 };
 
