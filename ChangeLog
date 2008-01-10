@@ -16,7 +16,7 @@ Version 0.9.6 (03 Jan 2008) - New features & Bug fixes
 - Allow users to delete an event with RRULE (repeating events)
 - When user selects an event from the month view, the corresponding calendar
   will be selected from the list of calendars to the left.
-- Added preferences window: can configure whether to display cancelled and
+- Added preferences window: can configure whether to display canceled and
   tentative events, whether to show hours in month view
 - Added support for Basic HTTP authentication when downloading remote iCalendar
   files.
@@ -70,7 +70,7 @@ Version 0.9.4 (01 Aug 2007) - Minor feature changes
   when user selects an event
 - Added refresh to menu for subscribed calendars
 - Added Location to edit event window
-- Added Status (confirmed/tentative/cancelled) to edit event window
+- Added Status (confirmed/tentative/canceled) to edit event window
 - Fixed bug 1759136: cannot add event to newly added local calendar
 - Fixed bug: newly added remote calendars do not show up immediately
 - Override CalendarPanel background painting to use gradient backgrounds
