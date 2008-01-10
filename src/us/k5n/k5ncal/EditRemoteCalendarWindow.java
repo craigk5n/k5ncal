@@ -216,8 +216,9 @@ public class EditRemoteCalendarWindow extends JDialog {
 		if ( urlStr.startsWith ( "webcal:" ) )
 			urlStr = urlStr.replaceFirst ( "webcal:", "http:" );
 		// Only allow HTTP
-		if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" ) ) {
-			showError ( "Invalid URL.\n\nOnly the HTTP protocol\nis supported." );
+		if ( !urlStr.toUpperCase ().startsWith ( "HTTP://" )
+		    && !urlStr.toUpperCase ().startsWith ( "HTTPS://" ) ) {
+			showError ( "Invalid URL.\n\nOnly the HTTP and HTTPS protocols\nare currently supported." );
 			return;
 		}
 		URL url = null;

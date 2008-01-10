@@ -2,6 +2,7 @@ ChangeLog
 $Id$
 
 Version 0.9.7dev (04 Jan 2008) - Bug fixes
+- Allow remote calendars to use HTTPS (instead of just HTTP)
 - Don't show password in Edit Remote Calendar window by using JPasswordField
   instead.
 - From calendar list, there is now an "Add Event" menu option.

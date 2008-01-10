@@ -76,7 +76,6 @@ import us.k5n.ical.DataStore;
 import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.ICalendarParser;
-import us.k5n.ical.ParseError;
 import us.k5n.k5ncal.data.Calendar;
 import us.k5n.k5ncal.data.HttpClient;
 import us.k5n.k5ncal.data.HttpClientStatus;
@@ -758,7 +757,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 			public Object construct () {
 				// Execute time-consuming task...
-				// For now, we only support HTTP since 99.99% of all users will use it
+				// For now, we only support HTTP/HTTPS since 99.99% of all users will
+				// use it
 				// instead of something like FTP.
 				File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
 				String username = null, password = null;
@@ -1557,7 +1557,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( args.length >= i + 1 ) {
 					String name = args[++i].trim ();
 					String url = args[++i].trim ();
-					if ( url.startsWith ( "http://" ) ) {
+					if ( url.startsWith ( "http://" ) || url.startsWith ( "https://" ) ) {
 						remoteNames.addElement ( name );
 						remoteURLs.addElement ( url );
 					} else {

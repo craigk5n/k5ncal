@@ -30,6 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 /**
  * Define a simple class for handling HTTP downloads. We may move to the more
  * robust Apache HttpClient class down the road. For now, this much leaner class
