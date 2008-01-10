@@ -754,13 +754,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		SwingWorker refreshWorker = new SwingWorker () {
 			private String error = null;
 			private String statusMsg = null;
+			private File outputFile = null;
 
 			public Object construct () {
 				// Execute time-consuming task...
 				// For now, we only support HTTP/HTTPS since 99.99% of all users will
 				// use it
 				// instead of something like FTP.
-				File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
+				outputFile = new File ( dataDir, cal.getFilename () + ".new" );
 				String username = null, password = null;
 				if ( cal.getAuthType () == Calendar.AUTH_BASIC ) {
 					username = cal.getAuthUsername ();
@@ -801,10 +802,24 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( this.statusMsg != null )
 					showStatusMessage ( statusMsg );
 				if ( error == null ) {
-					// If no error, then save calendar update
-					cal.setLastUpdatedAsNow ();
-					saveCalendars ( dataDir );
-					dataRepository.updateCalendar ( getDataDirectory (), cal );
+					// TODO: validate what we downloaded was ICS data rather than an HTML
+					// page
+					// Rename file from ".ics.new" to ".ics"
+					File file = new File ( dataDir, cal.getFilename () );
+					// Delete old file first since renameTo may file if file already
+					// exists
+					file.delete ();
+					// Now rename
+					if ( !outputFile.renameTo ( file ) ) {
+						// Error renaming
+						showError ( "Error renaming file" );
+					} else {
+						System.out.println ( "Renamed " + outputFile + " to " + file );
+						// If no error, then save calendar update
+						cal.setLastUpdatedAsNow ();
+						saveCalendars ( dataDir );
+						dataRepository.updateCalendar ( getDataDirectory (), cal );
+					}
 				}
 			}
 		};
