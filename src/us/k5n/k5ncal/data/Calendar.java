@@ -74,6 +74,8 @@ public class Calendar implements Serializable {
 	    .getTime () );
 	public static final int AUTH_NONE = 0;
 	public static final int AUTH_BASIC = 1;
+	private boolean canWrite = false; // For remote calendars
+	private boolean syncBeforePublish = false; // For remote calendars
 
 	public Calendar(File dir, String name) {
 		this.name = name;
@@ -147,6 +149,14 @@ public class Calendar implements Serializable {
 				} else if ( "selected".equals ( nodeName ) ) {
 					String s = Utils.xmlNodeGetValue ( n );
 					this.selected = s.toUpperCase ().startsWith ( "T" )
+					    || s.toUpperCase ().startsWith ( "Y" );
+				} else if ( "canWrite".equals ( nodeName ) ) {
+					String s = Utils.xmlNodeGetValue ( n );
+					this.canWrite = s.toUpperCase ().startsWith ( "T" )
+					    || s.toUpperCase ().startsWith ( "Y" );
+				} else if ( "syncBeforePublish".equals ( nodeName ) ) {
+					String s = Utils.xmlNodeGetValue ( n );
+					this.syncBeforePublish = s.toUpperCase ().startsWith ( "T" )
 					    || s.toUpperCase ().startsWith ( "Y" );
 				} else if ( "foregroundColor".equals ( nodeName ) ) {
 					this.fg = Utils.parseColor ( Utils.xmlNodeGetValue ( n ) );
@@ -240,6 +250,14 @@ public class Calendar implements Serializable {
 			sb.append ( "    <url>" );
 			sb.append ( Utils.escape ( this.url.toString () ) );
 			sb.append ( "</url>\n" );
+
+			sb.append ( "    <canWrite>" );
+			sb.append ( this.canWrite ? "true" : "false" );
+			sb.append ( "</canWrite>\n" );
+
+			sb.append ( "    <syncBeforePublish>" );
+			sb.append ( this.syncBeforePublish ? "true" : "false" );
+			sb.append ( "</syncBeforePublish>\n" );
 		}
 
 		sb.append ( "    <updateIntervalSecs>" );
@@ -437,6 +455,22 @@ public class Calendar implements Serializable {
 
 	public void setAuthPassword ( String authPassword ) {
 		this.authPassword = authPassword;
+	}
+
+	public boolean getCanWrite () {
+		return canWrite;
+	}
+
+	public void setCanWrite ( boolean canWrite ) {
+		this.canWrite = canWrite;
+	}
+
+	public boolean getSyncBeforePublish () {
+		return syncBeforePublish;
+	}
+
+	public void setSyncBeforePublish ( boolean syncBeforePublish ) {
+		this.syncBeforePublish = syncBeforePublish;
 	}
 
 }

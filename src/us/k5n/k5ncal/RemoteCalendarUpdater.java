@@ -38,7 +38,8 @@ public class RemoteCalendarUpdater extends Thread {
 	Repository repo;
 	CalendarRefresher refresher;
 	/** How long should we sleep between checking again? */
-	public static int SLEEP_DURATION = 5000;
+	// TODO: add support for "offline" usage where calendars are not refreshed.
+	public static int SLEEP_DURATION = 30000; /* 30 seconds */
 	public static final int FOURTEEN_DAYS = 3600 * 24 * 14;
 
 	/**

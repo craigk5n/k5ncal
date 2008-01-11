@@ -33,6 +33,7 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.Vector;
 
@@ -66,10 +67,12 @@ import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
 import us.k5n.ical.URL;
 import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.DataFile;
+import us.k5n.k5ncal.data.HttpClient;
+import us.k5n.k5ncal.data.HttpClientStatus;
 import us.k5n.k5ncal.data.Repository;
 
 import com.toedter.calendar.JDateChooser;
-
 
 /**
  * Create a Event entry edit window.
@@ -452,15 +455,18 @@ public class EditEventWindow extends JDialog implements Constants,
 		prompt = new JLabel ( "Calendar: " );
 		prompt.setHorizontalAlignment ( SwingConstants.RIGHT );
 		calPanel.add ( prompt );
-		Vector<Calendar> localCalendars = new Vector<Calendar> ();
+		Vector<Calendar> writableCalendars = new Vector<Calendar> ();
 		for ( int i = 0; i < this.repo.getCalendars ().size (); i++ ) {
 			Calendar c = this.repo.getCalendars ().elementAt ( i );
 			if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
-				localCalendars.addElement ( c );
+				writableCalendars.addElement ( c );
+			} else if ( c.getType () == Calendar.REMOTE_ICAL_CALENDAR
+			    && c.getCanWrite () ) {
+				writableCalendars.addElement ( c );
 			}
 		}
 		// TODO: show error if no local calendars found
-		calendar = new JComboBox ( localCalendars );
+		calendar = new JComboBox ( writableCalendars );
 		calendar.setRenderer ( new ComboBoxRenderer () );
 		if ( selectedCalendar == null )
 			calendar.setSelectedIndex ( 0 );
@@ -600,27 +606,81 @@ public class EditEventWindow extends JDialog implements Constants,
 			this.event.getUrl ().setValue ( url.getText ().trim () );
 			IntegerChoice ic = (IntegerChoice) status.getSelectedItem ();
 			this.event.setStatus ( ic.value );
+
 			// Did the event move from one calendar to another?
 			if ( c.equals ( this.selectedCalendar ) ) {
+				// No, this event is on the same calendar as before.
+				// Download the calendar from the server before we save (if required)
+				syncCalendarIfRequired ( c );
 				repo.saveEvent ( c, this.event );
 			} else {
 				// New event?
 				if ( !this.newEvent ) {
 					// Calendar moved from one calendar to another.
-					// Delete from old calendar
+					// Delete from old calendar, buy sync with remote first if required.
+					syncCalendarIfRequired ( this.selectedCalendar );
 					repo.deleteEvent ( this.selectedCalendar, this.event );
 					// Clear out the user data for the event (where the calendar
 					// info is stored.)
 					this.event.setUserData ( null );
 				}
+				// Download the calendar that the event was moved to (if required).
+				syncCalendarIfRequired ( c );
 				// Add to new calendar
 				repo.saveEvent ( c, this.event );
+				putRemoteCalendarIfRequired ( c );
+				// If the above call fails, what should we do???
 			}
 		} catch ( IOException e2 ) {
 			// TODO: add error handler that pops up a window here
 			e2.printStackTrace ();
 		}
 		this.dispose ();
+	}
+
+	private boolean syncCalendarIfRequired ( Calendar cal ) {
+		if ( cal.getUrl () != null && cal.getCanWrite ()
+		    && cal.getSyncBeforePublish () ) {
+			System.out.println ( "Get remote calendar: " + cal );
+			DataFile df = repo.getDataFileForCalendar ( cal );
+			File file = new File ( df.getAbsolutePath () + ".sync" );
+			HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
+			    cal.getAuthUsername (), cal.getAuthPassword (), file );
+			if ( result.getStatus () == HttpClientStatus.HTTP_STATUS_SUCCESS
+			    && file.exists () ) {
+				// Rename file.
+				df.delete ();
+				file.renameTo ( df );
+				repo.updateCalendar ( df.getParentFile (), cal );
+				return true; // success
+			} else {
+				// Cannot proceed
+				showError ( "Error syncing remote calendar\nbefore writing." );
+				return false;
+			}
+		} else {
+			// do not need to sync
+			return true; // success
+		}
+	}
+
+	private boolean putRemoteCalendarIfRequired ( Calendar cal ) {
+		if ( cal.getUrl () != null && cal.getCanWrite () ) {
+			System.out.println ( "put remote calendar: " + cal );
+			DataFile df = repo.getDataFileForCalendar ( cal );
+			HttpClientStatus result = HttpClient.putRemoteCalendar ( cal.getUrl (),
+			    cal.getAuthUsername (), cal.getAuthPassword (), df );
+			if ( result.getStatus () == HttpClientStatus.HTTP_STATUS_SUCCESS ) {
+				return true; // success
+			} else {
+				// Cannot proceed
+				showError ( "Error writing calendar to server" );
+				return false;
+			}
+		} else {
+			// Calendar not writable to server
+			return true;
+		}
 	}
 
 	void toggleAllDay () {
@@ -636,6 +696,12 @@ public class EditEventWindow extends JDialog implements Constants,
 	void close () {
 		// TODO: check for unsaved changes
 		this.dispose ();
+	}
+
+	void showError ( String message ) {
+		System.err.println ( "Error: " + message );
+		JOptionPane.showMessageDialog ( parent, message, "Error",
+		    JOptionPane.ERROR_MESSAGE );
 	}
 
 	public void componentHidden ( ComponentEvent ce ) {

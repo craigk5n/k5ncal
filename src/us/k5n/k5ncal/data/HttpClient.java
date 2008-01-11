@@ -36,7 +36,8 @@ import java.net.URL;
 /**
  * Define a simple class for handling HTTP downloads. We may move to the more
  * robust Apache HttpClient class down the road. For now, this much leaner class
- * will serve our purposes.
+ * will serve our purposes. (The HttpClient jar is about 300k plus we would need
+ * to also add jars for JUnit and Apache logging).
  * 
  * @author Craig Knudsen, craig@k5n.us
  * @version $Id$
@@ -113,7 +114,7 @@ public class HttpClient {
 				// handling another exception...
 				e2.printStackTrace ();
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "HTTP I/O Exception:", e1 );
+				    "HTTP I/O Error: " + e1.getMessage (), e1 );
 			}
 		}
 
@@ -145,16 +146,18 @@ public class HttpClient {
 		int totalRead = 0;
 		try {
 			urlC = (HttpURLConnection) url.openConnection ();
-			urlC.setDoInput ( true );
+			urlC.setDoInput ( true ); // so we can get response code
 			urlC.setDoOutput ( true );
 			urlC.setUseCaches ( false );
 			urlC.setDefaultUseCaches ( false );
 			urlC.setAllowUserInteraction ( true );
 			urlC.setRequestMethod ( "PUT" );
+			urlC.setRequestProperty ( "Content-type", "text/calendar" );
 			urlC.setRequestProperty ( "Content-Length", "" + inputFile.length () );
 
-			InputStream is = urlC.getInputStream ();
+			// InputStream is = urlC.getInputStream ();
 			OutputStream os = urlC.getOutputStream ();
+			System.out.println ( "Put file: " + inputFile );
 			FileInputStream fis = new FileInputStream ( inputFile );
 			DataInputStream dis = new DataInputStream (
 			    new BufferedInputStream ( fis ) );
@@ -167,9 +170,32 @@ public class HttpClient {
 				totalRead += bytesRead;
 			}
 			// TODO: should we read back the HTTP response data?
+			dos.flush ();
+			// NOTE: You cannot query the response with getResponseCode until you have
+			// written all the PUT data. (Some sort of undocumented Java requirement.)
+			int code = urlC.getResponseCode ();
+			System.out.println ( "PUT response code: " + code );
+			if ( code < 200 || code >= 300 ) {
+				// Server does not accept PUT
+				os.close ();
+				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
+				    "Server does not accept PUT. (Response Code = " + code + ")" );
+			}
+			// Read back response....
+			InputStream is = urlC.getInputStream ();
+			DataInputStream respIs = new DataInputStream ( new BufferedInputStream ( is ) );
+			buf = new byte[4 * 1024]; // 4K buffer
+			StringBuffer response = new StringBuffer ();
+			while ( ( bytesRead = respIs.read ( buf ) ) != -1 ) {
+				response.append ( new String ( buf ) );
+				//System.out.println ( "Response: " + new String ( buf ) );
+				totalRead += bytesRead;
+			}
+			System.out.println ( "Response: " + response.toString () );
+			respIs.close ();
 			os.close ();
 			dos.close ();
-			is.close ();
+			// is.close ();
 			dis.close ();
 			urlC.disconnect ();
 			// Handle the HTTP status code

@@ -13,6 +13,7 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -42,6 +43,10 @@ public class EditRemoteCalendarWindow extends JDialog {
 	    24 * 30, 24 * 90, 24 * 365, 0 };
 	int defChoice = 5;
 	JComboBox updateField;
+	JComboBox modeField;
+	String[] modeChoices = { "Read-Only", "Read/Publish" };
+	JPanel syncBeforePanel;
+	JCheckBox syncBeforePublishField;
 	JComboBox authField;
 	String[] authChoices = { "None", "Basic" };
 	int[] authChoiceValues = { Calendar.AUTH_NONE, Calendar.AUTH_BASIC };
@@ -66,7 +71,10 @@ public class EditRemoteCalendarWindow extends JDialog {
 		usernameField = new JTextField ( 25 );
 		passwordField = new JPasswordField ( 25 );
 		updateField = new JComboBox ( updateIntervalChoices );
-		int[] props = { 1, 3 };
+		modeField = new JComboBox ( modeChoices );
+		syncBeforePanel = new JPanel ();
+		syncBeforePublishField = new JCheckBox ();
+		int[] props = { 1, 2 };
 
 		if ( c != null ) {
 			for ( int i = 0; i < updateIntervalChoiceValues.length; i++ ) {
@@ -77,6 +85,10 @@ public class EditRemoteCalendarWindow extends JDialog {
 			// Don't allow changing of URL. Must delete and add new
 			urlField.setText ( c.getUrl ().toString () );
 			urlField.setEditable ( false );
+			modeField.setSelectedIndex ( c.getCanWrite () ? 1 : 0 );
+			if ( !c.getCanWrite () )
+				syncBeforePanel.setVisible ( false );
+			syncBeforePublishField.setSelected ( c.getSyncBeforePublish () );
 			switch ( c.getAuthType () ) {
 				case Calendar.AUTH_NONE:
 					authField.setSelectedIndex ( 0 );
@@ -114,7 +126,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 		JPanel main = new JPanel ();
 		main
 		    .setBorder ( BorderFactory.createTitledBorder ( "New Remote Calendar" ) );
-		main.setLayout ( new GridLayout ( 7, 1 ) );
+		main.setLayout ( new GridLayout ( 9, 1 ) );
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
@@ -152,6 +164,23 @@ public class EditRemoteCalendarWindow extends JDialog {
 		updatePanel.add ( updateSubPanel );
 		main.add ( updatePanel );
 
+		JPanel modePanel = new JPanel ();
+		modePanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		modePanel.add ( new JLabel ( "Mode: " ) );
+		JPanel modePanelSubPanel = new JPanel ( new BorderLayout () );
+		modePanelSubPanel.add ( modeField, BorderLayout.WEST );
+		modePanel.add ( modePanelSubPanel );
+		main.add ( modePanel );
+
+		syncBeforePanel.setLayout ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		syncBeforePanel.add ( new JLabel ( "   Sync before publish: " ) );
+		JPanel autoPublishSubPanel = new JPanel ( new BorderLayout () );
+		autoPublishSubPanel.add ( syncBeforePublishField, BorderLayout.WEST );
+		syncBeforePanel.add ( autoPublishSubPanel );
+		main.add ( syncBeforePanel );
+
 		JPanel authPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		authPanel.add ( new JLabel ( "Authentication: " ) );
@@ -162,7 +191,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel usernamePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		usernamePanel.add ( new JLabel ( "Username: " ) );
+		usernamePanel.add ( new JLabel ( "   Username: " ) );
 		JPanel usernameSubPanel = new JPanel ( new BorderLayout () );
 		usernameSubPanel.add ( usernameField, BorderLayout.WEST );
 		usernamePanel.add ( usernameSubPanel );
@@ -171,7 +200,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel passwordPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		passwordPanel.add ( new JLabel ( "Password: " ) );
+		passwordPanel.add ( new JLabel ( "   Password: " ) );
 		JPanel passwordSubPanel = new JPanel ( new BorderLayout () );
 		passwordSubPanel.add ( passwordField, BorderLayout.WEST );
 		passwordPanel.add ( passwordSubPanel );
@@ -181,6 +210,12 @@ public class EditRemoteCalendarWindow extends JDialog {
 		authField.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent e1 ) {
 				authChangeHandler ();
+			}
+		} );
+
+		modeField.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent e1 ) {
+				modeChangeHandler ();
 			}
 		} );
 
@@ -199,6 +234,11 @@ public class EditRemoteCalendarWindow extends JDialog {
 			JComponent c = this.visibleAuthEnabled.elementAt ( i );
 			c.setVisible ( authVisible );
 		}
+	}
+
+	void modeChangeHandler () {
+		boolean modeVisible = ( this.modeField.getSelectedIndex () > 0 );
+		this.syncBeforePanel.setVisible ( modeVisible );
 	}
 
 	void okHandler () {
@@ -242,6 +282,13 @@ public class EditRemoteCalendarWindow extends JDialog {
 		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
 		cal.setLastUpdatedAsNow ();
 		cal.setUpdateIntervalSecs ( updateInterval * 3600 );
+		if ( this.modeField.getSelectedIndex () == 0 ) {
+			cal.setCanWrite ( false );
+			cal.setSyncBeforePublish ( false );
+		} else {
+			cal.setCanWrite ( true );
+			cal.setSyncBeforePublish ( this.syncBeforePublishField.isSelected () );
+		}
 		int authType = authChoiceValues[authField.getSelectedIndex ()];
 		cal.setAuthType ( authType );
 		String username = null;
