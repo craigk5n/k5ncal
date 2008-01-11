@@ -66,6 +66,7 @@ import us.k5n.ical.Rrule;
 import us.k5n.ical.Sequence;
 import us.k5n.ical.Summary;
 import us.k5n.ical.URL;
+import us.k5n.ical.Uid;
 import us.k5n.k5ncal.data.Calendar;
 import us.k5n.k5ncal.data.DataFile;
 import us.k5n.k5ncal.data.HttpClient;
@@ -163,7 +164,6 @@ public class EditEventWindow extends JDialog implements Constants,
 		this.parent = parent;
 		this.repo = repo;
 		this.event = event;
-		;
 		this.selectedCalendar = selectedCalendar;
 
 		if ( this.event == null ) {
@@ -194,6 +194,11 @@ public class EditEventWindow extends JDialog implements Constants,
 			this.event.setLocation ( new Location () );
 		if ( this.event.getUrl () == null )
 			this.event.setUrl ( new URL () );
+		if (  newEvent ) {
+			Uid uid = new Uid ();
+			uid.setValue ( us.k5n.ical.Utils.generateUniqueId ( "K5NCAL" ) );
+			this.event.setUid ( uid );
+		}
 
 		createWindow ();
 		setVisible ( true );
