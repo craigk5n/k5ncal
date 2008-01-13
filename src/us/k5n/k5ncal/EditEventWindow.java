@@ -194,7 +194,7 @@ public class EditEventWindow extends JDialog implements Constants,
 			this.event.setLocation ( new Location () );
 		if ( this.event.getUrl () == null )
 			this.event.setUrl ( new URL () );
-		if (  newEvent ) {
+		if ( newEvent ) {
 			Uid uid = new Uid ();
 			uid.setValue ( us.k5n.ical.Utils.generateUniqueId ( "K5NCAL" ) );
 			this.event.setUid ( uid );
@@ -284,7 +284,8 @@ public class EditEventWindow extends JDialog implements Constants,
 		subDatePanel.add ( dateChooser );
 		timeAt = new JLabel ( " at " );
 		subDatePanel.add ( timeAt );
-		timeHour = new JFormattedTextField ( createFormatter ( "##" ) );
+		// timeHour = new JFormattedTextField ( createFormatter ( "##" ) );
+		timeHour = new JTextField ();
 		timeHour.setColumns ( 2 );
 		subDatePanel.add ( timeHour );
 		timeSep = new JLabel ( ":" );
@@ -576,12 +577,21 @@ public class EditEventWindow extends JDialog implements Constants,
 			this.event.getStartDate ().setDateOnly ( true );
 		} else {
 			this.event.getStartDate ().setDateOnly ( false );
-			int h = Integer.parseInt ( timeHour.getText () );
-			int m = Integer.parseInt ( timeMinute.getText () );
+			int h = 0, m = 0;
+			try {
+				h = Integer.parseInt ( timeHour.getText () );
+				m = Integer.parseInt ( timeMinute.getText () );
+			} catch ( NumberFormatException e1 ) {
+				JOptionPane.showMessageDialog ( parent,
+				    "You have not entered a valid start time.", "Error",
+				    JOptionPane.ERROR_MESSAGE );
+				return;
+			}
 			if ( h > 23 || m > 59 ) {
 				JOptionPane.showMessageDialog ( parent,
 				    "You have not entered a valid start time.", "Error",
 				    JOptionPane.ERROR_MESSAGE );
+				return;
 			}
 			if ( ampm.getText ().equals ( "AM" ) ) {
 				if ( h == 12 )
@@ -606,28 +616,45 @@ public class EditEventWindow extends JDialog implements Constants,
 		try {
 			this.event.getDescription ().setValue ( description.getText () );
 			this.event.getSummary ().setValue ( subject.getText ().trim () );
-			this.event.getCategories ().setValue ( categories.getText ().trim () );
-			this.event.getLocation ().setValue ( location.getText ().trim () );
-			this.event.getUrl ().setValue ( url.getText ().trim () );
+			String cats = categories.getText ().trim ();
+			if ( cats.length () == 0 )
+				this.event.setCategories ( null );
+			else
+				this.event.getCategories ().setValue ( cats );
+			String loc = location.getText ().trim ();
+			if ( loc.length () == 0 )
+				this.event.setLocation ( null );
+			else
+				this.event.getLocation ().setValue ( loc );
+			String urlStr = url.getText ().trim ();
+			if ( urlStr.length () == 0 )
+				this.event.setUrl ( null );
+			else
+				this.event.getUrl ().setValue ( urlStr );
 			IntegerChoice ic = (IntegerChoice) status.getSelectedItem ();
 			this.event.setStatus ( ic.value );
 
 			// Did the event move from one calendar to another?
 			if ( c.equals ( this.selectedCalendar ) ) {
 				// No, this event is on the same calendar as before.
-				// Download the calendar from the server before we save (if required)
+				// Download the old calendar from the server before we save (if
+				// required).
 				syncCalendarIfRequired ( c );
 				repo.saveEvent ( c, this.event );
+				putRemoteCalendarIfRequired ( c );
 			} else {
-				// New event?
+				// New event or event was moved from one calendar to another.
 				if ( !this.newEvent ) {
 					// Calendar moved from one calendar to another.
 					// Delete from old calendar, buy sync with remote first if required.
 					syncCalendarIfRequired ( this.selectedCalendar );
+					// TODO: if this is remote calendar, we may want to cancel the event
+					// rather than delete it.
 					repo.deleteEvent ( this.selectedCalendar, this.event );
 					// Clear out the user data for the event (where the calendar
 					// info is stored.)
 					this.event.setUserData ( null );
+					putRemoteCalendarIfRequired ( this.selectedCalendar );
 				}
 				// Download the calendar that the event was moved to (if required).
 				syncCalendarIfRequired ( c );

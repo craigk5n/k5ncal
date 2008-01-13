@@ -614,16 +614,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 * delete buttons should be disabled.
 	 */
 	void updateToolbar () {
-		boolean isLocal = false;
+		boolean canEdit = false;
 		boolean selected = false;
 		EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 		selected = ( eventInstance != null );
 		if ( selected && eventInstance instanceof SingleEvent ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			isLocal = ( se.getCalendar ().getType () == Calendar.LOCAL_CALENDAR );
+			canEdit = ( se.getCalendar ().getType () == Calendar.LOCAL_CALENDAR )
+			    || ( se.getCalendar ().getType () == Calendar.REMOTE_ICAL_CALENDAR && se
+			        .getCalendar ().getCanWrite () );
 		}
-		editButton.setEnabled ( selected && isLocal );
-		deleteButton.setEnabled ( selected && isLocal );
+		editButton.setEnabled ( selected && canEdit );
+		deleteButton.setEnabled ( selected && canEdit );
 	}
 
 	/**
@@ -814,7 +816,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						// Error renaming
 						showError ( "Error renaming file" );
 					} else {
-						System.out.println ( "Renamed " + outputFile + " to " + file );
+						// System.out.println ( "Renamed " + outputFile + " to " + file );
 						// If no error, then save calendar update
 						cal.setLastUpdatedAsNow ();
 						saveCalendars ( dataDir );
@@ -1424,8 +1426,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
 		if ( eventInstance != null ) {
 			SingleEvent se = (SingleEvent) eventInstance;
-			if ( se.getCalendar ().getType () != Calendar.LOCAL_CALENDAR ) {
-				showError ( "You cannot edit events\non remote/subscribed calendars." );
+			boolean canEdit = ( se.getCalendar ().getType () == Calendar.LOCAL_CALENDAR )
+			    || ( se.getCalendar ().getType () == Calendar.REMOTE_ICAL_CALENDAR && se
+			        .getCalendar ().getCanWrite () );
+			if ( !canEdit ) {
+				showError ( "You cannot edit events\non the '"
+				    + se.getCalendar ().getName () + "' calendar." );
 			} else {
 				new EditEventWindow ( parent, dataRepository, se.getEvent (), se
 				    .getCalendar () );
