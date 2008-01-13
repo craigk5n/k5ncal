@@ -301,12 +301,9 @@ public class Repository implements CalendarDataRepository {
 		HashMap<String, String> catH = new HashMap<String, String> ();
 		for ( int i = 0; i < dataFiles.size (); i++ ) {
 			DataFile df = (DataFile) dataFiles.elementAt ( i );
-			System.out.println ( "DataFile#"
-			    + i
-			    + ": "
-			    + df.toString ()
-			    + ( this.getCalendars ().elementAt ( i ).isSelected () ? "(selected)"
-			        : "" ) );
+			//System.out.println ( "DataFile#"  + i  + ": " + df.toString ()
+			//    + ( this.getCalendars ().elementAt ( i ).isSelected () ? "(selected)"
+			//        : "" ) );
 			// System.out.println ( " df.getEventCount () =" + df.getEventCount ()
 			// );
 			for ( int j = 0; j < df.getEventCount (); j++ ) {
