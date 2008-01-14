@@ -404,12 +404,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				String javaVersion = System.getProperty ( "java.version" );
 				if ( javaVersion == null )
 					javaVersion = "Unknown";
-				JOptionPane.showMessageDialog ( parent,
-				    "k5nCal " + ( version == null ? "Unknown Version" : version )
-				        + "\n\nJava Version: " + javaVersion
-				        + "\n\nDeveloped by k5n.us\n\n"
-				        + "Go to www.k5n.us for more info.", "About k5nCal",
-				    JOptionPane.INFORMATION_MESSAGE, icon );
+				JOptionPane.showMessageDialog ( parent, "k5nCal "
+				    + ( version == null ? "Unknown Version" : version )
+				    + "\n\nJava Version: " + javaVersion
+				    + "\n\nDeveloped by k5n.us\n\n" + "http://www.k5n.us",
+				    "About k5nCal", JOptionPane.INFORMATION_MESSAGE, icon );
 			}
 		} );
 		helpMenu.add ( item );
