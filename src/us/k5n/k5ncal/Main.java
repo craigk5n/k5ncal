@@ -116,7 +116,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static ClassLoader cl = null;
 	JFrame parent;
 	EventViewPanel eventViewPanel;
-	JButton newButton, editButton, deleteButton;
+	JButton newButton, editButton, deleteButton, largerButton, smallerButton;
 	JLabel messageArea;
 	// Vector<Calendar> calendars;
 	Repository dataRepository;
@@ -293,6 +293,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( preferencesWindow == null ) {
 					preferencesWindow = new PreferencesWindow ( parent, dataRepository );
 				} else {
+					preferencesWindow.updateUIFromPreferences ();
 					preferencesWindow.setVisible ( true );
 				}
 			}
@@ -621,6 +622,30 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 
+		largerButton = makeNavigationButton ( "LargerFont24.png",
+		    "Increase Font Size", "Increase Font Size", "Larger" );
+		toolbar.add ( largerButton );
+		largerButton.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				int oldOffset = prefs.getDisplayFontSize ();
+				if ( oldOffset < 4 )
+					prefs.setDisplayFontSize ( oldOffset + 2 );
+				displaySettingsChanged ();
+			}
+		} );
+
+		smallerButton = makeNavigationButton ( "SmallerFont24.png",
+		    "Decrease Font Size", "Decrease Font Size", "Smaller" );
+		toolbar.add ( smallerButton );
+		smallerButton.addActionListener ( new ActionListener () {
+			public void actionPerformed ( ActionEvent event ) {
+				int oldOffset = prefs.getDisplayFontSize ();
+				if ( oldOffset > -4 )
+					prefs.setDisplayFontSize ( oldOffset - 2 );
+				displaySettingsChanged ();
+			}
+		} );
+
 		return toolbar;
 	}
 
@@ -642,6 +667,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 		editButton.setEnabled ( selected && canEdit );
 		deleteButton.setEnabled ( selected && canEdit );
+		smallerButton.setEnabled ( prefs.getDisplayFontSize () > -4 );
+		largerButton.setEnabled ( prefs.getDisplayFontSize () < 4 );
 	}
 
 	/**
@@ -1445,6 +1472,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.dataRepository.rebuild ();
 		this.calendarPanel.repaint ();
 		this.eventViewPanel.setAllFonts ( newFont );
+		updateToolbar ();
 	}
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
