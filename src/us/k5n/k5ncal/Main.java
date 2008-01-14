@@ -50,7 +50,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -523,7 +522,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	JToolBar createToolBar () {
 		JToolBar toolbar = new JToolBar ();
-		newButton = makeNavigationButton ( "New24.gif", "new", "Add new entry",
+		newButton = makeNavigationButton ( "New24.gif", "new", "Add new event",
 		    "New..." );
 		newButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -556,8 +555,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 		toolbar.add ( newButton );
 
-		editButton = makeNavigationButton ( "Edit24.gif", "edit", "Edit entry",
-		    "Edit..." );
+		editButton = makeNavigationButton ( "Edit24.gif", "edit",
+		    "Edit selected event", "Edit..." );
 		toolbar.add ( editButton );
 		editButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -580,7 +579,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		deleteButton = makeNavigationButton ( "Delete24.gif", "delete",
-		    "Delete entry", "Delete" );
+		    "Delete selected event", "Delete" );
 		toolbar.add ( deleteButton );
 		deleteButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -621,8 +620,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 		} );
 
+		toolbar.addSeparator ();
+
 		largerButton = makeNavigationButton ( "LargerFont24.png",
-		    "Increase Font Size", "Increase Font Size", "Larger" );
+		    "Increase Font Size", "Increase font size", "Larger" );
 		toolbar.add ( largerButton );
 		largerButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -634,7 +635,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		smallerButton = makeNavigationButton ( "SmallerFont24.png",
-		    "Decrease Font Size", "Decrease Font Size", "Smaller" );
+		    "Decrease Font Size", "Decrease font size", "Smaller" );
 		toolbar.add ( smallerButton );
 		smallerButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
