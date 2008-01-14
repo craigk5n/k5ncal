@@ -25,6 +25,7 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -49,6 +50,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -139,6 +141,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_Y = "MainWindow.y";
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
+	private boolean fontsInitialized = false;
 
 	public Main() {
 		super ( "k5nCal" );
@@ -158,10 +161,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		Container contentPane = getContentPane ();
 
 		JLabel test = new JLabel ( "XXX" );
-		Font currentFont = test.getFont ();
-		Font newFont = new Font ( currentFont.getFamily (),
-		    currentFont.getStyle (), currentFont.getSize ()
-		        + prefs.getDisplayFontSize () );
+		// Font newFont = new Font ( currentFont.getFamily (),
+		// currentFont.getStyle (), currentFont.getSize ()
+		// + prefs.getDisplayFontSize () );
 
 		// Load data
 		File dataDir = getDataDirectory ();
@@ -192,7 +194,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		ap.setTooltipTextAt ( 1, "Filter displayed events by category" );
 
 		eventViewPanel = new EventViewPanel ();
-		eventViewPanel.setAllFonts ( newFont );
 		eventViewPanel.setBorder ( BorderFactory
 		    .createTitledBorder ( "Event Details" ) );
 		leftVerticalSplit = new JSplitPane ( JSplitPane.VERTICAL_SPLIT, ap,
@@ -210,7 +211,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		calendarPanel.addSelectionListener ( this );
 		calendarPanel.setShowTime ( prefs.getDisplayHourInMonthView () );
 		rightPanel.add ( calendarPanel, BorderLayout.CENTER );
-		calendarPanel.setFont ( newFont );
 
 		horizontalSplit = new JSplitPane ( JSplitPane.HORIZONTAL_SPLIT,
 		    leftVerticalSplit, rightPanel );
@@ -229,6 +229,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		RemoteCalendarUpdater updater = new RemoteCalendarUpdater (
 		    this.dataRepository, this );
 		updater.start ();
+	}
+
+	public void paint ( Graphics g ) {
+		if ( !this.fontsInitialized ) {
+			this.fontsInitialized = true;
+			Font currentFont = g.getFont ();
+			Font newFont = new Font ( currentFont.getFamily (), currentFont
+			    .getStyle (), currentFont.getSize () + prefs.getDisplayFontSize () );
+			eventViewPanel.setAllFonts ( newFont );
+			calendarPanel.setFont ( newFont );
+		}
+		super.paint ( g );
 	}
 
 	public Vector<Calendar> loadCalendars ( File dir ) {
@@ -525,14 +537,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( !foundLocal ) {
 					showError ( "You must create a local\ncalendar to add a\nnew event." );
 				} else {
-					// See if they have selected a local calendar from the calendar list
+					// See if they have selected a local calendar from the
+					// calendar list
 					Calendar selectedCalendar = null;
 					int selCalInd = calendarJList.getSelectedIndex ();
 					if ( selCalInd >= 0 ) {
 						selectedCalendar = dataRepository.getCalendars ().elementAt (
 						    selCalInd );
 						if ( selectedCalendar.getType () != Calendar.LOCAL_CALENDAR )
-							selectedCalendar = null; // don't allow adding to remote cals
+							selectedCalendar = null; // don't allow adding to
+						// remote cals
 					}
 					Date now = Date.getCurrentDateTime ( "DTSTART" );
 					now.setMinute ( 0 );
@@ -550,7 +564,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				// Get selected item and open edit window
 				EventInstance eventInstance = calendarPanel.getSelectedEvent ();
 				if ( eventInstance != null ) {
-					// NOTE: edit window does not yet support complicated recurrence
+					// NOTE: edit window does not yet support complicated
+					// recurrence
 					// rules.
 					SingleEvent se = (SingleEvent) eventInstance;
 					if ( se.getEvent ().getRrule () != null ) {
@@ -574,7 +589,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( eventInstance != null ) {
 					SingleEvent se = (SingleEvent) eventInstance;
 					if ( se.getEvent ().getRrule () != null ) {
-						// TODO: support deleting single occurrence, which will add an
+						// TODO: support deleting single occurrence, which will
+						// add an
 						// exception to the RRULE in the event.
 						if ( JOptionPane.showConfirmDialog ( parent,
 						    "Are you sure you want\nto delete all occurreces of the\n"
@@ -667,9 +683,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				    if ( c.getType () == Calendar.REMOTE_ICAL_CALENDAR ) {
 					    // Does this calendar have errors?
 					    // TODO: implement error viewer...
-					    // Vector<ParseError> errors = dataRepository.getErrorsAt ( ind );
+					    // Vector<ParseError> errors =
+					    // dataRepository.getErrorsAt ( ind );
 					    // if ( errors != null && errors.size () > 0 )
-					    // ret.addElement ( MENU_CALENDAR_VIEW_ERRORS + " " + "("
+					    // ret.addElement ( MENU_CALENDAR_VIEW_ERRORS + " "
+					    // + "("
 					    // + errors.size () + ")" );
 				    }
 				    return ret;
@@ -749,7 +767,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	 *          The Calendar to refresh
 	 */
 	public void refreshCalendar ( final Calendar cal ) {
-		// Before we get started, update the status bar to indicate we are loading
+		// Before we get started, update the status bar to indicate we are
+		// loading
 		// the calendar.
 		showStatusMessage ( "Refreshing calendar '" + cal.getName () + "' ..." );
 
@@ -760,7 +779,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 			public Object construct () {
 				// Execute time-consuming task...
-				// For now, we only support HTTP/HTTPS since 99.99% of all users will
+				// For now, we only support HTTP/HTTPS since 99.99% of all users
+				// will
 				// use it
 				// instead of something like FTP.
 				outputFile = new File ( dataDir, cal.getFilename () + ".new" );
@@ -771,7 +791,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				}
 				HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
 				    username, password, outputFile );
-				// We're not supposed to make UI calls from this thread. So, when
+				// We're not supposed to make UI calls from this thread. So,
+				// when
 				// we get an error, save it in the error variable for use in the
 				// finished method.
 				// TODO: implement a way to show these errors to the user.
@@ -804,11 +825,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( this.statusMsg != null )
 					showStatusMessage ( statusMsg );
 				if ( error == null ) {
-					// TODO: validate what we downloaded was ICS data rather than an HTML
+					// TODO: validate what we downloaded was ICS data rather
+					// than an HTML
 					// page
 					// Rename file from ".ics.new" to ".ics"
 					File file = new File ( dataDir, cal.getFilename () );
-					// Delete old file first since renameTo may file if file already
+					// Delete old file first since renameTo may file if file
+					// already
 					// exists
 					file.delete ();
 					// Now rename
@@ -816,7 +839,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						// Error renaming
 						showError ( "Error renaming file" );
 					} else {
-						// System.out.println ( "Renamed " + outputFile + " to " + file );
+						// System.out.println ( "Renamed " + outputFile + " to "
+						// + file );
 						// If no error, then save calendar update
 						cal.setLastUpdatedAsNow ();
 						saveCalendars ( dataDir );

@@ -3,6 +3,7 @@ $Id$
 
 Version 0.9.7dev (10 Jan 2008) - Bug fixes
 - Initial support for publishing changes to WebDAV server using HTTP PUT.
+- Bug fix: font size was not correct on app startup
 - Bug fix: remote calendar refresh was broken
 - Allow remote calendars to use HTTPS (instead of just HTTP)
 - Don't show password in Edit Remote Calendar window by using JPasswordField
