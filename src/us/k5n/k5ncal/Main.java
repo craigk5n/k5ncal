@@ -133,12 +133,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MENU_CALENDAR_DELETE = "Delete Calendar";
 	static final String MENU_CALENDAR_ADD_EVENT = "Add Event...";
 	static final String MENU_CALENDAR_VIEW_ERRORS = "View Errors/Warnings...";
-	static final String MAIN_WINDOW_HEIGHT = "MainWindow.height";
-	static final String MAIN_WINDOW_WIDTH = "MainWindow.width";
-	static final String MAIN_WINDOW_X = "MainWindow.x";
-	static final String MAIN_WINDOW_Y = "MainWindow.y";
-	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
-	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
 	private boolean fontsInitialized = false;
 	static final String ADD_EVENT_LABEL = "New...";
 	static final String EDIT_EVENT_LABEL = "Edit...";
@@ -162,11 +156,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		setDefaultCloseOperation ( JFrame.EXIT_ON_CLOSE );
 		Container contentPane = getContentPane ();
-
-		JLabel test = new JLabel ( "XXX" );
-		// Font newFont = new Font ( currentFont.getFamily (),
-		// currentFont.getStyle (), currentFont.getSize ()
-		// + prefs.getDisplayFontSize () );
 
 		// Load data
 		File dataDir = getDataDirectory ();
@@ -252,17 +241,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		if ( !f.exists () ) {
 			String name = (String) System.getProperty ( "user.name" );
 			if ( name == null )
-				name = "Main";
+				name = "Unnamed Calendar";
 			Calendar def = new Calendar ( dir, name );
-			this.showMessage ( "A new calendar named \"" + name
-			    + "\"\nwas created for you." );
+			this.showMessage ( "A new calendar named was created for you: " + name );
 			ret.addElement ( def );
 		} else {
 			try {
 				ret = Calendar.readCalendars ( f );
 			} catch ( Exception e1 ) {
-				this.fatalError ( "Error reading calendar file\n" + f + "\n\nError:\n"
-				    + e1.getMessage () );
+				this.fatalError ( "Error reading calendar file " + f + "\n\n"
+				    + "Error:" + "\n" + e1.getMessage () );
 				e1.printStackTrace ();
 			}
 		}
@@ -274,7 +262,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		try {
 			Calendar.writeCalendars ( f, dataRepository.getCalendars () );
 		} catch ( IOException e1 ) {
-			this.showError ( "Error writing calendars:\n" + e1.getMessage () );
+			this.showError ( "Error writing calendars:" + "\n" + e1.getMessage () );
 			e1.printStackTrace ();
 		}
 	}
@@ -408,10 +396,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				if ( javaVersion == null )
 					javaVersion = "Unknown";
 				JOptionPane.showMessageDialog ( parent, "k5nCal "
-				    + ( version == null ? "Unknown Version" : version )
-				    + "\n\nJava Version: " + javaVersion
-				    + "\n\nDeveloped by k5n.us\n\n" + "http://www.k5n.us",
-				    "About k5nCal", JOptionPane.INFORMATION_MESSAGE, icon );
+				    + ( version == null ? "Unknown Version" : version ) + "\n\n"
+				    + "Java Version: " + javaVersion + "\n\n" + "Developed by k5n.us"
+				    + "\n\nhttp://www.k5n.us", "About k5nCal",
+				    JOptionPane.INFORMATION_MESSAGE, icon );
 			}
 		} );
 		helpMenu.add ( item );
@@ -597,8 +585,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						// exception to the RRULE in the event.
 						if ( JOptionPane.showConfirmDialog ( parent,
 						    "Are you sure you want\nto delete all occurreces of the\n"
-						        + "following repeating event?\n\n" + se.getTitle ()
-						        + "\n\nThis will delete ALL events\nin this series.",
+						        + "following repeating event?" + "\n\n" + se.getTitle ()
+						        + "\n\n" + "This will delete ALL events\nin this series.",
 						    "Confirm Delete", JOptionPane.YES_NO_OPTION ) == 0 ) {
 							try {
 								dataRepository.deleteEvent ( se.getCalendar (), se.getEvent () );
@@ -609,8 +597,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						}
 					} else {
 						if ( JOptionPane.showConfirmDialog ( parent,
-						    "Are you sure you want\nto delete the following event?\n\n"
-						        + se.getTitle (), "Confirm Delete",
+						    "Are you sure you want\nto delete the following event?"
+						        + "\n\n" + se.getTitle (), "Confirm Delete",
 						    JOptionPane.YES_NO_OPTION ) == 0 ) {
 							try {
 								dataRepository.deleteEvent ( se.getCalendar (), se.getEvent () );
@@ -639,7 +627,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		smallerButton = makeNavigationButton ( "SmallerFont24.png",
-		    "Decrease Font Size", "Decrease font size", SMALLER_FONT_LABEL );
+		    "Decrease font size", "Decrease font size", SMALLER_FONT_LABEL );
 		toolbar.add ( smallerButton );
 		smallerButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -744,14 +732,14 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					    editCalendar ( c );
 				    } else if ( MENU_CALENDAR_REFRESH.equals ( actionCommand ) ) {
 					    if ( c.getType () == Calendar.LOCAL_CALENDAR ) {
-						    showError ( "You can only refresh\nremote/subscribed calendars" );
+						    showError ( "You can only refresh\nremote/subscribed calendars." );
 					    } else {
 						    refreshCalendar ( c );
 					    }
 				    } else if ( MENU_CALENDAR_DELETE.equals ( actionCommand ) ) {
 					    if ( JOptionPane.showConfirmDialog ( parent,
-					        "Are you sure you want to\nDelete the following calendar?\n\n"
-					            + c.toString (), "Confirm Delete",
+					        "Are you sure you want to\nDelete the following calendar?"
+					            + "\n\n" + c.toString (), "Confirm Delete",
 					        JOptionPane.YES_NO_OPTION ) == 0 ) {
 						    deleteCalendar ( c );
 					    }
@@ -815,7 +803,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		// Before we get started, update the status bar to indicate we are
 		// loading
 		// the calendar.
-		showStatusMessage ( "Refreshing calendar '" + cal.getName () + "' ..." );
+		showStatusMessage ( "Refreshing calendar: " + cal.getName () );
 
 		SwingWorker refreshWorker = new SwingWorker () {
 			private String error = null;
@@ -843,12 +831,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				// TODO: implement a way to show these errors to the user.
 				switch ( result.getStatus () ) {
 					case HttpClientStatus.HTTP_STATUS_SUCCESS:
-						statusMsg = "Calendar '" + cal.getName ()
-						    + "' successfully refreshed.";
+						statusMsg = "Calendar successfully refreshed: " + cal.getName ();
 						break;
 					case HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED:
-						error = "Authorization required.\nPlease provide a username\n"
-						    + "and password.";
+						error = "Authorization required.\nPlease provide a username\nand password.";
 						return null;
 					case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
 						error = "Invalid calendar URL (not found).\n\nServer response: "
@@ -989,7 +975,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			ap.setTitleAt ( 1, "Categories" );
 			this.dataRepository.clearCategoryFilter ();
 		} else {
-			ap.setTitleAt ( 1, "Categories [" + selected.length + "]" );
+			ap.setTitleAt ( 1, "Categories" + " [" + selected.length + "]" );
 			this.dataRepository.setCategoryFilter ( uncategorized, selectedCats );
 		}
 		this.calendarPanel.clearSelection ();
@@ -1039,25 +1025,25 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			return dataDir;
 		String s = (String) System.getProperty ( "user.home" );
 		if ( s == null ) {
-			System.err.println ( "Could not find user.home setting." );
-			System.err.println ( "Using current directory instead." );
+			System.err
+			    .println ( "Could not find user.home setting. Using current directory instead." );
 			s = ".";
 		}
 		File f = new File ( s );
 		if ( f == null )
-			fatalError ( "Invalid user.home value '" + s + "'" );
+			fatalError ( "Invalid user.home value: " + s );
 		if ( !f.exists () )
-			fatalError ( "Home directory '" + f + "' does not exist." );
+			fatalError ( "Home directory does not exist: " + f );
 		if ( !f.isDirectory () )
-			fatalError ( "Home directory '" + f + "'is not a directory" );
+			fatalError ( "Home directory is not a directory: " + f );
 		// Use the home directory as the base. Data files will
 		// be stored in a subdirectory.
 		File dir = new File ( f, DEFAULT_DIR_NAME );
 		if ( !dir.exists () ) {
 			if ( !dir.mkdirs () )
 				fatalError ( "Unable to create data directory: " + dir );
-			showMessage ( "The following directory was created\n"
-			    + "to store data files:\n\n" + dir );
+			showMessage ( "The following directory was created\nto store data files:"
+			    + "\n\n" + dir );
 		}
 		if ( !dir.isDirectory () )
 			fatalError ( "Not a directory: " + dir );
@@ -1132,7 +1118,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			UIManager
 			    .setLookAndFeel ( "com.sun.java.swing.plaf.windows.WindowsLookAndFeel" );
 		} catch ( Exception e ) {
-			System.out.println ( "Unable to load Windows UI: " + e.toString () );
+			// System.out.println ( "Unable to load Windows UI: " + e.toString () );
 		}
 	}
 
@@ -1158,7 +1144,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		}
 		if ( selectedLAFInfo != null ) {
 			try {
-				System.out.println ( "Changing L&F: " + selectedLAFInfo );
+				// System.out.println ( "Changing L&F: " + selectedLAFInfo );
 				UIManager.setLookAndFeel ( selectedLAFInfo.getClassName () );
 				// SwingUtilities.updateComponentTreeUI ( parent );
 				// parent.pack ();
@@ -1208,7 +1194,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				try {
 					String name = nameField.getText ();
 					if ( name == null || name.trim ().length () == 0 ) {
-						showError ( "You must provide a name" );
+						showError ( "You must provide a calendar name" );
 						return;
 					}
 					Color color = colorField.getSelectedColor ();
@@ -1234,18 +1220,17 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						writer.close ();
 					}
 					if ( c == null ) {
-						showStatusMessage ( "New local calendar \"" + name + "\" added" );
+						showStatusMessage ( "New local calendar added: " + name );
 						dataRepository.addCalendar ( getDataDirectory (), cal, false );
 						// This will call us back with calendarAdded (below)
 					} else {
 						// updating calendar...
 						dataRepository.updateCalendar ( getDataDirectory (), cal );
-						showStatusMessage ( "Updated local calendar \"" + name
-						    + "\" updated" );
+						showStatusMessage ( "Updated local calendar: " + name );
 					}
-					System.out.println ( "Created cal file: " + file );
+					// System.out.println ( "Created cal file: " + file );
 				} catch ( Exception e1 ) {
-					showError ( "Error writing calendar:\n" + e1.getMessage () );
+					showError ( "Error writing calendar: " + e1.getMessage () );
 					return;
 				}
 				addLocal.dispose ();
@@ -1262,7 +1247,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		namePanel.add ( new JLabel ( "Name: " ) );
+		namePanel.add ( new JLabel ( "Calendar Name: " ) );
 		namePanel.add ( nameField );
 		main.add ( namePanel );
 
@@ -1312,7 +1297,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			fileChooser = new JFileChooser ( lastExportDirectory );
 		fileChooser.setFileSelectionMode ( JFileChooser.FILES_ONLY );
 		fileChooser.setFileFilter ( new ICSFileChooserFilter () );
-		fileChooser.setDialogTitle ( "Select Output File for " + title );
+		fileChooser.setDialogTitle ( "Select Output File" );
 		fileChooser.setApproveButtonText ( "Save as ICS File" );
 		fileChooser
 		    .setApproveButtonToolTipText ( "Export entries to iCalendar file" );
@@ -1323,7 +1308,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			// Cancel
 			return;
 		}
-		// If no file extension provided, use ".ics
+		// If no file extension provided, use ".ics"
 		String basename = outFile.getName ();
 		if ( basename.indexOf ( '.' ) < 0 ) {
 			// No filename extension provided, so add ".csv" to it
@@ -1333,15 +1318,15 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		lastExportDirectory = outFile.getParentFile ();
 		if ( outFile.exists () && !outFile.canWrite () ) {
 			JOptionPane.showMessageDialog ( parent,
-			    "You do not have the proper\npermissions to write to:\n\n"
-			        + outFile.toString () + "\n\nPlease select another file.",
+			    "You do not have the proper\npermissions to write to:" + "\n\n"
+			        + outFile.toString () + "\n\n" + "Please select another file.",
 			    "Save Error", JOptionPane.PLAIN_MESSAGE );
 			return;
 		}
 		if ( outFile.exists () ) {
-			if ( JOptionPane.showConfirmDialog ( parent,
-			    "Overwrite existing file?\n\n" + outFile.toString (),
-			    "Overwrite Confirm", JOptionPane.YES_NO_OPTION ) != 0 ) {
+			if ( JOptionPane.showConfirmDialog ( parent, "Overwrite existing file?"
+			    + "\n\n" + outFile.toString (), "Overwrite Confirm",
+			    JOptionPane.YES_NO_OPTION ) != 0 ) {
 				JOptionPane.showMessageDialog ( parent, "Export canceled.",
 				    "Export canceled", JOptionPane.PLAIN_MESSAGE );
 				return;
@@ -1358,11 +1343,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			}
 			writer.write ( p.toICalendar () );
 			writer.close ();
-			JOptionPane.showMessageDialog ( parent, "Exported to:\n\n"
+			JOptionPane.showMessageDialog ( parent, "Exported to:" + "\n\n"
 			    + outFile.toString (), "Export", JOptionPane.PLAIN_MESSAGE );
 		} catch ( IOException e ) {
 			JOptionPane.showMessageDialog ( parent,
-			    "An error was encountered\nwriting to the file:\n\n"
+			    "An error was encountered\nwriting to the file:" + "\n\n"
 			        + e.getMessage (), "Save Error", JOptionPane.PLAIN_MESSAGE );
 			e.printStackTrace ();
 		}
@@ -1500,8 +1485,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			    || ( se.getCalendar ().getType () == Calendar.REMOTE_ICAL_CALENDAR && se
 			        .getCalendar ().getCanWrite () );
 			if ( !canEdit ) {
-				showError ( "You cannot edit events\non the '"
-				    + se.getCalendar ().getName () + "' calendar." );
+				showError ( "You cannot edit events\non the following calendar: "
+				    + "\n\n" + se.getCalendar ().getName () );
 			} else {
 				new EditEventWindow ( parent, dataRepository, se.getEvent (), se
 				    .getCalendar () );
@@ -1552,7 +1537,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			is.close ();
 		} catch ( IOException e1 ) {
 			e1.printStackTrace ();
-			this.version = "Unknown Version (" + e1.getMessage () + ")";
+			this.version = "Unknown Version: " + e1.getMessage ();
 		}
 		return;
 	}
@@ -1571,7 +1556,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			is.close ();
 			final JDialog d = new JDialog ();
 			d.getContentPane ().setLayout ( new BorderLayout () );
-			d.setTitle ( "Change Log" );
+			d.setTitle ( "ChangeLog" );
 			d.setSize ( 500, 400 );
 			d.setLocationByPlatform ( true );
 			JPanel buttonPanel = new JPanel ();
@@ -1593,13 +1578,13 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			sp.getVerticalScrollBar ().setValue ( 0 );
 			JPanel p = new JPanel ();
 			p.setLayout ( new BorderLayout () );
-			p.setBorder ( BorderFactory.createTitledBorder ( "Change Log" ) );
+			p.setBorder ( BorderFactory.createTitledBorder ( "ChangeLog" ) );
 			p.add ( sp, BorderLayout.CENTER );
 			d.getContentPane ().add ( p, BorderLayout.CENTER );
 			d.show ();
 		} catch ( Exception e1 ) {
 			e1.printStackTrace ();
-			showMessage ( "Error:\n" + e1.getMessage () );
+			showMessage ( "Error:" + "\n" + e1.getMessage () );
 		}
 	}
 
@@ -1631,7 +1616,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			d.show ();
 		} catch ( Exception e1 ) {
 			e1.printStackTrace ();
-			showMessage ( "Error:\n" + e1.getMessage () );
+			showMessage ( "Error:" + "\n" + e1.getMessage () );
 		}
 	}
 
@@ -1684,10 +1669,10 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		try {
 			url = new URL ( urlStr );
 		} catch ( Exception e1 ) {
-			showError ( "Invalid URL:\n" + e1.getMessage () );
+			showError ( "Invalid URL:" + "\n" + e1.getMessage () );
 			return;
 		}
-		showStatusMessage ( "Downloading calendar '" + name + "'" );
+		showStatusMessage ( "Downloading calendar: " + name );
 		final Calendar cal = new Calendar ( getDataDirectory (), name, url, 30 );
 		cal.setBackgroundColor ( Color.blue );
 		cal.setForegroundColor ( getForegroundColorForBackground ( Color.blue ) );
@@ -1707,8 +1692,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					case HttpClientStatus.HTTP_STATUS_SUCCESS:
 						break;
 					case HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED:
-						showError ( "Authorization required.\nPlease provide a username\n"
-						    + "and password." );
+						showError ( "Authorization required.\nPlease provide a username\nand password." );
 						return null;
 					case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
 						showError ( "Invalid calendar URL (not found).\n\nServer response: "
@@ -1742,7 +1726,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		addWorker.start ();
 		// updating calendar...
 		dataRepository.updateCalendar ( getDataDirectory (), cal );
-		showStatusMessage ( "Calendar \"" + name + "\" added" );
+		showStatusMessage ( "Calendar added: " + name );
 	}
 }
 
