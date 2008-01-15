@@ -175,7 +175,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		syncBeforePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		syncBeforePanel.add ( new JLabel ( "   Sync before publish: " ) );
+		syncBeforePanel.add ( new JLabel ( "   " + "Sync before publish:" ) );
 		JPanel autoPublishSubPanel = new JPanel ( new BorderLayout () );
 		autoPublishSubPanel.add ( syncBeforePublishField, BorderLayout.WEST );
 		syncBeforePanel.add ( autoPublishSubPanel );
@@ -183,7 +183,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel authPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		authPanel.add ( new JLabel ( "Authentication: " ) );
+		authPanel.add ( new JLabel ( "Authentication:" ) );
 		JPanel authSubPanel = new JPanel ( new BorderLayout () );
 		authSubPanel.add ( authField, BorderLayout.WEST );
 		authPanel.add ( authSubPanel );
@@ -191,7 +191,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel usernamePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		usernamePanel.add ( new JLabel ( "   Username: " ) );
+		usernamePanel.add ( new JLabel ( "   " + "Username:" ) );
 		JPanel usernameSubPanel = new JPanel ( new BorderLayout () );
 		usernameSubPanel.add ( usernameField, BorderLayout.WEST );
 		usernamePanel.add ( usernameSubPanel );
@@ -200,7 +200,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 
 		JPanel passwordPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		passwordPanel.add ( new JLabel ( "   Password: " ) );
+		passwordPanel.add ( new JLabel ( "   " + "Password:" ) );
 		JPanel passwordSubPanel = new JPanel ( new BorderLayout () );
 		passwordSubPanel.add ( passwordField, BorderLayout.WEST );
 		passwordPanel.add ( passwordSubPanel );
@@ -265,7 +265,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 		try {
 			url = new URL ( urlStr );
 		} catch ( Exception e1 ) {
-			showError ( "Invalid URL:\n" + e1.getMessage () );
+			showError ( "Invalid URL:" + "\n" + e1.getMessage () );
 			return;
 		}
 		int updSel = updateField.getSelectedIndex ();
@@ -304,17 +304,16 @@ public class EditRemoteCalendarWindow extends JDialog {
 			case HttpClientStatus.HTTP_STATUS_SUCCESS:
 				break;
 			case HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED:
-				showError ( "Authorization required.\nPlease provide a username\n"
-				    + "and password." );
+				showError ( "Authorization required.\nPlease provide a username\nand password." );
 				authField.setSelectedIndex ( 1 );
 				return;
 			case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
-				showError ( "Invalid calendar URL (not found).\n\nServer response: "
-				    + result.getMessage () );
+				showError ( "Invalid calendar URL (not found)." + "\n\n"
+				    + "Server response: " + result.getMessage () );
 				return;
 			default:
 			case HttpClientStatus.HTTP_STATUS_OTHER_ERROR:
-				showError ( "Error downloading calendar.\n\nServer response: "
+				showError ( "Error downloading calendar." + "\n\n" + "Server response: "
 				    + result.getMessage () );
 				return;
 		}

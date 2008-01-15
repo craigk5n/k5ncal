@@ -106,7 +106,6 @@ public class ThirdPartyDialog extends JDialog {
 		getContentPane ().add ( buttonPanel, BorderLayout.SOUTH );
 
 		int numEntries = components.length / 4;
-		System.out.println ( "Num Entries: " + numEntries );
 		JPanel panel = new JPanel ( new GridLayout ( numEntries, 1 ) );
 
 		for ( int i = 0; i < components.length; i += 4 ) {

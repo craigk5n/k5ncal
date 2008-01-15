@@ -154,7 +154,7 @@ public class Repository implements CalendarDataRepository {
 			}
 		}
 		if ( !found ) {
-			System.out.println ( "removeCalendar: not found " + c );
+			System.err.println ( "removeCalendar: not found " + c );
 		} else {
 			needsRebuilding = true;
 			for ( int i = 0; i < this.changeListeners.size (); i++ ) {
@@ -209,7 +209,7 @@ public class Repository implements CalendarDataRepository {
 				found = true;
 		}
 		if ( found ) {
-			System.out.println ( "addDataFile: not adding duplicate" );
+			System.err.println ( "addDataFile: not adding duplicate" );
 		} else {
 			this.dataFiles.addElement ( f );
 			eventCount += f.getEventCount ();
@@ -454,8 +454,8 @@ public class Repository implements CalendarDataRepository {
 				    + calendar );
 				return;
 			}
-			System.out.println ( "Added event '" + event.getSummary ().getValue ()
-			    + "' to data file: " + dataFile );
+			//System.out.println ( "Added event '" + event.getSummary ().getValue ()
+			//    + "' to data file: " + dataFile );
 			dataFile.addEvent ( event );
 			added = true;
 		}

@@ -133,12 +133,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MENU_CALENDAR_DELETE = "Delete Calendar";
 	static final String MENU_CALENDAR_ADD_EVENT = "Add Event...";
 	static final String MENU_CALENDAR_VIEW_ERRORS = "View Errors/Warnings...";
-	private boolean fontsInitialized = false;
 	static final String ADD_EVENT_LABEL = "New...";
 	static final String EDIT_EVENT_LABEL = "Edit...";
 	static final String DELETE_EVENT_LABEL = "Delete";
 	static final String LARGER_FONT_LABEL = "Larger";
 	static final String SMALLER_FONT_LABEL = "Smaller";
+	private boolean fontsInitialized = false;
 
 	public Main() {
 		super ( "k5nCal" );

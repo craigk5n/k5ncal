@@ -172,8 +172,8 @@ public class Calendar implements Serializable {
 		}
 
 		if ( this.type == -1 ) {
-			System.err.println ( "Error: no type attribute for calendar '"
-			    + this.name + "'" );
+			System.err.println ( "Error: no type attribute for calendar: "
+			    + this.name );
 			if ( this.url == null )
 				this.type = LOCAL_CALENDAR;
 			else

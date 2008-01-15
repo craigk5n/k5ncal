@@ -177,13 +177,12 @@ public class ImportDialog extends JDialog {
 					FileWriter writer = new FileWriter ( file );
 					writer.write ( parser.toICalendar () );
 					writer.close ();
-					showMessage ( "New local calendar \"" + name
-					    + "\" added for import.  "
-					    + parser.getDataStoreAt ( 0 ).getAllEvents ().size ()
-					    + " events imported." );
+					showMessage ( "New local calendar added for import: " + name
+					    + "      " + "Events imported: "
+					    + parser.getDataStoreAt ( 0 ).getAllEvents ().size () );
 					dataRepository.addCalendar ( dataDirectory, cal, false );
 				} catch ( Exception e1 ) {
-					showError ( "Error writing calendar:\n" + e1.getMessage () );
+					showError ( "Error writing calendar:" + "\n" + e1.getMessage () );
 					return;
 				}
 				dispose ();
@@ -312,7 +311,7 @@ public class ImportDialog extends JDialog {
 		if ( outFile.exists () && !outFile.canWrite () ) {
 			JOptionPane.showMessageDialog ( this,
 			    "You do not have the proper\npermissions to write to:\n\n"
-			        + outFile.toString () + "\n\nPlease select another file.",
+			        + outFile.toString () + "\n\n" + "Please select another file.",
 			    "Permissions Error", JOptionPane.WARNING_MESSAGE );
 			return null;
 		}

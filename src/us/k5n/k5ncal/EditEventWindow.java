@@ -338,7 +338,7 @@ public class EditEventWindow extends JDialog implements Constants,
 		repeatOptions
 		    .addElement ( new IntegerChoice ( "Every year", REPEAT_YEARLY ) );
 		// TODO: implement custom recurrence
-		// repeatOptions.addElement ( new IntegerChoice ( "custom...", REPEAT_CUSTOM
+		// repeatOptions.addElement ( new IntegerChoice ( "Custom...", REPEAT_CUSTOM
 		// ) );
 		repeatType = new JComboBox ( repeatOptions );
 		Rrule rrule = event.getRrule ();
@@ -390,11 +390,12 @@ public class EditEventWindow extends JDialog implements Constants,
 				error = "Interval not yet supported";
 		}
 		if ( error != null ) {
-			JOptionPane.showMessageDialog ( parent,
-			    "Warning: The recurrence type of this\n"
-			        + "event is not yet supported\nby k5nCal.  Editing this event\n"
-			        + "will result in data loss.\n\nIssue: " + error, "Error",
-			    JOptionPane.ERROR_MESSAGE );
+			JOptionPane
+			    .showMessageDialog (
+			        parent,
+			        "Warning: The recurrence type of this\nevent is not yet supported\nby k5nCal.  Editing this event\n will result in data loss."
+			            + "\n\n" + "Issue: " + error, "Error",
+			        JOptionPane.ERROR_MESSAGE );
 		}
 		repeatSubPanel.add ( repeatType, BorderLayout.WEST );
 		repeatPanel.add ( repeatSubPanel );

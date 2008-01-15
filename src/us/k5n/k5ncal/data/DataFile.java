@@ -75,7 +75,8 @@ public class DataFile extends File implements Constants {
 				parser.parse ( reader );
 				reader.close ();
 			} catch ( IOException e ) {
-				System.err.println ( "Error opening " + toString () + ": " + e );
+				System.err.println ( "Error opening file:\n" + toString () + "\n"
+				    + e.getMessage () );
 			}
 		}
 		dataStore = parser.getDataStoreAt ( 0 );

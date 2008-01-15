@@ -157,6 +157,7 @@ public class HttpClient {
 
 			// InputStream is = urlC.getInputStream ();
 			OutputStream os = urlC.getOutputStream ();
+			// TODO: update Main window status message bar
 			System.out.println ( "Put file: " + inputFile );
 			FileInputStream fis = new FileInputStream ( inputFile );
 			DataInputStream dis = new DataInputStream (
@@ -179,16 +180,17 @@ public class HttpClient {
 				// Server does not accept PUT
 				os.close ();
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "Server does not accept PUT. (Response Code = " + code + ")" );
+				    "Server does not accept PUT.  Response Code=" + code );
 			}
 			// Read back response....
 			InputStream is = urlC.getInputStream ();
-			DataInputStream respIs = new DataInputStream ( new BufferedInputStream ( is ) );
+			DataInputStream respIs = new DataInputStream ( new BufferedInputStream (
+			    is ) );
 			buf = new byte[4 * 1024]; // 4K buffer
 			StringBuffer response = new StringBuffer ();
 			while ( ( bytesRead = respIs.read ( buf ) ) != -1 ) {
 				response.append ( new String ( buf ) );
-				//System.out.println ( "Response: " + new String ( buf ) );
+				// System.out.println ( "Response: " + new String ( buf ) );
 				totalRead += bytesRead;
 			}
 			System.out.println ( "Response: " + response.toString () );

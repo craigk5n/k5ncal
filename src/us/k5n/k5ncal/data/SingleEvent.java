@@ -31,7 +31,6 @@ public class SingleEvent implements EventInstance, Comparable {
 	// The Event that this SingleEvent is derived from
 	protected Event event;
 	protected Calendar calendar;
-
 	// TODO: duration
 
 	public SingleEvent(String title, String description, int Y, int M, int D) {
