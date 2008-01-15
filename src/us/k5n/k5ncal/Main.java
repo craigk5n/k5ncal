@@ -117,7 +117,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	EventViewPanel eventViewPanel;
 	JButton newButton, editButton, deleteButton, largerButton, smallerButton;
 	JLabel messageArea;
-	// Vector<Calendar> calendars;
 	Repository dataRepository;
 	CalendarPanel calendarPanel;
 	JSplitPane horizontalSplit = null, leftVerticalSplit = null;
@@ -141,6 +140,11 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String MAIN_WINDOW_VERTICAL_SPLIT_POSITION = "MainWindow.vSplitPanePosition";
 	static final String MAIN_WINDOW_HORIZONTAL_SPLIT_POSITION = "MainWindow.hSplitPanePosition";
 	private boolean fontsInitialized = false;
+	static final String ADD_EVENT_LABEL = "New...";
+	static final String EDIT_EVENT_LABEL = "Edit...";
+	static final String DELETE_EVENT_LABEL = "Delete";
+	static final String LARGER_FONT_LABEL = "Larger";
+	static final String SMALLER_FONT_LABEL = "Smaller";
 
 	public Main() {
 		super ( "k5nCal" );
@@ -523,7 +527,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	JToolBar createToolBar () {
 		JToolBar toolbar = new JToolBar ();
 		newButton = makeNavigationButton ( "New24.gif", "new", "Add new event",
-		    "New..." );
+		    ADD_EVENT_LABEL );
 		newButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
 				// Make sure there is at least one local calendar.
@@ -556,7 +560,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		toolbar.add ( newButton );
 
 		editButton = makeNavigationButton ( "Edit24.gif", "edit",
-		    "Edit selected event", "Edit..." );
+		    "Edit selected event", EDIT_EVENT_LABEL );
 		toolbar.add ( editButton );
 		editButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -579,7 +583,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		deleteButton = makeNavigationButton ( "Delete24.gif", "delete",
-		    "Delete selected event", "Delete" );
+		    "Delete selected event", DELETE_EVENT_LABEL );
 		toolbar.add ( deleteButton );
 		deleteButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -623,7 +627,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		toolbar.addSeparator ();
 
 		largerButton = makeNavigationButton ( "LargerFont24.png",
-		    "Increase Font Size", "Increase font size", "Larger" );
+		    "Increase Font Size", "Increase font size", LARGER_FONT_LABEL );
 		toolbar.add ( largerButton );
 		largerButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -635,7 +639,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 
 		smallerButton = makeNavigationButton ( "SmallerFont24.png",
-		    "Decrease Font Size", "Decrease font size", "Smaller" );
+		    "Decrease Font Size", "Decrease font size", SMALLER_FONT_LABEL );
 		toolbar.add ( smallerButton );
 		smallerButton.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
@@ -669,6 +673,20 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		deleteButton.setEnabled ( selected && canEdit );
 		smallerButton.setEnabled ( prefs.getDisplayFontSize () > -4 );
 		largerButton.setEnabled ( prefs.getDisplayFontSize () < 4 );
+		// Show text?
+		if ( prefs.getToolbarIconText () ) {
+			this.newButton.setText ( ADD_EVENT_LABEL );
+			this.editButton.setText ( EDIT_EVENT_LABEL );
+			this.deleteButton.setText ( DELETE_EVENT_LABEL );
+			this.largerButton.setText ( LARGER_FONT_LABEL );
+			this.smallerButton.setText ( SMALLER_FONT_LABEL );
+		} else {
+			this.newButton.setText ( null );
+			this.editButton.setText ( null );
+			this.deleteButton.setText ( null );
+			this.largerButton.setText ( null );
+			this.smallerButton.setText ( null );
+		}
 	}
 
 	/**

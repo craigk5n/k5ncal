@@ -54,6 +54,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 	JComboBox displayTentative;
 	JComboBox displayHourInMonthView;
 	JComboBox displayFontSize;
+	JComboBox iconStyle;
 
 	class IntegerChoice {
 		String label;
@@ -147,7 +148,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 		aPanel.add ( this.displayHourInMonthView, BorderLayout.WEST );
 		showHourInMonthPanel.add ( aPanel );
 		displayPanel.add ( showHourInMonthPanel );
-		
+
 		JPanel fontSizePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		fontSizePanel.add ( new JLabel ( "Font size: " ) );
@@ -168,6 +169,21 @@ public class PreferencesWindow extends JDialog implements Constants,
 		JScrollPane sp = new JScrollPane ( eventParentPanel );
 
 		tabbedPane.addTab ( "Display", sp );
+
+		JPanel toolbarPanel = new JPanel ( new BorderLayout () );
+		JPanel toolbarSubPanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		toolbarPanel.add ( toolbarSubPanel, BorderLayout.NORTH );
+		toolbarSubPanel.add ( new JLabel ( "Icon Style: " ) );
+		JPanel iconStylePanel = new JPanel ( new BorderLayout () );
+		choices = new Vector<IntegerChoice> ();
+		choices.addElement ( new IntegerChoice ( "Text & Icon", 0 ) );
+		choices.addElement ( new IntegerChoice ( "Icon", 1 ) );
+		this.iconStyle = new JComboBox ( choices );
+		iconStylePanel.add ( this.iconStyle, BorderLayout.WEST );
+		toolbarSubPanel.add ( iconStylePanel );
+
+		tabbedPane.addTab ( "Toolbar", toolbarPanel );
 
 		getContentPane ().add ( tabbedPane, BorderLayout.CENTER );
 	}
@@ -197,6 +213,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 				this.displayFontSize.setSelectedIndex ( 2 );
 				break;
 		}
+		this.iconStyle.setSelectedIndex ( prefs.getToolbarIconText () ? 0 : 1 );
 	}
 
 	void save () {
@@ -209,6 +226,9 @@ public class PreferencesWindow extends JDialog implements Constants,
 		IntegerChoice ic = (IntegerChoice) this.displayFontSize.getSelectedItem ();
 		if ( ic != null )
 			prefs.setDisplayFontSize ( ic.value );
+		ic = (IntegerChoice) this.iconStyle.getSelectedItem ();
+		if ( ic != null )
+			prefs.setToolbarIconText ( ic.value == 0 );
 		repo.notifyDisplayPreferencesChange ();
 		this.dispose ();
 	}

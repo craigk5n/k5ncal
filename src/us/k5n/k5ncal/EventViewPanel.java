@@ -19,6 +19,7 @@
 package us.k5n.k5ncal;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -36,6 +37,8 @@ import us.k5n.ical.Event;
 import us.k5n.k5ncal.data.Calendar;
 
 public class EventViewPanel extends JPanel {
+	private JPanel eventDetailPanel, blankPanel;
+	private CardLayout cardLayout;
 	private JLabel date;
 	private JLabel subject;
 	private JLabel location;
@@ -58,7 +61,8 @@ public class EventViewPanel extends JPanel {
 			EventViewPanel.handCursor = Cursor
 			    .getPredefinedCursor ( Cursor.HAND_CURSOR );
 		}
-		setLayout ( new BorderLayout () );
+		setLayout ( this.cardLayout = new CardLayout () );
+		this.eventDetailPanel = new JPanel ( new BorderLayout () );
 
 		JPanel topPanel = new JPanel ();
 		topPanel.setLayout ( new GridLayout ( 6, 1 ) );
@@ -112,7 +116,7 @@ public class EventViewPanel extends JPanel {
 		subpanel.add ( categories, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
-		add ( topPanel, BorderLayout.NORTH );
+		eventDetailPanel.add ( topPanel, BorderLayout.NORTH );
 
 		text = new JTextArea ();
 		text.setLineWrap ( true );
@@ -121,10 +125,22 @@ public class EventViewPanel extends JPanel {
 		this.textComponents.addElement ( text );
 		JScrollPane scrollPane = new JScrollPane ( text );
 
-		add ( scrollPane, BorderLayout.CENTER );
+		eventDetailPanel.add ( scrollPane, BorderLayout.CENTER );
+
+		this.blankPanel = new JPanel ( new BorderLayout () );
+		this.blankPanel.add ( new JLabel (
+		    "<html>Click on an event<br>to view details</html>", JLabel.CENTER ),
+		    BorderLayout.CENTER );
+
+		add ( this.eventDetailPanel, "details" );
+		add ( this.blankPanel, "blank" );
+
+		this.cardLayout.first ( this );
 
 		if ( font != null )
 			this.setAllFonts ( font );
+
+		clear ();
 	}
 
 	JLabel makeLabel ( String s ) {
@@ -141,6 +157,7 @@ public class EventViewPanel extends JPanel {
 		this.calendar.setText ( "" );
 		this.categories.setText ( "" );
 		this.text.setText ( "" );
+		this.cardLayout.last ( this );
 	}
 
 	public void setAllFonts ( Font font ) {
@@ -154,6 +171,7 @@ public class EventViewPanel extends JPanel {
 	public void update ( Date eventDate, Event event, Calendar calendar ) {
 		if ( event == null ) {
 			this.clear ();
+			this.cardLayout.last ( this );
 			return;
 		}
 		DisplayDate dd = new DisplayDate ( eventDate );
@@ -189,5 +207,6 @@ public class EventViewPanel extends JPanel {
 		else
 			this.text.setText ( "" );
 		this.text.setCaretPosition ( 0 );
+		this.cardLayout.first ( this );
 	}
 }

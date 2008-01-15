@@ -53,7 +53,9 @@ public class AppPreferences {
 	static final String DISPLAY_HOUR_IN_MONTH_VIEW = "Display.hourInMonthView";
 
 	static final String DISPLAY_FONT_SIZE = "Display.fontSize";
-	
+
+	static final String TOOLBAR_ICON_TEXT = "Toolbar.iconText";
+
 	private static AppPreferences instance = null;
 
 	public AppPreferences() {
@@ -366,12 +368,20 @@ public class AppPreferences {
 	public void setDisplayHourInMonthView ( boolean isSet ) {
 		prefs.putBoolean ( DISPLAY_HOUR_IN_MONTH_VIEW, isSet );
 	}
-	
+
 	public int getDisplayFontSize () {
 		return prefs.getInt ( DISPLAY_FONT_SIZE, 0 );
 	}
 
 	public void setDisplayFontSize ( int fontSize ) {
 		prefs.putInt ( DISPLAY_FONT_SIZE, fontSize );
+	}
+
+	public void setToolbarIconText ( boolean isSet ) {
+		prefs.putBoolean ( TOOLBAR_ICON_TEXT, isSet );
+	}
+
+	public boolean getToolbarIconText () {
+		return prefs.getBoolean ( TOOLBAR_ICON_TEXT, true );
 	}
 }
