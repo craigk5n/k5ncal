@@ -70,7 +70,7 @@ public class EventViewPanel extends JPanel {
 
 		JPanel subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "Date:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "Date" + ":" ), BorderLayout.WEST );
 		date = makeLabel ( "" );
 		this.textComponents.addElement ( date );
 		subpanel.add ( date, BorderLayout.CENTER );
@@ -78,7 +78,7 @@ public class EventViewPanel extends JPanel {
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "Subject:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "Subject" + ":" ), BorderLayout.WEST );
 		subject = makeLabel ( "" );
 		this.textComponents.addElement ( subject );
 		subpanel.add ( subject, BorderLayout.CENTER );
@@ -86,7 +86,7 @@ public class EventViewPanel extends JPanel {
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "Location:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "Location" + ":" ), BorderLayout.WEST );
 		location = makeLabel ( "" );
 		this.textComponents.addElement ( location );
 		subpanel.add ( location, BorderLayout.CENTER );
@@ -94,7 +94,7 @@ public class EventViewPanel extends JPanel {
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "URL:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "URL" + ":" ), BorderLayout.WEST );
 		url = new JLabelWithHyperlink ( "" );
 		this.textComponents.addElement ( url );
 		JPanel subSubPanel = new JPanel ( new BorderLayout () );
@@ -104,14 +104,14 @@ public class EventViewPanel extends JPanel {
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "Calendar:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "Calendar" + ":" ), BorderLayout.WEST );
 		calendar = makeLabel ( "" );
 		subpanel.add ( calendar, BorderLayout.CENTER );
 		topPanel.add ( subpanel );
 
 		subpanel = new JPanel ();
 		subpanel.setLayout ( new BorderLayout () );
-		subpanel.add ( makeLabel ( "Categories:" ), BorderLayout.WEST );
+		subpanel.add ( makeLabel ( "Categories" + ":" ), BorderLayout.WEST );
 		categories = makeLabel ( "" );
 		subpanel.add ( categories, BorderLayout.CENTER );
 		topPanel.add ( subpanel );

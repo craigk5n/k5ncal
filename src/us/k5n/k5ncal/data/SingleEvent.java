@@ -23,6 +23,12 @@ import java.awt.Color;
 import us.k5n.ical.Event;
 import us.k5n.ui.calendar.EventInstance;
 
+/**
+ * k5nCal implementation of the EventInstance interface.
+ * 
+ * @author Craig Knudsen, craig@k5n.us
+ * @version $Id$
+ */
 public class SingleEvent implements EventInstance, Comparable {
 	String title, description, location;
 	int Y, M, D, h, m, s;
@@ -31,6 +37,7 @@ public class SingleEvent implements EventInstance, Comparable {
 	// The Event that this SingleEvent is derived from
 	protected Event event;
 	protected Calendar calendar;
+
 	// TODO: duration
 
 	public SingleEvent(String title, String description, int Y, int M, int D) {

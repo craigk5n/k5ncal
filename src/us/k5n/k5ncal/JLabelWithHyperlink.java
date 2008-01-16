@@ -68,7 +68,7 @@ public class JLabelWithHyperlink extends JLabel {
 						BrowserLauncher bl = new BrowserLauncher ();
 						bl.openURLinBrowser ( urlStr );
 					} catch ( Exception e ) {
-						System.err.println ( "Error starting web browser: "
+						System.err.println ( "Error starting web browser" + ": "
 						    + e.getMessage () );
 						e.printStackTrace ();
 					}

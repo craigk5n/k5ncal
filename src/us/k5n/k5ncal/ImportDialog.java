@@ -177,12 +177,12 @@ public class ImportDialog extends JDialog {
 					FileWriter writer = new FileWriter ( file );
 					writer.write ( parser.toICalendar () );
 					writer.close ();
-					showMessage ( "New local calendar added for import: " + name
-					    + "      " + "Events imported: "
+					showMessage ( "New local calendar added for import" + ": " + name
+					    + "      " + "Events imported" + ": "
 					    + parser.getDataStoreAt ( 0 ).getAllEvents ().size () );
 					dataRepository.addCalendar ( dataDirectory, cal, false );
 				} catch ( Exception e1 ) {
-					showError ( "Error writing calendar:" + "\n" + e1.getMessage () );
+					showError ( "Error writing calendar" + ":\n" + e1.getMessage () );
 					return;
 				}
 				dispose ();
@@ -233,14 +233,14 @@ public class ImportDialog extends JDialog {
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		namePanel.add ( new JLabel ( "New Calendar Name: " ) );
+		namePanel.add ( new JLabel ( "New Calendar Name" + ": " ) );
 		namePanel.add ( nameField );
 		main.add ( namePanel );
 
 		JPanel colorPanel = new JPanel ();
 		colorPanel.setLayout ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		colorPanel.add ( new JLabel ( "Background Color: " ) );
+		colorPanel.add ( new JLabel ( "Background Color" + ": " ) );
 		JPanel colorSub = new JPanel ();
 		colorSub.setLayout ( new BorderLayout () );
 		colorField.setBackground ( Color.blue );
@@ -254,7 +254,7 @@ public class ImportDialog extends JDialog {
 	}
 
 	void showError ( String message ) {
-		System.err.println ( "Error: " + message );
+		System.err.println ( "Error" + ": " + message );
 		JOptionPane.showMessageDialog ( this, message, "Import Error",
 		    JOptionPane.ERROR_MESSAGE );
 	}
@@ -306,11 +306,11 @@ public class ImportDialog extends JDialog {
 			// No filename extension provided, so add ".csv" to it
 			outFile = new File ( outFile.getParent (), basename + ".csv" );
 		}
-		System.out.println ( "Selected File: " + outFile.toString () );
+		// System.out.println ( "Selected File" + ": " + outFile.toString () );
 		lastImportDirectory = outFile.getParentFile ();
 		if ( outFile.exists () && !outFile.canWrite () ) {
 			JOptionPane.showMessageDialog ( this,
-			    "You do not have the proper\npermissions to write to:\n\n"
+			    "You do not have the proper\npermissions to write to" + ":\n\n"
 			        + outFile.toString () + "\n\n" + "Please select another file.",
 			    "Permissions Error", JOptionPane.WARNING_MESSAGE );
 			return null;

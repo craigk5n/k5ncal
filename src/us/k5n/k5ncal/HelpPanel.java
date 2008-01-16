@@ -56,7 +56,7 @@ public class HelpPanel extends JPanel implements HyperlinkListener,
 			JScrollPane scrollPane = new MyScrollPane ( htmlPane );
 			add ( scrollPane, BorderLayout.CENTER );
 		} catch ( IOException ioe ) {
-			warnUser ( "Can't build HTML pane for URL:" + "\n\n" + initialURL
+			warnUser ( "Can't build HTML pane for URL" + ":\n\n" + initialURL
 			    + "\n\n" + ioe );
 		}
 	}
@@ -71,7 +71,7 @@ public class HelpPanel extends JPanel implements HyperlinkListener,
 			htmlPane.setPage ( new URL ( url ) );
 			// urlField.setText(url);
 		} catch ( IOException ioe ) {
-			warnUser ( "Can't follow link to URL:" + "\n\n" + url + "\n\n" + ioe );
+			warnUser ( "Can't follow link to URL" + ":\n\n" + url + "\n\n" + ioe );
 		}
 	}
 
@@ -81,7 +81,7 @@ public class HelpPanel extends JPanel implements HyperlinkListener,
 				htmlPane.setPage ( event.getURL () );
 				// urlField.setText(event.getURL().toExternalForm());
 			} catch ( IOException ioe ) {
-				warnUser ( "Can't follow link to URL:" + "\n\n"
+				warnUser ( "Can't follow link to URL" + ":\n\n"
 				    + event.getURL ().toExternalForm () + "\n\n" + ioe );
 			}
 		}

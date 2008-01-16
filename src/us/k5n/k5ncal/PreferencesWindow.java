@@ -121,7 +121,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JPanel cancelledPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		cancelledPanel.add ( new JLabel ( "Display cancelled events:" ) );
+		cancelledPanel.add ( new JLabel ( "Display cancelled events" + ": " ) );
 		Vector<IntegerChoice> choices = new Vector<IntegerChoice> ();
 		choices.addElement ( new IntegerChoice ( "No", 0 ) );
 		choices.addElement ( new IntegerChoice ( "Yes", 1 ) );
@@ -133,7 +133,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JPanel tentativePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		tentativePanel.add ( new JLabel ( "Display tentative events:" ) );
+		tentativePanel.add ( new JLabel ( "Display tentative events" + ": " ) );
 		this.displayTentative = new JComboBox ( choices );
 		aPanel = new JPanel ( new BorderLayout () );
 		aPanel.add ( this.displayTentative, BorderLayout.WEST );
@@ -142,7 +142,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JPanel showHourInMonthPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		showHourInMonthPanel.add ( new JLabel ( "Show hour in month view:" ) );
+		showHourInMonthPanel.add ( new JLabel ( "Show hour in month view" + ": " ) );
 		this.displayHourInMonthView = new JComboBox ( choices );
 		aPanel = new JPanel ( new BorderLayout () );
 		aPanel.add ( this.displayHourInMonthView, BorderLayout.WEST );
@@ -151,7 +151,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JPanel fontSizePanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
-		fontSizePanel.add ( new JLabel ( "Font size:" ) );
+		fontSizePanel.add ( new JLabel ( "Font size" + ": " ) );
 		choices = new Vector<IntegerChoice> ();
 		choices.addElement ( new IntegerChoice ( "Smallest", -4 ) );
 		choices.addElement ( new IntegerChoice ( "Small", -2 ) );
@@ -174,7 +174,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 		JPanel toolbarSubPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
 		toolbarPanel.add ( toolbarSubPanel, BorderLayout.NORTH );
-		toolbarSubPanel.add ( new JLabel ( "Icon Style:" ) );
+		toolbarSubPanel.add ( new JLabel ( "Icon Style" + ": " ) );
 		JPanel iconStylePanel = new JPanel ( new BorderLayout () );
 		choices = new Vector<IntegerChoice> ();
 		choices.addElement ( new IntegerChoice ( "Text & Icon", 0 ) );

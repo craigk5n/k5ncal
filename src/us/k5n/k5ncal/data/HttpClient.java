@@ -85,7 +85,7 @@ public class HttpClient {
 				    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED, "Authorizaton required" );
 			} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "HTTP Error " + urlC.getResponseCode () + ": "
+				    "HTTP Error" + " " + urlC.getResponseCode () + ": "
 				        + urlC.getResponseMessage () );
 			}
 		} catch ( IOException e1 ) {
@@ -102,19 +102,20 @@ public class HttpClient {
 					    "Authorizaton required" );
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error "
-					        + urlC.getResponseCode () + ": " + urlC.getResponseMessage () );
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error" + " "
+					        + +urlC.getResponseCode () + ": "
+					        + urlC.getResponseMessage () );
 				} else {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception:",
-					    e1 );
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception"
+					        + ":", e1 );
 				}
 			} catch ( IOException e2 ) {
 				// Print the stack trace on this one since it happened while we were
 				// handling another exception...
 				e2.printStackTrace ();
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "HTTP I/O Error: " + e1.getMessage (), e1 );
+				    "HTTP I/O Error" + ": " + e1.getMessage (), e1 );
 			}
 		}
 
@@ -127,7 +128,7 @@ public class HttpClient {
 	    final String username, final String password, File inputFile ) {
 		if ( !inputFile.exists () || inputFile.length () <= 0 ) {
 			return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
-			    "No such file: " + inputFile );
+			    "No such file" + ": " + inputFile );
 		}
 		if ( username != null && password != null ) {
 			Authenticator.setDefault ( new Authenticator () {
@@ -209,7 +210,7 @@ public class HttpClient {
 				    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED, "Authorizaton required" );
 			} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "HTTP Error " + urlC.getResponseCode () + ": "
+				    "HTTP Error" + ": " + urlC.getResponseCode () + ": "
 				        + urlC.getResponseMessage () );
 			}
 		} catch ( IOException e1 ) {
@@ -226,19 +227,19 @@ public class HttpClient {
 					    "Authorizaton required" );
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error "
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error" + " "
 					        + urlC.getResponseCode () + ": " + urlC.getResponseMessage () );
 				} else {
 					return new HttpClientStatus (
-					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception:",
-					    e1 );
+					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception"
+					        + ":", e1 );
 				}
 			} catch ( IOException e2 ) {
 				// Print the stack trace on this one since it happened while we were
 				// handling another exception...
 				e2.printStackTrace ();
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
-				    "HTTP I/O Exception:", e1 );
+				    "HTTP I/O Exception" + ":", e1 );
 			}
 		}
 

@@ -58,7 +58,7 @@ public class SharedCalendars {
 							BrowserLauncher bl = new BrowserLauncher ();
 							bl.openURLinBrowser ( url );
 						} catch ( Exception e1 ) {
-							System.err.println ( "Error starting web browser: "
+							System.err.println ( "Error starting web browser" + ": "
 							    + e1.getMessage () );
 							e1.printStackTrace ();
 						}
