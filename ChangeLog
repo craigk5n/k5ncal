@@ -6,6 +6,7 @@ Version 0.9.7dev (14 Jan 2008) - Bug fixes
 - Added toolbar buttons for increasing/decreasing font size.
 - Added preference for icons to show/hide text under icon
 - Added place holder in event view area that says "Click on event..."
+- Added preference for Look And Feel
 - Bug fix: font size was not correct on app startup
 - Bug fix: remote calendar refresh was broken
 - Allow remote calendars to use HTTPS (instead of just HTTP)

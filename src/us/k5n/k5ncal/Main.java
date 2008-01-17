@@ -67,6 +67,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -125,7 +126,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	JList categoryJList;
 	String searchText = null;
 	private static File lastExportDirectory = null;
-	PreferencesWindow preferencesWindow = null;
 	AppPreferences prefs;
 	File dataDir = null;
 	static final String MENU_CALENDAR_EDIT = "Edit Calendar...";
@@ -142,7 +142,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 	public Main() {
 		super ( "k5nCal" );
-		setWindowsLAF ();
 		this.parent = this;
 
 		// Get version from ChangeLog
@@ -150,6 +149,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		// TODO: save user's preferred size on exit and set here
 		prefs = AppPreferences.getInstance ();
+		// prefs.clearAll ();
+
+		setInitialLAF ();
 
 		setSize ( prefs.getMainWindowWidth (), prefs.getMainWindowHeight () );
 		this.setLocation ( prefs.getMainWindowX (), prefs.getMainWindowY () );
@@ -243,14 +245,15 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			if ( name == null )
 				name = "Unnamed Calendar";
 			Calendar def = new Calendar ( dir, name );
-			this.showMessage ( "A new calendar named was created for you" + ": " + name );
+			this.showMessage ( "A new calendar named was created for you" + ": "
+			    + name );
 			ret.addElement ( def );
 		} else {
 			try {
 				ret = Calendar.readCalendars ( f );
 			} catch ( Exception e1 ) {
-				this.fatalError ( "Error reading calendar file " + f + "\n\n"
-				    + "Error" + ":\n" + e1.getMessage () );
+				this.fatalError ( "Error reading calendar file " + f + "\n\n" + "Error"
+				    + ":\n" + e1.getMessage () );
 				e1.printStackTrace ();
 			}
 		}
@@ -281,12 +284,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		item = new JMenuItem ( "Preferences..." );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
-				if ( preferencesWindow == null ) {
-					preferencesWindow = new PreferencesWindow ( parent, dataRepository );
-				} else {
-					preferencesWindow.updateUIFromPreferences ();
-					preferencesWindow.setVisible ( true );
-				}
+				new PreferencesWindow ( parent, dataRepository );
 			}
 		} );
 		fileMenu.add ( item );
@@ -397,8 +395,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					javaVersion = "Unknown";
 				JOptionPane.showMessageDialog ( parent, "k5nCal "
 				    + ( version == null ? "Unknown Version" : version ) + "\n\n"
-				    + "Java Version" + ": " + javaVersion + "\n\n" + "Developed by k5n.us"
-				    + "\n\nhttp://www.k5n.us", "About k5nCal",
+				    + "Java Version" + ": " + javaVersion + "\n\n"
+				    + "Developed by k5n.us" + "\n\nhttp://www.k5n.us", "About k5nCal",
 				    JOptionPane.INFORMATION_MESSAGE, icon );
 			}
 		} );
@@ -831,19 +829,23 @@ public class Main extends JFrame implements Constants, ComponentListener,
 				// TODO: implement a way to show these errors to the user.
 				switch ( result.getStatus () ) {
 					case HttpClientStatus.HTTP_STATUS_SUCCESS:
-						statusMsg = "Calendar successfully refreshed" + ": " + cal.getName ();
+						statusMsg = "Calendar successfully refreshed" + ": "
+						    + cal.getName ();
 						break;
 					case HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED:
-						error = "Authorization required.\nPlease provide a username\nand password.";
+						error = "Authorization required.\nPlease provide a username\n"
+						    + "and password." + "\n\n" + "Calendar" + ": " + cal.getName ()
+						    + "\n" + "URL" + ": " + cal.getUrl ();
 						return null;
 					case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
-						error = "Invalid calendar URL (not found).\n\nServer response" + ": "
-						    + result.getMessage ();
+						error = "Invalid calendar URL (not found).\n\nServer response"
+						    + ": " + result.getMessage ();
 						return null;
 					default:
 					case HttpClientStatus.HTTP_STATUS_OTHER_ERROR:
-						error = "Error downloading calendar.\n\nServer response" + ": "
-						    + result.getMessage ();
+						error = "Error downloading calendar.\n\nServer response: "
+						    + result.getMessage () + "\n\n" + "Calendar" + ": "
+						    + cal.getName () + "\n" + "URL" + ": " + cal.getUrl ();
 						return null;
 				}
 				return null;
@@ -1113,18 +1115,19 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	/**
 	 * Set the Look and Feel to be Windows.
 	 */
-	public static void setWindowsLAF () {
+	public void setInitialLAF () {
+		String laf = prefs.getAppearanceLookAndFeel ();
 		try {
-			UIManager
-			    .setLookAndFeel ( "com.sun.java.swing.plaf.windows.WindowsLookAndFeel" );
+			if ( laf != null )
+				UIManager.setLookAndFeel ( laf );
 		} catch ( Exception e ) {
-			// System.out.println ( "Unable to load Windows UI: " + e.toString () );
+			System.out.println ( "Unable to L&F " + laf + ": " + e.toString () );
 		}
 	}
 
 	public void selectLookAndFeel ( Component toplevel, Frame dialogParent ) {
 		LookAndFeel lafCurrent = UIManager.getLookAndFeel ();
-		//System.out.println ( "Current L&F: " + lafCurrent );
+		// System.out.println ( "Current L&F: " + lafCurrent );
 		UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels ();
 		String[] choices = new String[info.length];
 		int sel = 0;
@@ -1314,7 +1317,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			// No filename extension provided, so add ".csv" to it
 			outFile = new File ( outFile.getParent (), basename + ".ics" );
 		}
-		//System.out.println ( "Selected File: " + outFile.toString () );
+		// System.out.println ( "Selected File: " + outFile.toString () );
 		lastExportDirectory = outFile.getParentFile ();
 		if ( outFile.exists () && !outFile.canWrite () ) {
 			JOptionPane.showMessageDialog ( parent,
@@ -1476,6 +1479,19 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		this.calendarPanel.repaint ();
 		this.eventViewPanel.setAllFonts ( newFont );
 		updateToolbar ();
+		updateLookAndFeel ();
+	}
+
+	public void updateLookAndFeel () {
+		String laf = prefs.getAppearanceLookAndFeel ();
+		try {
+			if ( laf != null ) {
+				UIManager.setLookAndFeel ( laf );
+				SwingUtilities.updateComponentTreeUI ( parent );
+			}
+		} catch ( Exception e ) {
+			System.out.println ( "Unable to L&F " + laf + ": " + e.toString () );
+		}
 	}
 
 	public void eventDoubleClicked ( EventInstance eventInstance ) {
@@ -1655,8 +1671,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 			String name = remoteNames.elementAt ( i );
 			String url = remoteURLs.elementAt ( i );
 			if ( app.dataRepository.hasCalendarWithURL ( url ) ) {
-				System.out
-				    .println ( "Ignoring add calendar from duplicate URL" + ": " + url );
+				System.out.println ( "Ignoring add calendar from duplicate URL" + ": "
+				    + url );
 			} else {
 				// auto-add the calendar....
 				app.addCalendarFromCommandLine ( name, url );
@@ -1695,8 +1711,8 @@ public class Main extends JFrame implements Constants, ComponentListener,
 						showError ( "Authorization required.\nPlease provide a username\nand password." );
 						return null;
 					case HttpClientStatus.HTTP_STATUS_NOT_FOUND:
-						showError ( "Invalid calendar URL (not found).\n\nServer response" + ": "
-						    + result.getMessage () );
+						showError ( "Invalid calendar URL (not found).\n\nServer response"
+						    + ": " + result.getMessage () );
 						return null;
 					default:
 					case HttpClientStatus.HTTP_STATUS_OTHER_ERROR:

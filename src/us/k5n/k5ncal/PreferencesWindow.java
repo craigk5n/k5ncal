@@ -35,6 +35,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
 
 import us.k5n.ical.Constants;
 import us.k5n.k5ncal.data.Repository;
@@ -54,6 +56,7 @@ public class PreferencesWindow extends JDialog implements Constants,
 	JComboBox displayTentative;
 	JComboBox displayHourInMonthView;
 	JComboBox displayFontSize;
+	JComboBox appearanceLAF;
 	JComboBox iconStyle;
 
 	class IntegerChoice {
@@ -63,6 +66,20 @@ public class PreferencesWindow extends JDialog implements Constants,
 		public IntegerChoice(String label, int value) {
 			this.label = label;
 			this.value = value;
+		}
+
+		public String toString () {
+			return label;
+		}
+	}
+
+	class LAFChoice {
+		UIManager.LookAndFeelInfo laf;
+		String label;
+
+		public LAFChoice(UIManager.LookAndFeelInfo laf) {
+			this.laf = laf;
+			this.label = laf.getName ();
 		}
 
 		public String toString () {
@@ -117,7 +134,21 @@ public class PreferencesWindow extends JDialog implements Constants,
 
 		JTabbedPane tabbedPane = new JTabbedPane ();
 
-		JPanel displayPanel = new JPanel ( new GridLayout ( 4, 1 ) );
+		JPanel displayPanel = new JPanel ( new GridLayout ( 5, 1 ) );
+
+		UIManager.LookAndFeelInfo[] info = UIManager.getInstalledLookAndFeels ();
+		JPanel lafPanel = new JPanel ( new ProportionalLayout ( props,
+		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
+		lafPanel.add ( new JLabel ( "Look and Feel: " ) );
+		Vector<LAFChoice> lafChoices = new Vector<LAFChoice> ();
+		for ( int i = 0; i < info.length; i++ ) {
+			lafChoices.addElement ( new LAFChoice ( info[i] ) );
+		}
+		this.appearanceLAF = new JComboBox ( lafChoices );
+		JPanel lafSubPanel = new JPanel ( new BorderLayout () );
+		lafSubPanel.add ( this.appearanceLAF, BorderLayout.WEST );
+		lafPanel.add ( lafSubPanel );
+		displayPanel.add ( lafPanel );
 
 		JPanel cancelledPanel = new JPanel ( new ProportionalLayout ( props,
 		    ProportionalLayout.HORIZONTAL_LAYOUT ) );
@@ -213,6 +244,12 @@ public class PreferencesWindow extends JDialog implements Constants,
 				this.displayFontSize.setSelectedIndex ( 2 );
 				break;
 		}
+		String laf = prefs.getAppearanceLookAndFeel ();
+		for ( int i = 0; i < this.appearanceLAF.getItemCount (); i++ ) {
+			LAFChoice lafChoice = (LAFChoice) this.appearanceLAF.getItemAt ( i );
+			if ( lafChoice.laf.getClassName ().equals ( laf ) )
+				this.appearanceLAF.setSelectedIndex ( i );
+		}
 		this.iconStyle.setSelectedIndex ( prefs.getToolbarIconText () ? 0 : 1 );
 	}
 
@@ -229,6 +266,9 @@ public class PreferencesWindow extends JDialog implements Constants,
 		ic = (IntegerChoice) this.iconStyle.getSelectedItem ();
 		if ( ic != null )
 			prefs.setToolbarIconText ( ic.value == 0 );
+		LAFChoice laf = (LAFChoice) this.appearanceLAF.getSelectedItem ();
+		prefs.setAppearanceLookAndFeel ( laf.laf.getClassName () );
+		
 		repo.notifyDisplayPreferencesChange ();
 		this.dispose ();
 	}

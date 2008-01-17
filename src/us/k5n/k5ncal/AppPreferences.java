@@ -51,8 +51,9 @@ public class AppPreferences {
 	static final String DISPLAY_CANCELLED_EVENTS = "Display.cancelledEvents";
 	static final String DISPLAY_TENTATIVE_EVENTS = "Display.tentativeEvents";
 	static final String DISPLAY_HOUR_IN_MONTH_VIEW = "Display.hourInMonthView";
-
 	static final String DISPLAY_FONT_SIZE = "Display.fontSize";
+
+	static final String APPEARANCE_LAF = "Display.LookAndFeel";
 
 	static final String TOOLBAR_ICON_TEXT = "Toolbar.iconText";
 
@@ -67,6 +68,13 @@ public class AppPreferences {
 		if ( instance == null )
 			instance = new AppPreferences ();
 		return instance;
+	}
+
+	public void clearAll () {
+		try {
+			prefs.removeNode ();
+		} catch ( Exception e1 ) {
+		}
 	}
 
 	/**
@@ -375,6 +383,14 @@ public class AppPreferences {
 
 	public void setDisplayFontSize ( int fontSize ) {
 		prefs.putInt ( DISPLAY_FONT_SIZE, fontSize );
+	}
+
+	public void setAppearanceLookAndFeel ( String laf ) {
+		prefs.put ( APPEARANCE_LAF, laf );
+	}
+
+	public String getAppearanceLookAndFeel () {
+		return prefs.get ( APPEARANCE_LAF, null );
 	}
 
 	public void setToolbarIconText ( boolean isSet ) {
