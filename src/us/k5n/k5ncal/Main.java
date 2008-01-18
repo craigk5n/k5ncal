@@ -1643,6 +1643,16 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		Vector<String> remoteNames = new Vector<String> ();
 		Vector<String> remoteURLs = new Vector<String> ();
 
+		// If running on a Mac, change some system properties.
+		if ( System.getProperty ( "mrj.version" ) != null ) {
+			System.setProperty ( "com.apple.mrj.application.apple.menu.about.name",
+			    "k5nCal" );
+			System.setProperty ( "apple.laf.useScreenMenuBar", "true" );
+			System.setProperty ( "com.apple.mrj.application.growbox.intrudes",
+			    "false" );
+			System.setProperty ( "apple.awt.antialiasing", "true" );
+		}
+
 		// Check for command line options
 		for ( int i = 0; i < args.length; i++ ) {
 			if ( args[i].equals ( "-addcalendar" ) ) {
