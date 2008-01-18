@@ -147,7 +147,6 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		// Get version from ChangeLog
 		this.getVersionFromChangeLog ();
 
-		// TODO: save user's preferred size on exit and set here
 		prefs = AppPreferences.getInstance ();
 		// prefs.clearAll ();
 
