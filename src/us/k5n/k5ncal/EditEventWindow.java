@@ -368,8 +368,10 @@ public class EditEventWindow extends JDialog implements Constants,
 		// Check for other advanced Rrule options that are not yet supported in our
 		// UI.
 		if ( error == null && rrule != null ) {
-			if ( rrule.exceptions != null && rrule.exceptions.size () > 0 )
-				error = "Exceptions not yet supported";
+			if ( event.getExceptions () != null && event.getExceptions ().size () > 0 )
+				error = "EXDATE not yet supported";
+			else if ( event.getRdates () != null && event.getRdates ().size () > 0 )
+				error = "RDATE not yet supported";
 			else if ( rrule.byhour != null && rrule.byhour.length > 0 )
 				error = "BYHOUR not supported";
 			else if ( rrule.byminute != null && rrule.byminute.length > 0 )
@@ -384,8 +386,6 @@ public class EditEventWindow extends JDialog implements Constants,
 				error = "BYSETPOS not supported";
 			else if ( rrule.count > 0 )
 				error = "COUNT not supported";
-			else if ( rrule.inclusions != null && rrule.inclusions.size () > 0 )
-				error = "Inclusions not yet supported";
 			else if ( rrule.interval > 1 )
 				error = "Interval not yet supported";
 		}

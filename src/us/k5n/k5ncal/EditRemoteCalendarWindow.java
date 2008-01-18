@@ -277,11 +277,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 		} else {
 			cal = c;
 		}
-		cal.setBackgroundColor ( color );
-		cal.setBorderColor ( Utils.getBorderColorForBackground ( color ) );
-		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
-		cal.setLastUpdatedAsNow ();
-		cal.setUpdateIntervalSecs ( updateInterval * 3600 );
+		int authType = authChoiceValues[authField.getSelectedIndex ()];
 		if ( this.modeField.getSelectedIndex () == 0 ) {
 			cal.setCanWrite ( false );
 			cal.setSyncBeforePublish ( false );
@@ -289,8 +285,6 @@ public class EditRemoteCalendarWindow extends JDialog {
 			cal.setCanWrite ( true );
 			cal.setSyncBeforePublish ( this.syncBeforePublishField.isSelected () );
 		}
-		int authType = authChoiceValues[authField.getSelectedIndex ()];
-		cal.setAuthType ( authType );
 		String username = null;
 		String password = null;
 		if ( authType == Calendar.AUTH_BASIC ) {
@@ -298,7 +292,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 			password = passwordField.getText ();
 		}
 		File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
-		HttpClientStatus result = HttpClient.getRemoteCalendar ( cal.getUrl (),
+		HttpClientStatus result = HttpClient.getRemoteCalendar ( url,
 		    username, password, outputFile );
 		switch ( result.getStatus () ) {
 			case HttpClientStatus.HTTP_STATUS_SUCCESS:
@@ -313,8 +307,8 @@ public class EditRemoteCalendarWindow extends JDialog {
 				return;
 			default:
 			case HttpClientStatus.HTTP_STATUS_OTHER_ERROR:
-				showError ( "Error downloading calendar." + "\n\n" + "Server response: "
-				    + result.getMessage () );
+				showError ( "Error downloading calendar." + "\n\n"
+				    + "Server response: " + result.getMessage () );
 				return;
 		}
 		// TODO: validate the contents of the file
@@ -329,6 +323,22 @@ public class EditRemoteCalendarWindow extends JDialog {
 			showError ( "Unable to rename calendar file" );
 			return;
 		}
+		
+		cal.setBackgroundColor ( color );
+		cal.setBorderColor ( Utils.getBorderColorForBackground ( color ) );
+		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
+		cal.setLastUpdatedAsNow ();
+		cal.setUpdateIntervalSecs ( updateInterval * 3600 );
+		if ( this.modeField.getSelectedIndex () == 0 ) {
+			cal.setCanWrite ( false );
+			cal.setSyncBeforePublish ( false );
+		} else {
+			cal.setCanWrite ( true );
+			cal.setSyncBeforePublish ( this.syncBeforePublishField.isSelected () );
+		}
+		cal.setAuthType ( authType );
+		cal.setAuthUsername ( username );
+		cal.setAuthPassword ( password );
 
 		if ( c == null ) {
 			// TODO: update status msg on main window

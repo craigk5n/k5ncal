@@ -258,11 +258,11 @@ public class Calendar implements Serializable {
 			sb.append ( "    <syncBeforePublish>" );
 			sb.append ( this.syncBeforePublish ? "true" : "false" );
 			sb.append ( "</syncBeforePublish>\n" );
+			
+			sb.append ( "    <updateIntervalSecs>" );
+			sb.append ( this.updateIntervalSecs );
+			sb.append ( "</updateIntervalSecs>\n" );
 		}
-
-		sb.append ( "    <updateIntervalSecs>" );
-		sb.append ( this.updateIntervalSecs );
-		sb.append ( "</updateIntervalSecs>\n" );
 
 		sb.append ( "    <selected>" );
 		sb.append ( this.selected ? "true" : "false" );

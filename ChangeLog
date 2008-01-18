@@ -21,6 +21,7 @@ Version 0.9.7dev (14 Jan 2008) - Bug fixes
   single digit hours were not being accepted.
 - Updated libraries: k5n-calendarpanel-0.4.6.jar, k5n-ical-0.4.6.jar
 - Use native Mac toolbar
+- Bug fix: username/password not properly saved for basic auth
 
 Version 0.9.6 (03 Jan 2008) - New features & Bug fixes
 - Allow users to delete an event with RRULE (repeating events)
