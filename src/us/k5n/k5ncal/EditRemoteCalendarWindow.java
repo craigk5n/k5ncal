@@ -86,8 +86,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 			urlField.setText ( c.getUrl ().toString () );
 			urlField.setEditable ( false );
 			modeField.setSelectedIndex ( c.getCanWrite () ? 1 : 0 );
-			if ( !c.getCanWrite () )
-				syncBeforePanel.setVisible ( false );
+			syncBeforePanel.setVisible ( c.getCanWrite () );
 			syncBeforePublishField.setSelected ( c.getSyncBeforePublish () );
 			switch ( c.getAuthType () ) {
 				case Calendar.AUTH_NONE:
@@ -99,6 +98,9 @@ public class EditRemoteCalendarWindow extends JDialog {
 					passwordField.setText ( c.getAuthPassword () );
 					break;
 			}
+		} else {
+			// default settings
+			syncBeforePanel.setVisible ( false );
 		}
 
 		this.setTitle ( c != null ? "Edit Remote Calendar" : "Add Remote Calendar" );
@@ -292,8 +294,8 @@ public class EditRemoteCalendarWindow extends JDialog {
 			password = passwordField.getText ();
 		}
 		File outputFile = new File ( dataDir, cal.getFilename () + ".new" );
-		HttpClientStatus result = HttpClient.getRemoteCalendar ( url,
-		    username, password, outputFile );
+		HttpClientStatus result = HttpClient.getRemoteCalendar ( url, username,
+		    password, outputFile );
 		switch ( result.getStatus () ) {
 			case HttpClientStatus.HTTP_STATUS_SUCCESS:
 				break;
@@ -323,7 +325,7 @@ public class EditRemoteCalendarWindow extends JDialog {
 			showError ( "Unable to rename calendar file" );
 			return;
 		}
-		
+
 		cal.setBackgroundColor ( color );
 		cal.setBorderColor ( Utils.getBorderColorForBackground ( color ) );
 		cal.setForegroundColor ( Utils.getForegroundColorForBackground ( color ) );
