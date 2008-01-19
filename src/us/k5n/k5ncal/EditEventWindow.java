@@ -572,6 +572,9 @@ public class EditEventWindow extends JDialog implements Constants,
 			case REPEAT_YEARLY:
 				this.event.setRrule ( new Rrule ( Rrule.FREQ_YEARLY ) );
 				break;
+			default:
+				System.err.println ( "Error: unknown repeat type" );
+				return;
 		}
 
 		if ( this.allDay.isSelected () ) {
