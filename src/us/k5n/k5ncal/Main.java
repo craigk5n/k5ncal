@@ -139,10 +139,12 @@ public class Main extends JFrame implements Constants, ComponentListener,
 	static final String LARGER_FONT_LABEL = "Larger";
 	static final String SMALLER_FONT_LABEL = "Smaller";
 	private boolean fontsInitialized = false;
+	private boolean isMac = false;
 
 	public Main() {
 		super ( "k5nCal" );
 		this.parent = this;
+		this.isMac = ( System.getProperty ( "mrj.version" ) != null );
 
 		// Get version from ChangeLog
 		this.getVersionFromChangeLog ();
@@ -280,13 +282,18 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		JMenu fileMenu = new JMenu ( "File" );
 
-		item = new JMenuItem ( "Preferences..." );
-		item.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				new PreferencesWindow ( parent, dataRepository );
-			}
-		} );
-		fileMenu.add ( item );
+		// On Mac, we will hook into the native preferences menu object (see
+		// MacStuff.java). So, if we're on a Mac, don't add the Preferences menu
+		// item to the File menu.
+		if ( !isMac ) {
+			item = new JMenuItem ( "Preferences..." );
+			item.addActionListener ( new ActionListener () {
+				public void actionPerformed ( ActionEvent event ) {
+					showPreferences ();
+				}
+			} );
+			fileMenu.add ( item );
+		}
 
 		JMenu importMenu = new JMenu ( "Import" );
 		// exportMenu.setMnemonic ( 'X' );
@@ -328,20 +335,20 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		} );
 		exportMenu.add ( item );
 
-		fileMenu.addSeparator ();
-
-		/* Mac users see "Quit", everyone else gets "Exit" */
-		boolean isMac = System.getProperty ( "mrj.version" ) != null;
-		item = new JMenuItem ( isMac ? "Quit k5nCal" : "Exit" );
-		item.setAccelerator ( KeyStroke.getKeyStroke ( 'Q', Toolkit
-		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
-		item.addActionListener ( new ActionListener () {
-			public void actionPerformed ( ActionEvent event ) {
-				saveCalendars ( getDataDirectory () );
-				System.exit ( 0 );
-			}
-		} );
-		fileMenu.add ( item );
+		// On Mac, we will be using the native "Quit" (see MacStuff.java),
+		// so do not add it to the file menu.
+		if ( !isMac ) {
+			fileMenu.addSeparator ();
+			item = new JMenuItem ( "Exit" );
+			item.setAccelerator ( KeyStroke.getKeyStroke ( 'Q', Toolkit
+			    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
+			item.addActionListener ( new ActionListener () {
+				public void actionPerformed ( ActionEvent event ) {
+					quit ();
+				}
+			} );
+			fileMenu.add ( item );
+		}
 
 		bar.add ( fileMenu );
 
@@ -385,18 +392,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		    .getDefaultToolkit ().getMenuShortcutKeyMask () ) );
 		item.addActionListener ( new ActionListener () {
 			public void actionPerformed ( ActionEvent event ) {
-				// Get application icon
-				URL url = getResource ( APP_ICON );
-				ImageIcon icon = new ImageIcon ( url, "k5nCal" );
-				// Get java version
-				String javaVersion = System.getProperty ( "java.version" );
-				if ( javaVersion == null )
-					javaVersion = "Unknown";
-				JOptionPane.showMessageDialog ( parent, "k5nCal "
-				    + ( version == null ? "Unknown Version" : version ) + "\n\n"
-				    + "Java Version" + ": " + javaVersion + "\n\n"
-				    + "Developed by k5n.us" + "\n\nhttp://www.k5n.us", "About k5nCal",
-				    JOptionPane.INFORMATION_MESSAGE, icon );
+				showAbout ();
 			}
 		} );
 		helpMenu.add ( item );
@@ -507,6 +503,42 @@ public class Main extends JFrame implements Constants, ComponentListener,
 		bar.add ( helpMenu );
 
 		return bar;
+	}
+
+	/**
+	 * Quit the k5nCal application (and save the current calendar states).
+	 */
+	public void quit () {
+		saveCalendars ( getDataDirectory () );
+		System.exit ( 0 );
+	}
+
+	/**
+	 * Show the application preferences dialog window.
+	 */
+	public void showPreferences () {
+		// Note: we can re-use this same JDialog window. However, the hidden window
+		// will not receive the L&F updates while the app is running. So, we just
+		// create a new one to avoid this issue.
+		new PreferencesWindow ( parent, dataRepository );
+	}
+
+	/**
+	 * Show the k5nCal About dialog.
+	 */
+	public void showAbout () {
+		// Get application icon
+		URL url = getResource ( APP_ICON );
+		ImageIcon icon = new ImageIcon ( url, "k5nCal" );
+		// Get java version
+		String javaVersion = System.getProperty ( "java.version" );
+		if ( javaVersion == null )
+			javaVersion = "Unknown";
+		JOptionPane.showMessageDialog ( parent, "k5nCal "
+		    + ( version == null ? "Unknown Version" : version ) + "\n\n"
+		    + "Java Version" + ": " + javaVersion + "\n\n" + "Developed by k5n.us"
+		    + "\n\nhttp://www.k5n.us", "About k5nCal",
+		    JOptionPane.INFORMATION_MESSAGE, icon );
 	}
 
 	JToolBar createToolBar () {
@@ -1675,6 +1707,9 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		}
 		Main app = new Main ();
+		if ( System.getProperty ( "mrj.version" ) != null ) {
+			MacStuff mac = new MacStuff ( app );
+		}
 		// Add calendars if not there...
 		for ( int i = 0; i < remoteURLs.size (); i++ ) {
 			String name = remoteNames.elementAt ( i );
