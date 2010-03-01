@@ -47,6 +47,12 @@ public class HttpClient {
 
 	public static HttpClientStatus getRemoteCalendar ( URL url,
 	    final String username, final String password, File outputFile ) {
+		HttpURLConnection urlC = null;
+		int totalRead = 0;
+		InputStream is = null;
+		OutputStream os = null;
+		DataInputStream dis = null;
+
 		if ( username != null && password != null ) {
 			Authenticator.setDefault ( new Authenticator () {
 				protected PasswordAuthentication getPasswordAuthentication () {
@@ -60,13 +66,11 @@ public class HttpClient {
 				}
 			} );
 		}
-		HttpURLConnection urlC = null;
-		int totalRead = 0;
 		try {
 			urlC = (HttpURLConnection) url.openConnection ();
-			InputStream is = urlC.getInputStream ();
-			OutputStream os = new FileOutputStream ( outputFile );
-			DataInputStream dis = new DataInputStream ( new BufferedInputStream ( is ) );
+			is = urlC.getInputStream ();
+			os = new FileOutputStream ( outputFile );
+			dis = new DataInputStream ( new BufferedInputStream ( is ) );
 			byte[] buf = new byte[4 * 1024]; // 4K buffer
 			int bytesRead;
 			while ( ( bytesRead = dis.read ( buf ) ) != -1 ) {
@@ -74,8 +78,11 @@ public class HttpClient {
 				totalRead += bytesRead;
 			}
 			os.close ();
+			os = null;
 			dis.close ();
-			urlC.disconnect ();
+			dis = null;
+			// urlC.disconnect ();
+			// urlC = null;
 			// Handle the HTTP status code
 			if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
@@ -92,24 +99,30 @@ public class HttpClient {
 			// Checking the response code can generate another IOException
 			try {
 				// Handle the HTTP status code
+				HttpClientStatus ret = null;
 				if ( urlC.getResponseCode () == HttpURLConnection.HTTP_NOT_FOUND ) {
 					// Handle this one individually since it will be the most common.
-					return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
+					ret = new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_NOT_FOUND,
 					    "File not found on server" );
 				} else if ( urlC.getResponseCode () == HttpURLConnection.HTTP_UNAUTHORIZED ) {
-					return new HttpClientStatus (
+					ret = new HttpClientStatus (
 					    HttpClientStatus.HTTP_STATUS_AUTH_REQUIRED,
 					    "Authorizaton required" );
 				} else if ( urlC.getResponseCode () != HttpURLConnection.HTTP_OK ) {
-					return new HttpClientStatus (
+					ret = new HttpClientStatus (
 					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP Error" + " "
 					        + +urlC.getResponseCode () + ": "
 					        + urlC.getResponseMessage () );
 				} else {
-					return new HttpClientStatus (
+					ret = new HttpClientStatus (
 					    HttpClientStatus.HTTP_STATUS_OTHER_ERROR, "HTTP I/O Exception"
 					        + ":", e1 );
 				}
+				if ( urlC != null ) {
+					urlC.disconnect ();
+					urlC = null;
+				}
+				return ret;
 			} catch ( IOException e2 ) {
 				// Print the stack trace on this one since it happened while we were
 				// handling another exception...
@@ -117,8 +130,18 @@ public class HttpClient {
 				return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_OTHER_ERROR,
 				    "HTTP I/O Error" + ": " + e1.getMessage (), e1 );
 			}
+		} finally {
+			try {
+				if ( os != null )
+					os.close ();
+				if ( is != null )
+					is.close ();
+				if ( urlC != null )
+					urlC.disconnect ();
+			} catch ( IOException e3 ) {
+				// Ignore...
+			}
 		}
-
 		// Success
 		return new HttpClientStatus ( HttpClientStatus.HTTP_STATUS_SUCCESS,
 		    outputFile );

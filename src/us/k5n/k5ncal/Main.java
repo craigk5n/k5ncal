@@ -79,6 +79,7 @@ import us.k5n.ical.Date;
 import us.k5n.ical.Event;
 import us.k5n.ical.ICalendarParser;
 import us.k5n.k5ncal.data.Calendar;
+import us.k5n.k5ncal.data.FileUtils;
 import us.k5n.k5ncal.data.HttpClient;
 import us.k5n.k5ncal.data.HttpClientStatus;
 import us.k5n.k5ncal.data.Repository;
@@ -890,19 +891,36 @@ public class Main extends JFrame implements Constants, ComponentListener,
 					showStatusMessage ( statusMsg );
 				if ( error == null ) {
 					// TODO: validate what we downloaded was ICS data rather
-					// than an HTML
-					// page
-					// Rename file from ".ics.new" to ".ics"
+					// than an HTML page Rename file from ".ics.new" to ".ics"
 					File file = new File ( dataDir, cal.getFilename () );
-					// Delete old file first since renameTo may file if file
-					// already
+					// Delete old file first since renameTo may file if file already
 					// exists
 					file.delete ();
 					// Now rename
+					boolean success = false;
+
 					if ( !outputFile.renameTo ( file ) ) {
+						// renameTo failed :-(
+						// renameTo can be flakey at times. If it fails, do a brute force
+						// copy and then delete the old file.
+						try {
+							FileUtils.copyFile ( outputFile, file );
+							outputFile.delete ();
+							success = true;
+							System.out.println ( "Brute force copy: " + file );
+						} catch ( Exception e ) {
+							System.err.println ( "copyFile failed: " + e.getMessage () );
+						}
 						// Error renaming
-						showError ( "Error renaming file" );
+						if ( !success ) {
+							showError ( "Error renaming updated calendar:\nCalendar: "
+							    + cal.getName () + "\nOld Name: " + outputFile
+							    + "\nNew name:" + file );
+						}
 					} else {
+						success = true;
+					}
+					if ( success ) {
 						// System.out.println ( "Renamed " + outputFile + " to "
 						// + file );
 						// If no error, then save calendar update
