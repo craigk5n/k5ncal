@@ -3,6 +3,8 @@ $Id$
 
 Version 0.9.8 (?? ??? 2010) - Bug fixes
 - Fixed error renaming temporary file shortly after app startup
+- Updated ical library to fix bug: double clicking on date would not
+  set date properly for new event in edit window.
 
 Version 0.9.7 (20 Jan 2008) - Bug fixes
 - Initial support for publishing changes to WebDAV server using HTTP PUT.

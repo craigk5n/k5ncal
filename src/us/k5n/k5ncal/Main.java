@@ -1293,8 +1293,7 @@ public class Main extends JFrame implements Constants, ComponentListener,
 
 		JPanel main = new JPanel ();
 		main.setBorder ( BorderFactory
-		    .createTitledBorder ( c == null ? "New Local Calendar"
-		        : "Edit Local Calendar" ) );
+		    .createTitledBorder ( "Local Calendar Settings" ) );
 		main.setLayout ( new GridLayout ( 2, 1 ) );
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,

@@ -126,8 +126,8 @@ public class EditRemoteCalendarWindow extends JDialog {
 		content.add ( buttonPanel, BorderLayout.SOUTH );
 
 		JPanel main = new JPanel ();
-		main
-		    .setBorder ( BorderFactory.createTitledBorder ( "New Remote Calendar" ) );
+		main.setBorder ( BorderFactory
+		    .createTitledBorder ( "Remote Calendar Settings" ) );
 		main.setLayout ( new GridLayout ( 9, 1 ) );
 		JPanel namePanel = new JPanel ();
 		namePanel.setLayout ( new ProportionalLayout ( props,
