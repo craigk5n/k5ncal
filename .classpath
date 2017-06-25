@@ -5,8 +5,8 @@
 	<classpathentry kind="lib" path="lib/jcalendar-1.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/BrowserLauncher2-1_3.jar"/>
 	<classpathentry kind="lib" path="lib/k5nAccordion-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/k5n-calendarpanel-0.4.6.jar"/>
-	<classpathentry kind="lib" path="lib/k5n-ical-0.4.6.jar"/>
 	<classpathentry kind="lib" path="lib/MacStuff.jar"/>
+	<classpathentry kind="lib" path="lib/k5n-calendarpanel-0.4.7.jar"/>
+	<classpathentry kind="lib" path="lib/k5n-ical-0.4.7.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
