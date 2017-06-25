@@ -15,8 +15,8 @@
 
 	<property name="version" value="0.9.8" />
 
-	<property name="k5n-ical-lib" value="lib/k5n-ical-0.4.6.jar" />
-	<property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.6.jar" />
+	<property name="k5n-ical-lib" value="lib/k5n-ical-0.4.7.jar" />
+	<property name="k5n-calendarpanel-lib" value="lib/k5n-calendarpanel-0.4.7.jar" />
 	<property name="k5n-accordionpane-lib" value="lib/k5nAccordion-1.0.1.jar" />
 	<property name="jcalendar-lib" value="lib/jcalendar-1.3.2.jar" />
 	<property name="browserlauncher-lib" value="lib/BrowserLauncher2-1_3.jar" />
