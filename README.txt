@@ -1,8 +1,8 @@
                            k5nCal
 ****************************************************************************
 
-Version:      0.9.7
-URL:          http://k5ndesktopcal.sourceforge.net
+Version:      0.9.8
+URL:          http://www.k5n.us/k5ncal.php
 Author:       Craig Knudsen, craig [< at >] k5n.us
 License:      GNU GPL
 Requires:     Java 1.5 or later
@@ -42,7 +42,7 @@ To build with ant:
 
 This build process will create the following jar file:
 
-	dist/k5nCal-0.9.7.jar
+	dist/k5nCal-0.9.8.jar
 
 ---------------------------------------------------------------------------
                          RUNNING THE APP
@@ -52,7 +52,7 @@ To run the k5nCal application, you can double-click on the file
 in your file browser (Windows Explorer, Mac OS X Finder, etc.), or you
 can start it from the command line:
 
-java -jar k5nCal-0.9.7.jar
+java -jar k5nCal-0.9.8.jar
 
 ---------------------------------------------------------------------------
                          LICENSE

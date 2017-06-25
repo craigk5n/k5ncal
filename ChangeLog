@@ -1,7 +1,6 @@
 ChangeLog
-$Id$
 
-Version 0.9.8 (?? ??? 2010) - Bug fixes
+Version 0.9.8 (01 Jan 2011) - Bug fixes
 - Fixed error renaming temporary file shortly after app startup
 - Updated ical library to fix bug: double clicking on date would not
   set date properly for new event in edit window.
