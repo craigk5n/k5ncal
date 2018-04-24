@@ -60,9 +60,7 @@ public class ThirdPartyDialog extends JDialog {
 
 	    "JCalendar", "http://www.toedter.com/en/jcalendar/index.html",
 	    "GNU LGPL", "http://www.toedter.com/en/jcalendar/license.html",
-
-	    "BrowserLauncher2", "http://browserlaunch2.sourceforge.net/", "GNU LGPL",
-	    "http://www.gnu.org/licenses/lgpl.html", };
+	     };
 
 	/**
 	 * Create a new window.

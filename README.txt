@@ -1,11 +1,11 @@
                            k5nCal
 ****************************************************************************
 
-Version:      0.9.8
+Version:      0.9.9-SNAPSHOT
 URL:          http://www.k5n.us/k5ncal.php
 Author:       Craig Knudsen, craig [< at >] k5n.us
 License:      GNU GPL
-Requires:     Java 1.5 or later
+Requires:     Java 1.8 or later
 
 ---------------------------------------------------------------------------
                          ABOUT
@@ -34,7 +34,7 @@ Features not yet implemented:
                          BUILDING
 ---------------------------------------------------------------------------
 To build the source, you will need to use ant with the provided build.xml
-file.  (Ant 1.6 or later is required.)
+file.
 
 To build with ant:
 
@@ -42,7 +42,7 @@ To build with ant:
 
 This build process will create the following jar file:
 
-	dist/k5nCal-0.9.8.jar
+	dist/k5nCal-0.9.9-SNAPSHOT.jar
 
 ---------------------------------------------------------------------------
                          RUNNING THE APP
@@ -52,7 +52,7 @@ To run the k5nCal application, you can double-click on the file
 in your file browser (Windows Explorer, Mac OS X Finder, etc.), or you
 can start it from the command line:
 
-java -jar k5nCal-0.9.8.jar
+java -jar k5nCal-0.9.9-SNAPSHOT.jar
 
 ---------------------------------------------------------------------------
                          LICENSE
@@ -104,8 +104,3 @@ JCalendar:
   URL: http://www.toedter.com/en/jcalendar/index.html
   License: LGPL
   Licence URL: http://www.toedter.com/en/jcalendar/license.html
-  
-BrowserLauncher2:
-  URL: http://browserlaunch2.sourceforge.net/
-  License: LGPL
-  License URL: http://www.gnu.org/licenses/lgpl.html

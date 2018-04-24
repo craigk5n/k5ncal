@@ -20,19 +20,18 @@ package us.k5n.k5ncal;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.URI;
 
 import javax.swing.JLabel;
-
-import edu.stanford.ejalbert.BrowserLauncher;
 
 /**
  * Override the JLabel class with a hyperlink so users can click on it to open
  * up their preferred browser to the URL in the JLabel.
  * 
  * @author Craig Knudsen, craig@k5n.us
- * @version $Id$
  */
 public class JLabelWithHyperlink extends JLabel {
 	private static Cursor handCursor = null, defaultCursor = null;
@@ -65,8 +64,7 @@ public class JLabelWithHyperlink extends JLabel {
 				String urlStr = getText ();
 				if ( urlStr != null && urlStr.trim ().startsWith ( "http" ) ) {
 					try {
-						BrowserLauncher bl = new BrowserLauncher ();
-						bl.openURLinBrowser ( urlStr );
+						Desktop.getDesktop ().browse ( new URI ( urlStr ) );
 					} catch ( Exception e ) {
 						System.err.println ( "Error starting web browser" + ": "
 						    + e.getMessage () );

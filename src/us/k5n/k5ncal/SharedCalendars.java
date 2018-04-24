@@ -18,14 +18,14 @@
  */
 package us.k5n.k5ncal;
 
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
 import java.util.Vector;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-
-import edu.stanford.ejalbert.BrowserLauncher;
 
 public class SharedCalendars {
 	public static Vector<CalendarSite> sites;
@@ -55,8 +55,7 @@ public class SharedCalendars {
 				item.addActionListener ( new ActionListener () {
 					public void actionPerformed ( ActionEvent event ) {
 						try {
-							BrowserLauncher bl = new BrowserLauncher ();
-							bl.openURLinBrowser ( url );
+							Desktop.getDesktop ().browse ( new URI ( url ) );
 						} catch ( Exception e1 ) {
 							System.err.println ( "Error starting web browser" + ": "
 							    + e1.getMessage () );
