@@ -66,7 +66,7 @@ to download them separately.
 Package|License
 -------|-------
 [k5n Java Calendar Tools](http://www.k5n.us/javacaltools.php)|[GNU GPL](http://www.fsf.org/licensing/licenses/gpl.html)
-[Joda Time)[http://joda-time.sourceforge.net/index.html]|(Apache License 2.0)[http://joda-time.sourceforge.net/license.html]
+[Joda Time](http://joda-time.sourceforge.net/index.html)|[Apache License 2.0](http://joda-time.sourceforge.net/license.html)
 [k5n AccordionPane](http://www.k5n.us/k5naccordion.php)|[GNU GPL](http://www.fsf.org/licensing/licenses/gpl.html)
 [Google RFC2445](http://code.google.com/p/google-rfc-2445/)|[Apache License 2.0](http://www.apache.org/licenses/)
 [Java CSV Library](http://sourceforge.net/projects/javacsv/)|[LGPL](http://www.gnu.org/licenses/lgpl.html)
